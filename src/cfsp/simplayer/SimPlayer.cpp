@@ -2,7 +2,7 @@
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/simplayer/CFSP.h"
-#include "cfsp/simplayer/SpLuaApi.h"
+#include "cfsp/simplayer/luaapi/SpLuaApi.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/memory/Hook.h"
@@ -658,6 +658,16 @@ SimPlayerManager::groupScript(Player* player, std::string const& gname, std::str
 }
 
 LL_TYPE_INSTANCE_HOOK(
+    CoralFansSimPlayerTickHook,
+    ll::memory::HookPriority::Normal,
+    Level,
+    "?tick@Level@@UEAAXXZ",
+    void
+) {
+    mod().getSimPlayerManager().tick();
+}
+
+LL_TYPE_INSTANCE_HOOK(
     CoralFansSimPlayerDieEventHook,
     ll::memory::HookPriority::Normal,
     Player,
@@ -701,10 +711,12 @@ LL_TYPE_INSTANCE_HOOK(
 
 void hookSimPlayer(bool hook) {
     if (hook) {
+        CoralFansSimPlayerTickHook::hook();
         CoralFansSimPlayerDieEventHook::hook();
         CoralFansSimPlayerServerStopSaveHook::hook();
         CoralFansSimPlayerDataSaveHook::hook();
     } else {
+        CoralFansSimPlayerTickHook::unhook();
         CoralFansSimPlayerDieEventHook::unhook();
         CoralFansSimPlayerServerStopSaveHook::unhook();
         CoralFansSimPlayerDataSaveHook::unhook();
