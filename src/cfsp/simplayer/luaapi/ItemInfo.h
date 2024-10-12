@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cfsp/base/Macros.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/Tag.h"
