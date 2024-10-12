@@ -1,7 +1,5 @@
 #pragma once
 
-#include "cfsp/base/Macros.h"
-
 extern "C" {
 #include "lua.h"
 }

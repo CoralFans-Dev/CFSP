@@ -1,3 +1,5 @@
+#pragma once
+
 #define COMMAND_CHECK_PLAYER                                                                                           \
     auto* entity = origin.getEntity();                                                                                 \
     if (entity == nullptr || !entity->isType(ActorType::Player)) {                                                     \

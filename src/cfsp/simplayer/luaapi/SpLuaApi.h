@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cfsp/simplayer/CFSP.h"
 #include <string>
 #include <utility>
 
