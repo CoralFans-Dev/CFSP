@@ -36,7 +36,6 @@
 #include <unordered_set>
 #include <utility>
 
-
 namespace coral_fans::cfsp {
 
 namespace sputils {
@@ -628,7 +627,8 @@ std::pair<std::string, bool> SimPlayerManager::simPlayerScript(
     std::string const& spname,
     bool               noCheck,
     std::string const& arg,
-    int                interval
+    int                interval,
+    std::string const& luaArg
 ) {
     using ll::i18n_literals::operator""_tr;
     auto uuid = player->getUuid();
@@ -639,13 +639,18 @@ std::pair<std::string, bool> SimPlayerManager::simPlayerScript(
         if (it->second.status != SimPlayerStatus::Alive) return {"translate.simplayer.error.statuserror"_tr(), false};
         if (!it->second.isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};
         // run script
-        if (it->second.simPlayer) return sputils::lua_api::execLuaScript(arg, interval, it->second);
+        if (it->second.simPlayer) return sputils::lua_api::execLuaScript(arg, interval, luaArg, it->second);
         return {"translate.simplayer.success"_tr(), true};
     }
     return {"translate.simplayer.error.permissiondenied"_tr(), false};
 }
-std::pair<std::string, bool>
-SimPlayerManager::groupScript(Player* player, std::string const& gname, std::string const& arg, int interval) {
+std::pair<std::string, bool> SimPlayerManager::groupScript(
+    Player*            player,
+    std::string const& gname,
+    std::string const& arg,
+    int                interval,
+    std::string const& luaArg
+) {
     using ll::i18n_literals::operator""_tr;
     auto adminIt = this->mGroupAdminMap.find(gname);
     auto it      = this->mGroupNameMap.find(gname);
@@ -653,7 +658,7 @@ SimPlayerManager::groupScript(Player* player, std::string const& gname, std::str
         return {"translate.simplayer.error.notfound"_tr(), false};
     if (adminIt->second.find(player->getUuid().asString()) == adminIt->second.end())
         return {"translate.simplayer.error.permissiondenied"_tr(), false};
-    for (auto const& v : it->second) this->simPlayerScript(player, v, true, arg, interval);
+    for (auto const& v : it->second) this->simPlayerScript(player, v, true, arg, interval, luaArg);
     return {"translate.simplayer.success"_tr(), true};
 }
 
@@ -664,7 +669,8 @@ LL_TYPE_INSTANCE_HOOK(
     "?tick@Level@@UEAAXXZ",
     void
 ) {
-    mod().getSimPlayerManager().tick();
+    origin();
+    SimPlayerManager::getInstance().tick();
 }
 
 LL_TYPE_INSTANCE_HOOK(
@@ -677,7 +683,7 @@ LL_TYPE_INSTANCE_HOOK(
 ) {
     origin(source);
     if (this->isSimulatedPlayer()) {
-        auto& manager = mod().getSimPlayerManager();
+        auto& manager = SimPlayerManager::getInstance();
         manager.setDead(this->getRealName());
         if (manager.getAutoRespawn()) manager.respawnSimPlayer(this, this->getRealName(), true);
     }
@@ -692,7 +698,7 @@ LL_TYPE_INSTANCE_HOOK(
     CommandOrigin const& arg1,
     CommandOutput&       arg2
 ) {
-    mod().getSimPlayerManager().save();
+    SimPlayerManager::getInstance().save();
     origin(arg1, arg2);
 }
 
@@ -705,7 +711,7 @@ LL_TYPE_INSTANCE_HOOK(
     std::chrono::steady_clock::time_point unknown
 ) {
     CFSP::getInstance().getSelf().getLogger().debug("call LevelStorageManager::saveGameData");
-    mod().getSimPlayerManager().save();
+    SimPlayerManager::getInstance().save();
     origin(unknown);
 }
 

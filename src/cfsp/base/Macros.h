@@ -22,10 +22,16 @@
         break;                                                                                                         \
     }
 
+#ifdef CFSPEXP
+#define CFSP_API __declspec(dllexport)
+#else
+#define CFSP_API __declspec(dllimport)
+#endif
+
 // SimPlayer reg def
 #define SP_REG_DEF(NAME, ...)                                                                                          \
-    std::pair<std::string, bool> simPlayer##NAME(Player*, std::string const&, bool, __VA_ARGS__);                      \
-    std::pair<std::string, bool> group##NAME(Player*, std::string const&, __VA_ARGS__);
+    CFSP_API std::pair<std::string, bool> simPlayer##NAME(Player*, std::string const&, bool, __VA_ARGS__);             \
+    CFSP_API std::pair<std::string, bool> group##NAME(Player*, std::string const&, __VA_ARGS__);
 
 // SimPlayer def with arg
 #define SP_DEF_WA(NAME, ACTION, ARG_TYPE)                                                                              \
@@ -192,7 +198,7 @@
         return {"translate.simplayer.success"_tr(), true};                                                             \
     }
 
-#define LUAAPI(name) static int lua_api_##name(lua_State* L)
+#define LUAAPI(name) int lua_api_##name(lua_State* L)
 
 #define LUA_ARG_COUNT_CHECK_C(i)                                                                                       \
     if (lua_gettop(L) != (i)) return luaL_error(L, "%d args expected", (i));
