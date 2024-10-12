@@ -10,5 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 + Move CoralFans SimulatedPlayer System from [CoralFans](https://github.com/CoralFans-Dev/CoralFans) to here
++ Added Script Arg
 
 [1.0.0]: https://github.com/CoralFans-Dev/CFSP/releases/tag/v1.0.0

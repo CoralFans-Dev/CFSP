@@ -1,6 +1,8 @@
 #include "cfsp/CFSP.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/commands/Command.h"
+#include "cfsp/simplayer/CFSP.h"
+#include "cfsp/simplayer/Hooks.h"
 #include "ll/api/Config.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
@@ -42,6 +44,8 @@ bool CFSP::load() {
 bool CFSP::enable() {
     auto& mod = coral_fans::cfsp::mod();
 
+    hookSimPlayer(true);
+
     // get DefaultDataLoadHelper
     mod.getDefaultDataLoadHelper() =
         static_cast<DefaultDataLoadHelper*>(ll::memory::resolveSymbol("??_7DefaultDataLoadHelper@@6B@"));
@@ -53,12 +57,15 @@ bool CFSP::enable() {
     if (mod.getConfig().command.sp.enabled) commands::registerSpCommand(mod.getConfig().command.sp.permission);
 
     // load simplayer data
-    mod.getSimPlayerManager().load();
+    SimPlayerManager::getInstance().load();
 
     return true;
 }
 
-bool CFSP::disable() { return true; }
+bool CFSP::disable() {
+    hookSimPlayer(false);
+    return true;
+}
 
 } // namespace coral_fans::cfsp
 

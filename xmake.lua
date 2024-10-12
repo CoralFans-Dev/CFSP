@@ -30,6 +30,7 @@ target("CFSP") -- Change this to your mod name.
         "/w45204"
     )
     add_defines("NOMINMAX", "UNICODE", "CFSPEXP")
+    add_defines("VERSION=\"$(shell git describe --tags --abbrev=0 --always)\"")
     add_defines("COMMITID=\"$(shell git rev-parse HEAD)\"")
     add_files("src/**.cpp")
     add_headerfiles("src/cfsp/simplayer/CFSP.h")

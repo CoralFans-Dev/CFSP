@@ -31,6 +31,8 @@
 #include <unordered_set>
 #include <utility>
 
+#define MANAGER_VERSION 1
+#define INFO_VERSION    1
 
 namespace coral_fans::cfsp {
 
@@ -79,19 +81,19 @@ public:
             }
         }
         // functions
-        inline std::string getName() { return name; }
-        inline std::string getXuid() { return xuid; }
-        inline int         getStatus() { return status; }
-        inline Vec3        getPos() { return simPlayer->getPosition(); }
-        inline Vec3        getFeetPos() { return simPlayer->getFeetPos(); }
-        inline BlockPos    getStandingOn() { return simPlayer->getBlockPosCurrentlyStandingOn(simPlayer); }
-        inline Vec2        getRot() { return simPlayer->getRotation(); }
-        inline int         getHealth() { return simPlayer->getHealth(); }
-        inline float       getHunger() { return simPlayer->getAttribute(SimulatedPlayer::HUNGER).getCurrentValue(); }
-        inline bool        sneaking(bool enable) {
+        CFSP_API inline std::string getName() { return name; }
+        CFSP_API inline std::string getXuid() { return xuid; }
+        CFSP_API inline int         getStatus() { return status; }
+        CFSP_API inline Vec3        getPos() { return simPlayer->getPosition(); }
+        CFSP_API inline Vec3        getFeetPos() { return simPlayer->getFeetPos(); }
+        CFSP_API inline BlockPos    getStandingOn() { return simPlayer->getBlockPosCurrentlyStandingOn(simPlayer); }
+        CFSP_API inline Vec2        getRot() { return simPlayer->getRotation(); }
+        CFSP_API inline int         getHealth() { return simPlayer->getHealth(); }
+        CFSP_API inline float getHunger() { return simPlayer->getAttribute(SimulatedPlayer::HUNGER).getCurrentValue(); }
+        CFSP_API inline bool  sneaking(bool enable) {
             return enable ? simPlayer->simulateSneaking() : simPlayer->simulateStopSneaking();
         }
-        void swimming(bool enable) {
+        CFSP_API void swimming(bool enable) {
             if (enable) {
                 simPlayer->startSwimming();
                 taskid = scheduler->add(1, [sp = this->simPlayer](unsigned long long) {
@@ -106,13 +108,13 @@ public:
                 });
             }
         }
-        bool attack() {
+        CFSP_API bool attack() {
             const auto& hit = simPlayer->traceRay(5.25f, true, false);
             if (hit) return simPlayer->simulateAttack(hit.getEntity());
             else return false;
         }
-        inline void chat(std::string const& msg) { simPlayer->simulateChat(msg); }
-        bool        destroy() {
+        CFSP_API inline void chat(std::string const& msg) { simPlayer->simulateChat(msg); }
+        CFSP_API bool        destroy() {
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (hit)
                 return simPlayer->simulateDestroyBlock(
@@ -121,8 +123,8 @@ public:
                 );
             else return false;
         }
-        inline bool dropSelectedItem() { return simPlayer->simulateDropSelectedItem(); }
-        bool        dropInv() {
+        CFSP_API inline bool dropSelectedItem() { return simPlayer->simulateDropSelectedItem(); }
+        CFSP_API bool        dropInv() {
             bool rst = true;
             if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM) rst &= simPlayer->simulateDropSelectedItem();
             int   sel  = simPlayer->getSelectedItemSlot();
@@ -135,7 +137,7 @@ public:
             }
             return rst;
         }
-        void swap(Player* player) {
+        CFSP_API void swap(Player* player) {
             // get data
             auto&      spInv     = simPlayer->getInventory();
             const auto spOffhand = simPlayer->getOffhandSlot();
@@ -178,7 +180,7 @@ public:
             // refresh
             player->refreshInventory();
         }
-        bool runCmd(std::string const& cmd) {
+        CFSP_API bool runCmd(std::string const& cmd) {
             CommandContext ctx(cmd, std::make_unique<PlayerCommandOrigin>(PlayerCommandOrigin(*simPlayer)));
             auto           mc = ll::service::getMinecraft();
             if (mc) {
@@ -187,11 +189,11 @@ public:
             }
             return false;
         }
-        std::pair<BlockPos, bool> getBlockPosFromView() {
+        CFSP_API std::pair<BlockPos, bool> getBlockPosFromView() {
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             return {hit.mBlockPos, hit.mType == HitResultType::Tile};
         }
-        int searchInInvWithId(int id, int start = 0) {
+        CFSP_API int searchInInvWithId(int id, int start = 0) {
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i) {
@@ -199,7 +201,7 @@ public:
             }
             return -1;
         }
-        int searchInInvWithName(std::string const& itemName, int start = 0) {
+        CFSP_API int searchInInvWithName(std::string const& itemName, int start = 0) {
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i) {
@@ -209,14 +211,14 @@ public:
             }
             return -1;
         }
-        bool selectSlot(int slot) {
+        CFSP_API bool selectSlot(int slot) {
             int maxslot = simPlayer->getInventory().getContainerSize();
             if (slot < 0 || slot >= maxslot) return false;
             int sel = simPlayer->getSelectedItemSlot();
             utils::swapItemInContainer(simPlayer, sel, slot);
             return true;
         }
-        bool select(int id) {
+        CFSP_API bool select(int id) {
             int sel    = simPlayer->getSelectedItemSlot();
             int target = searchInInvWithId(id);
             if (target == sel) target = searchInInvWithId(id, sel + 1);
@@ -224,41 +226,41 @@ public:
             utils::swapItemInContainer(simPlayer, sel, target);
             return true;
         }
-        const ItemStack& getItemFromInv(int slot) {
+        CFSP_API const ItemStack& getItemFromInv(int slot) {
             auto& inv = simPlayer->getInventory();
             return inv.getItem(slot);
         }
-        inline bool interact() { return simPlayer->simulateInteract(); }
-        inline bool jump() { return simPlayer->simulateJump(); }
-        void        useItem(int delay) {
+        CFSP_API inline bool interact() { return simPlayer->simulateInteract(); }
+        CFSP_API inline bool jump() { return simPlayer->simulateJump(); }
+        CFSP_API void        useItem(int delay) {
             simPlayer->simulateUseItemInSlot(simPlayer->getSelectedItemSlot());
             taskid = scheduler->add(delay, [sp = this->simPlayer](unsigned long long) {
                 if (sp) sp->simulateStopUsingItem();
                 return false;
             });
         }
-        inline void startBuild() { simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot()); }
-        inline void lookAt(Vec3 const& pos) { simPlayer->simulateLookAt(pos, ::sim::LookDuration{}); }
-        inline void moveTo(Vec3 const& pos) { simPlayer->simulateMoveToLocation(pos, 4.3f, true); }
-        inline void navigateTo(Vec3 const& pos) { simPlayer->simulateNavigateToLocation(pos, 4.3f); }
-        inline void cancelTask() { scheduler->cancel(taskid); }
-        inline void cancelScript() { scheduler->cancel(scriptid); }
-        bool        isTaskFree() {
+        CFSP_API inline void startBuild() { simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot()); }
+        CFSP_API inline void lookAt(Vec3 const& pos) { simPlayer->simulateLookAt(pos, ::sim::LookDuration{}); }
+        CFSP_API inline void moveTo(Vec3 const& pos) { simPlayer->simulateMoveToLocation(pos, 4.3f, true); }
+        CFSP_API inline void navigateTo(Vec3 const& pos) { simPlayer->simulateNavigateToLocation(pos, 4.3f); }
+        CFSP_API inline void cancelTask() { scheduler->cancel(taskid); }
+        CFSP_API inline void cancelScript() { scheduler->cancel(scriptid); }
+        CFSP_API bool        isTaskFree() {
             if (scheduler->isRunning(taskid)) return false;
             else {
                 taskid = 0;
                 return true;
             }
         }
-        bool isScriptFree() {
+        CFSP_API bool isScriptFree() {
             if (scheduler->isRunning(scriptid)) return false;
             else {
                 scriptid = 0;
                 return true;
             }
         }
-        inline bool isFree() { return isTaskFree() && isScriptFree(); }
-        void        stopAction() {
+        CFSP_API inline bool isFree() { return isTaskFree() && isScriptFree(); }
+        CFSP_API void        stopAction() {
             simPlayer->simulateStopBuild();
             simPlayer->simulateStopDestroyingBlock();
             simPlayer->simulateStopFlying();
@@ -268,7 +270,7 @@ public:
             if (scheduler->isRunning(taskid)) cancelTask();
             taskid = 0;
         }
-        void stop() {
+        CFSP_API void stop() {
             stopAction();
             if (scheduler->isRunning(scriptid)) cancelScript();
             scriptid = 0;
@@ -286,7 +288,7 @@ private:
     bool                                                             autorespawn;
     bool                                                             autojoin;
 
-public:
+private:
     SimPlayerManager()
     : mOnlineCount(0),
       mSpawnCount(0),
@@ -294,8 +296,14 @@ public:
       autorespawn(false),
       autojoin(false) {}
     ~SimPlayerManager() { this->mScheduler->clear(); }
-    SimPlayerManager(const SimPlayerManager&)            = delete;
-    SimPlayerManager& operator=(const SimPlayerManager&) = delete;
+    SimPlayerManager(const SimPlayerManager&);
+    SimPlayerManager& operator=(const SimPlayerManager&);
+
+public:
+    CFSP_API static SimPlayerManager& getInstance() {
+        static SimPlayerManager inst;
+        return inst;
+    }
 
 private:
     friend class boost::serialization::access;
@@ -315,40 +323,40 @@ private:
     void refreshSoftEnum();
 
 public:
-    void        save();
-    void        load();
-    inline void tick() { this->mScheduler->tick(); }
+    CFSP_API void save();
+    CFSP_API void load();
+    inline void   tick() { this->mScheduler->tick(); }
 
 public:
-    std::string listSimPlayer();
-    std::string listGroup();
+    CFSP_API std::string listSimPlayer();
+    CFSP_API std::string listGroup();
 
 public:
-    inline void setAutoRespawn(bool isopen) { this->autorespawn = isopen; }
-    inline void setAutoJoin(bool isopen) { this->autojoin = isopen; }
-    inline bool getAutoRespawn() { return this->autorespawn; }
-    inline bool getAutoJoin() { return this->autojoin; }
+    CFSP_API inline void setAutoRespawn(bool isopen) { this->autorespawn = isopen; }
+    CFSP_API inline void setAutoJoin(bool isopen) { this->autojoin = isopen; }
+    CFSP_API inline bool getAutoRespawn() { return this->autorespawn; }
+    CFSP_API inline bool getAutoJoin() { return this->autojoin; }
 
 public:
-    std::pair<std::string, bool> createGroup(Player*, std::string const&);
-    std::pair<std::string, bool> deleteGroup(Player*, std::string const&);
-    std::pair<std::string, bool> addSpToGroup(Player*, std::string const&, std::string const&);
-    std::pair<std::string, bool> rmSpFromGroup(Player*, std::string const&, std::string const&);
-    std::pair<std::string, bool> addAdminToGroup(Player*, std::string const&, Player*);
-    std::pair<std::string, bool> rmAdminFromGroup(Player*, std::string const&, Player*);
+    CFSP_API std::pair<std::string, bool> createGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> deleteGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> addSpToGroup(Player*, std::string const&, std::string const&);
+    CFSP_API std::pair<std::string, bool> rmSpFromGroup(Player*, std::string const&, std::string const&);
+    CFSP_API std::pair<std::string, bool> addAdminToGroup(Player*, std::string const&, Player*);
+    CFSP_API std::pair<std::string, bool> rmAdminFromGroup(Player*, std::string const&, Player*);
 
 public:
-    std::pair<std::string, bool> spawnSimPlayer(Player*, std::string const&, Vec3 const&, Vec2 const&);
-    std::pair<std::string, bool> spawnGroup(Player*, std::string const&);
-    std::pair<std::string, bool> despawnSimPlayer(Player*, std::string const&, bool);
-    std::pair<std::string, bool> despawnGroup(Player*, std::string const&);
-    std::pair<std::string, bool> rmSimPlayer(Player*, std::string const&, bool);
-    std::pair<std::string, bool> rmGroup(Player*, std::string const&);
-    std::pair<std::string, bool> respawnSimPlayer(Player*, std::string const&, bool);
-    std::pair<std::string, bool> respawnGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> spawnSimPlayer(Player*, std::string const&, Vec3 const&, Vec2 const&);
+    CFSP_API std::pair<std::string, bool> spawnGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> despawnSimPlayer(Player*, std::string const&, bool);
+    CFSP_API std::pair<std::string, bool> despawnGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> rmSimPlayer(Player*, std::string const&, bool);
+    CFSP_API std::pair<std::string, bool> rmGroup(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> respawnSimPlayer(Player*, std::string const&, bool);
+    CFSP_API std::pair<std::string, bool> respawnGroup(Player*, std::string const&);
 
 public:
-    void setDead(std::string const&);
+    CFSP_API void setDead(std::string const&);
 
 public:
     SP_REG_DEF(Stop)
@@ -359,7 +367,7 @@ public:
     SP_REG_DEF(Destroy, int, int)
     SP_REG_DEF(DropSelectedItem)
     SP_REG_DEF(DropInv)
-    std::pair<std::string, bool> simPlayerSwap(Player*, std::string const&);
+    CFSP_API std::pair<std::string, bool> simPlayerSwap(Player*, std::string const&);
     SP_REG_DEF(RunCmd, std::string const&, int, int)
     SP_REG_DEF(Select, int)
     SP_REG_DEF(Interact, int, int)
@@ -369,10 +377,10 @@ public:
     SP_REG_DEF(LookAt, Vec3 const&)
     SP_REG_DEF(MoveTo, Vec3 const&)
     SP_REG_DEF(NavTo, Vec3 const&)
-    SP_REG_DEF(Script, std::string const&, int)
+    SP_REG_DEF(Script, std::string const&, int, std::string const&)
 };
 
 } // namespace coral_fans::cfsp
 
-BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager, 1)
-BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager::SimPlayerInfo, 1)
+BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager, MANAGER_VERSION)
+BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager::SimPlayerInfo, INFO_VERSION)
