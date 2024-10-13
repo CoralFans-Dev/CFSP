@@ -75,9 +75,7 @@ int lua_api_simplayer_isTaskFree(lua_State*);
 
 int lua_api_simplayer_stopAction(lua_State*);
 
-int lua_api_simplayer_meta_gc(lua_State*);
-
-extern const luaL_Reg lua_reg_simplayer_m[34];
+extern const luaL_Reg lua_reg_simplayer_m[33];
 
 int lua_api_open_simplayer(lua_State*);
 

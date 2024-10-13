@@ -21,17 +21,19 @@
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/phys/HitResultType.h"
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
-#define MANAGER_VERSION 1
+#define MANAGER_VERSION 2
 #define INFO_VERSION    1
 
 namespace coral_fans::cfsp {
@@ -57,14 +59,14 @@ public:
         float                                 offlineRotY;
         std::string                           offlineGameType;
         bool                                  offlineEmptyInv;
-        SimulatedPlayer*                      simPlayer;
-        std::shared_ptr<timewheel::TimeWheel> scheduler;
-        unsigned long long                    taskid;
-        unsigned long long                    scriptid;
+        SimulatedPlayer*                      simPlayer; // no-save
+        std::shared_ptr<timewheel::TimeWheel> scheduler; // no-save
+        unsigned long long                    taskid;    // no-save
+        unsigned long long                    scriptid;  // no-save
         // serialization
         template <typename Archive>
         void serialize(Archive& ar, const unsigned int version) {
-            if (version == 1) {
+            if (version == INFO_VERSION) {
                 ar & name;
                 ar & xuid;
                 ar & ownerUuid;
@@ -278,15 +280,15 @@ public:
     };
 
 private:
-    std::unordered_map<std::string, SimPlayerInfo>                   mNameSimPlayerMap;
-    std::unordered_map<std::string, std::unordered_set<std::string>> mOwnerNameMap;
-    std::unordered_map<std::string, std::unordered_set<std::string>> mGroupNameMap;
-    std::unordered_map<std::string, std::unordered_set<std::string>> mGroupAdminMap;
-    unsigned long long                                               mOnlineCount;
-    unsigned long long                                               mSpawnCount;
-    std::shared_ptr<timewheel::TimeWheel>                            mScheduler;
-    bool                                                             autorespawn;
-    bool                                                             autojoin;
+    std::unordered_map<std::string, boost::shared_ptr<SimPlayerInfo>> mNameSimPlayerMap;
+    std::unordered_map<std::string, std::unordered_set<std::string>>  mOwnerNameMap;
+    std::unordered_map<std::string, std::unordered_set<std::string>>  mGroupNameMap;
+    std::unordered_map<std::string, std::unordered_set<std::string>>  mGroupAdminMap;
+    unsigned long long                                                mOnlineCount; // no-save
+    unsigned long long                                                mSpawnCount;  // no-save
+    std::shared_ptr<timewheel::TimeWheel>                             mScheduler;   // no-save
+    bool                                                              autorespawn;
+    bool                                                              autojoin;
 
 private:
     SimPlayerManager()
@@ -309,7 +311,7 @@ private:
     friend class boost::serialization::access;
     template <typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        if (version == 1) {
+        if (version == MANAGER_VERSION) {
             ar & mNameSimPlayerMap;
             ar & mOwnerNameMap;
             ar & mGroupNameMap;
@@ -359,6 +361,9 @@ public:
     CFSP_API void setDead(std::string const&);
 
 public:
+    CFSP_API std::optional<boost::shared_ptr<SimPlayerManager::SimPlayerInfo>> fetchSimPlayer(std::string const&);
+
+public:
     SP_REG_DEF(Stop)
     SP_REG_DEF(Sneaking, bool)
     SP_REG_DEF(Swimming, bool)
@@ -373,7 +378,7 @@ public:
     SP_REG_DEF(Interact, int, int)
     SP_REG_DEF(Jump, int, int)
     SP_REG_DEF(Use, int, int, int)
-    SP_REG_DEF(Build, int, int)
+    SP_REG_DEF(Build)
     SP_REG_DEF(LookAt, Vec3 const&)
     SP_REG_DEF(MoveTo, Vec3 const&)
     SP_REG_DEF(NavTo, Vec3 const&)
