@@ -694,22 +694,15 @@ void registerSpCommand(CommandPermissionLevel permission) {
         spCommand,
         "build",
         {},
-        taskArg,
+        {},
         [](Player* player, ll::command::RuntimeCommand const& self) {
-            return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerBuild(
-                player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                false,
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
-            );
+            return coral_fans::cfsp::SimPlayerManager::getInstance()
+                .simPlayerBuild(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
         },
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupBuild(
                 player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+                self["name"].get<ll::command::ParamKind::SoftEnum>()
             );
         }
     );

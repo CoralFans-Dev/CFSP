@@ -5,7 +5,6 @@
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include <string>
-#include <utility>
 
 #include "cfsp/simplayer/luaapi/ItemInfo.h"
 #include "cfsp/simplayer/luaapi/Utils.h"
@@ -23,144 +22,154 @@ namespace sputils::lua_api {
 
 LUAAPI(simplayer_getName) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushstring(L, (*spinfo)->getName().c_str());
+    lua_pushstring(L, (**spinfo)->getName().c_str());
     return 1;
 }
 
 LUAAPI(simplayer_getXuid) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushstring(L, (*spinfo)->getXuid().c_str());
+    lua_pushstring(L, (**spinfo)->getXuid().c_str());
     return 1;
 }
 
 LUAAPI(simplayer_getStatus) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushinteger(L, (*spinfo)->getStatus());
+    lua_pushinteger(L, (**spinfo)->getStatus());
     return 1;
 }
 
 LUAAPI(simplayer_getPos) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = (*spinfo)->getPos();
+    *pos      = (**spinfo)->getPos();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
 
 LUAAPI(simplayer_getFeetPos) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = (*spinfo)->getFeetPos();
+    *pos      = (**spinfo)->getFeetPos();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
 
 LUAAPI(simplayer_getStandingOn) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
     BlockPos* pos = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *pos          = (*spinfo)->getStandingOn();
+    *pos          = (**spinfo)->getStandingOn();
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }
 
 LUAAPI(simplayer_getRot) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
     Vec2* pos = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *pos      = (*spinfo)->getRot();
+    *pos      = (**spinfo)->getRot();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
 
 LUAAPI(simplayer_getHealth) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushinteger(L, (*spinfo)->getHealth());
+    lua_pushinteger(L, (**spinfo)->getHealth());
     return 1;
 }
 
 LUAAPI(simplayer_getHunger) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushnumber(L, (*spinfo)->getHunger());
+    lua_pushnumber(L, (**spinfo)->getHunger());
     return 1;
 }
 
 LUAAPI(simplayer_sneaking) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
@@ -170,16 +179,17 @@ LUAAPI(simplayer_sneaking) {
         2,
         std::string{"boolean expected, got " + std::string{lua_typename(L, lua_type(L, 2))}}.c_str()
     );
-    lua_pushboolean(L, (*spinfo)->sneaking(lua_toboolean(L, 2)));
+    lua_pushboolean(L, (**spinfo)->sneaking(lua_toboolean(L, 2)));
     return 1;
 }
 
 LUAAPI(simplayer_swimming) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
@@ -189,107 +199,114 @@ LUAAPI(simplayer_swimming) {
         2,
         std::string{"boolean expected, got " + std::string{lua_typename(L, lua_type(L, 2))}}.c_str()
     );
-    (*spinfo)->swimming(lua_toboolean(L, 2));
+    (**spinfo)->swimming(lua_toboolean(L, 2));
     return 0;
 }
 
 LUAAPI(simplayer_attack) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->attack());
+    lua_pushboolean(L, (**spinfo)->attack());
     return 1;
 }
 
 LUAAPI(simplayer_chat) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     std::string msg = luaL_checkstring(L, 2);
     lua_settop(L, 0);
-    (*spinfo)->chat(msg);
+    (**spinfo)->chat(msg);
     return 0;
 }
 
 LUAAPI(simplayer_destroy) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->destroy());
+    lua_pushboolean(L, (**spinfo)->destroy());
     return 1;
 }
 
 LUAAPI(simplayer_dropSelectedItem) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->dropSelectedItem());
+    lua_pushboolean(L, (**spinfo)->dropSelectedItem());
     return 1;
 }
 
 LUAAPI(simplayer_dropInv) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->dropInv());
+    lua_pushboolean(L, (**spinfo)->dropInv());
     return 1;
 }
 
 LUAAPI(simplayer_runCmd) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     std::string cmd = luaL_checkstring(L, 2);
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->runCmd(cmd));
+    lua_pushboolean(L, (**spinfo)->runCmd(cmd));
     return 1;
 }
 
 LUAAPI(simplayer_getBlockPosFromView) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    const auto& rst = (*spinfo)->getBlockPosFromView();
+    const auto& rst = (**spinfo)->getBlockPosFromView();
     BlockPos*   pos = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
     *pos            = rst.first;
     luaL_setmetatable(L, "blockpos_mt");
@@ -300,10 +317,11 @@ LUAAPI(simplayer_getBlockPosFromView) {
 LUAAPI(simplayer_searchInInvWithId) {
     int count = lua_gettop(L);
     if (count < 2 || count > 3) return luaL_error(L, "1 or 2 args expected (without \"self\")");
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
@@ -311,17 +329,18 @@ LUAAPI(simplayer_searchInInvWithId) {
     int start = 0;
     if (count == 3) start = static_cast<int>(luaL_checkinteger(L, 3));
     lua_settop(L, 0);
-    lua_pushinteger(L, (*spinfo)->searchInInvWithId(id, start));
+    lua_pushinteger(L, (**spinfo)->searchInInvWithId(id, start));
     return 1;
 }
 
 LUAAPI(simplayer_searchInInvWithName) {
     int count = lua_gettop(L);
     if (count < 2 || count > 3) return luaL_error(L, "1 or 2 args expected (without \"self\")");
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
@@ -329,193 +348,206 @@ LUAAPI(simplayer_searchInInvWithName) {
     int         start = 0;
     if (count == 3) start = static_cast<int>(luaL_checkinteger(L, 3));
     lua_settop(L, 0);
-    lua_pushinteger(L, (*spinfo)->searchInInvWithName(name, start));
+    lua_pushinteger(L, (**spinfo)->searchInInvWithName(name, start));
     return 1;
 }
 
 LUAAPI(simplayer_selectSlot) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     int slot = static_cast<int>(luaL_checkinteger(L, 2));
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->selectSlot(slot));
+    lua_pushboolean(L, (**spinfo)->selectSlot(slot));
     return 1;
 }
 
 LUAAPI(simplayer_select) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     int id = static_cast<int>(luaL_checkinteger(L, 2));
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->select(id));
+    lua_pushboolean(L, (**spinfo)->select(id));
     return 1;
 }
 
 LUAAPI(simplayer_getItemFromInv) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     int slot = static_cast<int>(luaL_checkinteger(L, 2));
     lua_settop(L, 0);
     ItemInfo** info = (ItemInfo**)lua_newuserdata(L, sizeof(ItemInfo*));
-    *info           = new ItemInfo((*spinfo)->getItemFromInv(slot));
+    *info           = new ItemInfo((**spinfo)->getItemFromInv(slot));
     luaL_setmetatable(L, "iteminfo_mt");
     return 1;
 }
 
 LUAAPI(simplayer_interact) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->interact());
+    lua_pushboolean(L, (**spinfo)->interact());
     return 1;
 }
 
 LUAAPI(simplayer_jump) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->jump());
+    lua_pushboolean(L, (**spinfo)->jump());
     return 1;
 }
 
 LUAAPI(simplayer_useItem) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     int delay = static_cast<int>(luaL_checkinteger(L, 2));
     lua_settop(L, 0);
-    (*spinfo)->useItem(delay);
+    (**spinfo)->useItem(delay);
     return 0;
 }
 
 LUAAPI(simplayer_startBuild) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    (*spinfo)->startBuild();
+    (**spinfo)->startBuild();
     return 0;
 }
 
 LUAAPI(simplayer_lookAt) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     Vec3* pos = (Vec3*)luaL_checkudata(L, 2, "vec3_mt");
     luaL_argcheck(L, pos != nullptr, 2, "invalid userdata");
     lua_settop(L, 0);
-    (*spinfo)->lookAt(*pos);
+    (**spinfo)->lookAt(*pos);
     return 0;
 }
 
 LUAAPI(simplayer_moveTo) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     Vec3* pos = (Vec3*)luaL_checkudata(L, 2, "vec3_mt");
     luaL_argcheck(L, pos != nullptr, 2, "invalid userdata");
     lua_settop(L, 0);
-    (*spinfo)->moveTo(*pos);
+    (**spinfo)->moveTo(*pos);
     return 0;
 }
 
 LUAAPI(simplayer_navigateTo) {
     LUA_ARG_COUNT_CHECK_M(1)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     Vec3* pos = (Vec3*)luaL_checkudata(L, 2, "vec3_mt");
     luaL_argcheck(L, pos != nullptr, 2, "invalid userdata");
     lua_settop(L, 0);
-    (*spinfo)->navigateTo(*pos);
+    (**spinfo)->navigateTo(*pos);
     return 0;
 }
 
 LUAAPI(simplayer_isTaskFree) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    lua_pushboolean(L, (*spinfo)->isTaskFree());
+    lua_pushboolean(L, (**spinfo)->isTaskFree());
     return 1;
 }
 
 LUAAPI(simplayer_stopAction) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(
         L,
-        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((*spinfo)->simPlayer != nullptr),
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
         1,
         "invalid userdata"
     );
     lua_settop(L, 0);
-    (*spinfo)->stopAction();
+    (**spinfo)->stopAction();
     return 0;
 }
 
 LUAAPI(simplayer_meta_gc) {
     LUA_ARG_COUNT_CHECK_M(0)
-    SimPlayerManager::SimPlayerInfo** spinfo = (SimPlayerManager::SimPlayerInfo**)luaL_checkudata(L, 1, "simplayer_mt");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
     luaL_argcheck(L, (spinfo != nullptr) && ((*spinfo) != nullptr), 1, "invalid userdata");
     lua_settop(L, 0);
     delete *spinfo;
