@@ -1,3 +1,5 @@
+#pragma once
+
 #define COMMAND_CHECK_PLAYER                                                                                           \
     auto* entity = origin.getEntity();                                                                                 \
     if (entity == nullptr || !entity->isType(ActorType::Player)) {                                                     \
@@ -42,10 +44,10 @@
         auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second.ownerUuid) {                                                              \
-            if (it->second.status != SimPlayerStatus::Alive)                                                           \
+            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+            if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
-            if (it->second.simPlayer) it->second.ACTION(arg);                                                          \
+            if (it->second->simPlayer) it->second->ACTION(arg);                                                        \
             return {"translate.simplayer.success"_tr(), true};                                                         \
         }                                                                                                              \
         return {"translate.simplayer.error.permissiondenied"_tr(), false};                                             \
@@ -78,10 +80,10 @@
         auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second.ownerUuid) {                                                              \
-            if (it->second.status != SimPlayerStatus::Alive)                                                           \
+            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+            if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
-            if (it->second.simPlayer) it->second.ACTION();                                                             \
+            if (it->second->simPlayer) it->second->ACTION();                                                           \
             return {"translate.simplayer.success"_tr(), true};                                                         \
         }                                                                                                              \
         return {"translate.simplayer.error.permissiondenied"_tr(), false};                                             \
@@ -113,17 +115,17 @@
         auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second.ownerUuid) {                                                              \
-            if (it->second.status != SimPlayerStatus::Alive)                                                           \
+            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+            if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
-            if (!it->second.isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                        \
-            if (it->second.simPlayer) it->second.ACTION(arg);                                                          \
+            if (!it->second->isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                       \
+            if (it->second->simPlayer) it->second->ACTION(arg);                                                        \
             if (interval >= 1) {                                                                                       \
-                it->second.taskid =                                                                                    \
+                it->second->taskid =                                                                                   \
                     this->mScheduler->add(interval, [times, sp = it->second, arg](unsigned long long t) mutable {      \
                         if (times > 0 && t > (unsigned long long)times - 1) return false;                              \
-                        if (sp.simPlayer) [[likely]] {                                                                 \
-                            sp.ACTION(arg);                                                                            \
+                        if (sp->simPlayer) [[likely]] {                                                                \
+                            sp->ACTION(arg);                                                                           \
                             return true;                                                                               \
                         }                                                                                              \
                         return false;                                                                                  \
@@ -165,17 +167,17 @@
         auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second.ownerUuid) {                                                              \
-            if (it->second.status != SimPlayerStatus::Alive)                                                           \
+            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+            if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
-            if (!it->second.isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                        \
-            if (it->second.simPlayer) it->second.ACTION();                                                             \
+            if (!it->second->isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                       \
+            if (it->second->simPlayer) it->second->ACTION();                                                           \
             if (interval >= 1) {                                                                                       \
-                it->second.taskid =                                                                                    \
+                it->second->taskid =                                                                                   \
                     this->mScheduler->add(interval, [times, sp = it->second](unsigned long long t) mutable {           \
                         if (times > 0 && t > (unsigned long long)times - 1) return false;                              \
-                        if (sp.simPlayer) [[likely]] {                                                                 \
-                            sp.ACTION();                                                                               \
+                        if (sp->simPlayer) [[likely]] {                                                                \
+                            sp->ACTION();                                                                              \
                             return true;                                                                               \
                         }                                                                                              \
                         return false;                                                                                  \

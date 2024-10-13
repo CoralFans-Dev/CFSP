@@ -1,8 +1,8 @@
 #include "cfsp/CFSP.h"
-#include "cfsp/base/Macros.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/simplayer/CFSP.h"
 #include "mc/network/packet/TextPacket.h"
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -47,15 +47,16 @@ inline void broadcastErr(std::filesystem::path const& path, std::string const& n
 }
 
 std::pair<std::string, bool> execLuaScript(
-    std::string const&               fileName,
-    int                              interval,
-    std::string const&               luaArg,
-    SimPlayerManager::SimPlayerInfo& spinfo
+    std::string const&                                 fileName,
+    int                                                interval,
+    std::string const&                                 luaArg,
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo> spinfo,
+    std::filesystem::path                              basePath
 ) {
-    auto path = CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "scripts" / fileName;
+    auto path = basePath / fileName;
     // new state
-    std::shared_ptr<lua_State> L(luaL_newstate(), [](lua_State* L) {
-        if (L) lua_close(L);
+    std::shared_ptr<lua_State> L(luaL_newstate(), [](lua_State* state) {
+        if (state) lua_close(state);
     });
     if (!L.get()) return {"Cannot open lua state", false};
     // open libs
@@ -74,7 +75,7 @@ std::pair<std::string, bool> execLuaScript(
     }
     // load BlockSource
     int* dimid = (int*)lua_newuserdata(L.get(), sizeof(int));
-    *dimid     = (int)spinfo.simPlayer->getDimensionId();
+    *dimid     = (int)spinfo->simPlayer->getDimensionId();
     luaL_setmetatable(L.get(), "blocksource_mt");
     lua_setglobal(L.get(), "BlockSource");
     // load Level
@@ -82,9 +83,10 @@ std::pair<std::string, bool> execLuaScript(
     luaL_setmetatable(L.get(), "level_mt");
     lua_setglobal(L.get(), "Level");
     // load SimPlayer
-    SimPlayerManager::SimPlayerInfo** luaspinfo =
-        (SimPlayerManager::SimPlayerInfo**)lua_newuserdata(L.get(), sizeof(SimPlayerManager::SimPlayerInfo*));
-    *luaspinfo = new SimPlayerManager::SimPlayerInfo(spinfo);
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** luaspinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)
+            lua_newuserdata(L.get(), sizeof(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>*));
+    *luaspinfo = new boost::shared_ptr<SimPlayerManager::SimPlayerInfo>(spinfo);
     luaL_setmetatable(L.get(), "simplayer_mt");
     lua_setglobal(L.get(), "SimPlayer");
     // set require path
@@ -128,21 +130,21 @@ std::pair<std::string, bool> execLuaScript(
     } else return {"function \"Tick\" did not return a boolean type value", false};
     lua_settop(L.get(), 0);
     // run Tick in scheduler
-    spinfo.scriptid = spinfo.scheduler->add(interval, [L, path, spinfo](unsigned long long) {
+    spinfo->scriptid = spinfo->scheduler->add(interval, [L, path, spinfo](unsigned long long) {
         lua_settop(L.get(), 0);
         int fType = lua_getglobal(L.get(), "Tick");
         if (fType != LUA_TFUNCTION) {
-            broadcastErr(path, spinfo.name, "\"Tick\" is not a function");
+            broadcastErr(path, spinfo->name, "\"Tick\" is not a function");
             return false;
         }
         int ret = lua_pcall(L.get(), 0, 1, 0);
         if (ret != LUA_OK) {
-            broadcastErr(path, spinfo.name, lua_tostring(L.get(), -1));
+            broadcastErr(path, spinfo->name, lua_tostring(L.get(), -1));
             return false;
         }
         if (lua_isboolean(L.get(), -1)) return static_cast<bool>(lua_toboolean(L.get(), -1));
         else {
-            broadcastErr(path, spinfo.name, "function \"Tick\" did not return a boolean type value");
+            broadcastErr(path, spinfo->name, "function \"Tick\" did not return a boolean type value");
             return false;
         }
     });

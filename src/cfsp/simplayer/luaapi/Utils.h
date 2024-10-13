@@ -1,10 +1,8 @@
 #pragma once
 
-#include "cfsp/base/Macros.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/ListTag.h"
-
 
 extern "C" {
 #include "lauxlib.h"

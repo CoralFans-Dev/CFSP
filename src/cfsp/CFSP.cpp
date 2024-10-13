@@ -46,14 +46,6 @@ bool CFSP::enable() {
 
     hookSimPlayer(true);
 
-    // get DefaultDataLoadHelper
-    mod.getDefaultDataLoadHelper() =
-        static_cast<DefaultDataLoadHelper*>(ll::memory::resolveSymbol("??_7DefaultDataLoadHelper@@6B@"));
-    if (!mod.getDefaultDataLoadHelper()) {
-        getSelf().getLogger().error("Cannot get DefaultDataLoadHelper from symbol.");
-        return false;
-    }
-
     if (mod.getConfig().command.sp.enabled) commands::registerSpCommand(mod.getConfig().command.sp.permission);
 
     // load simplayer data
