@@ -14,7 +14,7 @@ std::pair<std::string, bool> execLuaScript(
     std::string const&,
     int,
     std::string const&,
-    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>&,
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>,
     std::filesystem::path
 );
 

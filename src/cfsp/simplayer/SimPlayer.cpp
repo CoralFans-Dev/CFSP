@@ -42,7 +42,7 @@ namespace coral_fans::cfsp {
 
 namespace sputils {
 
-bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& sp, std::filesystem::path basePath) {
+bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::filesystem::path basePath) {
     if (!sp->simPlayer) return false;
     auto tag = std::make_unique<CompoundTag>();
     if (!sp->simPlayer->save(*tag)) return false;
@@ -54,7 +54,7 @@ bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& sp, std::file
     return true;
 }
 
-bool loadSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& sp, std::filesystem::path basePath) {
+bool loadSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::filesystem::path basePath) {
     if (!sp->simPlayer) return false;
     if (!std::filesystem::exists(basePath / "nbt")) return false;
     std::ifstream f(basePath / "nbt");
@@ -63,14 +63,15 @@ bool loadSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& sp, std::file
     f >> snbt;
     f.close();
     try {
-        sp->simPlayer->load(CompoundTag::fromSnbt(snbt).value(), *(mod().getDefaultDataLoadHelper()));
+        DefaultDataLoadHelper helper;
+        sp->simPlayer->load(CompoundTag::fromSnbt(snbt).value(), helper);
     } catch (...) {
         return false;
     }
     return true;
 }
 
-bool emptyInv(boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& sp) {
+bool emptyInv(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp) {
     if (!sp->simPlayer) return false;
     bool ender = true;
     auto ec    = sp->simPlayer->getEnderChestContainer();
@@ -194,12 +195,9 @@ std::pair<std::string, bool> SimPlayerManager::createGroup(Player* player, std::
     using ll::i18n_literals::operator""_tr;
     if (this->mGroupNameMap.size() >= mod().getConfig().simPlayer.maxGroup)
         return {"translate.simplayer.error.toomanygroup"_tr(), false};
-    if (this->mGroupNameMap.find(gname) == this->mGroupNameMap.end()
-        && this->mGroupAdminMap.find(gname) == this->mGroupAdminMap.end()) {
-        this->mGroupNameMap.emplace(std::make_pair(gname, std::unordered_set<std::string>{}));
-        this->mGroupAdminMap.emplace(
-            std::make_pair(gname, std::unordered_set<std::string>{player->getUuid().asString()})
-        );
+    if (!(this->mGroupNameMap.contains(gname)) && !(this->mGroupAdminMap.contains(gname))) {
+        this->mGroupNameMap.emplace(gname, std::unordered_set<std::string>{});
+        this->mGroupAdminMap.emplace(gname, std::unordered_set<std::string>{player->getUuid().asString()});
         this->refreshSoftEnum();
         return {"translate.simplayer.success"_tr(), true};
     }

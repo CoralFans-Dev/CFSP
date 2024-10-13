@@ -28,6 +28,7 @@
 #include <boost/serialization/version.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -361,6 +362,19 @@ public:
     CFSP_API void setDead(std::string const&);
 
 public:
+    CFSP_API bool hasGroup(std::string const& gname) {
+        return mGroupAdminMap.contains(gname) && mGroupNameMap.contains(gname);
+    }
+    CFSP_API bool isGroupAdmin(Player* player, std::string const& gname) {
+        return hasGroup(gname) && mGroupAdminMap[gname].contains(player->getUuid().asString());
+    }
+    CFSP_API bool inGroup(std::string const& spname, std::string const& gname) {
+        return hasGroup(gname) && mGroupNameMap[gname].contains(spname);
+    }
+    CFSP_API bool hasSimPlayer(std::string const& spname) { return mNameSimPlayerMap.contains(spname); }
+    CFSP_API bool isSimPlayerOwner(Player* player, std::string const& spname) {
+        return hasSimPlayer(spname) && mNameSimPlayerMap[spname]->ownerUuid == player->getUuid().asString();
+    }
     CFSP_API std::optional<boost::shared_ptr<SimPlayerManager::SimPlayerInfo>> fetchSimPlayer(std::string const&);
 
 public:

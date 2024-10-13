@@ -47,11 +47,11 @@ inline void broadcastErr(std::filesystem::path const& path, std::string const& n
 }
 
 std::pair<std::string, bool> execLuaScript(
-    std::string const&                                  fileName,
-    int                                                 interval,
-    std::string const&                                  luaArg,
-    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>& spinfo,
-    std::filesystem::path                               basePath
+    std::string const&                                 fileName,
+    int                                                interval,
+    std::string const&                                 luaArg,
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo> spinfo,
+    std::filesystem::path                              basePath
 ) {
     auto path = basePath / fileName;
     // new state
