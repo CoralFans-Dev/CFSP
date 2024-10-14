@@ -47,9 +47,9 @@ namespace coral_fans::cfsp {
 class SimPlayerManager {
 public:
     enum SimPlayerStatus : int {
-        Offline,
-        Alive,
-        Dead,
+        Offline = 0,
+        Alive   = 1,
+        Dead    = 2,
     };
     struct SimPlayerInfo {
         std::string                           name;
@@ -212,8 +212,7 @@ public:
             return -1;
         }
         CFSP_API bool selectSlot(int slot) {
-            int maxslot = simPlayer->getInventory().getContainerSize();
-            if (slot < 0 || slot >= maxslot) return false;
+            if (slot < 0 || slot >= simPlayer->getInventory().getContainerSize()) return false;
             int sel = simPlayer->getSelectedItemSlot();
             utils::swapItemInContainer(simPlayer, sel, slot);
             return true;
@@ -282,7 +281,16 @@ public:
                 if (inv.getItem(i) == ItemStack::EMPTY_ITEM) return i;
             return -1;
         }
-        enum ContainerOperationErrCode : int { Success, NoHit, NoContainer, NoBlockActor, CannotOpen, SlotOutOfRange };
+        enum ContainerOperationErrCode : int {
+            Success        = 0,
+            NoHit          = 1,
+            NoContainer    = 2,
+            NoBlockActor   = 3,
+            CannotOpen     = 4,
+            SlotOutOfRange = 5,
+            NoEnoughSpace  = 6,
+            NoItem         = 7
+        };
         CFSP_API ContainerOperationErrCode trySwapSlotWithContainer(int invSlot, int targetSlot) {
             using errc      = ContainerOperationErrCode;
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
@@ -306,6 +314,64 @@ public:
             container->setItem(targetSlot, inv.getItem(invSlot));
             inv.setItem(invSlot, item);
             return errc::Success;
+        }
+        CFSP_API ContainerOperationErrCode tryPutIntoContainer(int invSlot) {
+            using errc      = ContainerOperationErrCode;
+            const auto& hit = simPlayer->traceRay(5.25f, false, true);
+            if (!hit) return errc::NoHit;
+            auto&       blockSource = simPlayer->getDimensionBlockSource();
+            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            if (!block.isContainerBlock()) return errc::NoContainer;
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            if (!blockActor) return errc::NoBlockActor;
+            auto type = blockActor->getType();
+            if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
+                auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
+                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+            }
+            auto* container = blockActor->getContainer();
+            if (!container) return errc::NoContainer;
+            auto& inv = simPlayer->getInventory();
+            if (invSlot >= inv.getContainerSize()) return errc::SlotOutOfRange;
+            int size = container->getContainerSize();
+            for (int i = 0; i < size; ++i) {
+                if (container->getItem(i) == ItemStack::EMPTY_ITEM) {
+                    container->setItem(i, inv.getItem(invSlot));
+                    inv.setItem(invSlot, ItemStack::EMPTY_ITEM);
+                    return errc::Success;
+                }
+            }
+            return errc::NoEnoughSpace;
+        }
+        CFSP_API ContainerOperationErrCode tryGetFromContainerWithName(std::string const& typeName) {
+            using errc      = ContainerOperationErrCode;
+            const auto& hit = simPlayer->traceRay(5.25f, false, true);
+            if (!hit) return errc::NoHit;
+            auto&       blockSource = simPlayer->getDimensionBlockSource();
+            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            if (!block.isContainerBlock()) return errc::NoContainer;
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            if (!blockActor) return errc::NoBlockActor;
+            auto type = blockActor->getType();
+            if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
+                auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
+                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+            }
+            auto* container = blockActor->getContainer();
+            if (!container) return errc::NoContainer;
+            auto& inv = simPlayer->getInventory();
+            if (int emptySlot = getFirstEmptySlot(); emptySlot != -1) {
+                int size = container->getContainerSize();
+                for (int i = 0; i < size; ++i) {
+                    const auto& item = container->getItem(i);
+                    if (utils::removeMinecraftPrefix(item.getTypeName()) == typeName) {
+                        inv.setItem(emptySlot, item);
+                        container->setItem(i, ItemStack::EMPTY_ITEM);
+                        return errc::Success;
+                    }
+                }
+                return errc::NoItem;
+            } else return errc::NoEnoughSpace;
         }
     };
 
