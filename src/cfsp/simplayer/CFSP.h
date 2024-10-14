@@ -19,6 +19,11 @@
 #include "mc/world/attribute/AttributeInstance.h"
 #include "mc/world/item/registry/ItemStack.h"
 #include "mc/world/level/BlockPos.h"
+#include "mc/world/level/BlockSource.h"
+#include "mc/world/level/block/Block.h"
+#include "mc/world/level/block/actor/BlockActor.h"
+#include "mc/world/level/block/actor/ChestBlockActor.h"
+#include "mc/world/level/block/utils/BlockActorType.h"
 #include "mc/world/phys/HitResultType.h"
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
@@ -142,24 +147,22 @@ public:
         }
         CFSP_API void swap(Player* player) {
             // get data
-            auto&      spInv     = simPlayer->getInventory();
-            const auto spOffhand = simPlayer->getOffhandSlot();
-            auto&      spArmor   = ActorEquipment::getArmorContainer(simPlayer->getEntityContext());
-            auto&      pInv      = player->getInventory();
-            const auto pOffhand  = player->getOffhandSlot();
-            auto&      pArmor    = ActorEquipment::getArmorContainer(player->getEntityContext());
-            auto       spEnder   = simPlayer->getEnderChestContainer();
-            auto       pEnder    = player->getEnderChestContainer();
+            auto&      spInv    = simPlayer->getInventory();
+            auto&      spArmor  = ActorEquipment::getArmorContainer(simPlayer->getEntityContext());
+            auto&      pInv     = player->getInventory();
+            const auto pOffhand = player->getOffhandSlot();
+            auto&      pArmor   = ActorEquipment::getArmorContainer(player->getEntityContext());
+            auto       spEnder  = simPlayer->getEnderChestContainer();
+            auto       pEnder   = player->getEnderChestContainer();
             // swap offhand
-            player->setOffhandSlot(spOffhand);
+            player->setOffhandSlot(simPlayer->getOffhandSlot());
             simPlayer->setOffhandSlot(pOffhand);
             // swap inv
             int spInvSize = spInv.getContainerSize();
             if (spInvSize == pInv.getContainerSize())
                 for (int i = 0; i < spInvSize; ++i) {
                     const auto spItem = spInv.getItem(i);
-                    const auto pItem  = pInv.getItem(i);
-                    spInv.setItem(i, pItem);
+                    spInv.setItem(i, pInv.getItem(i));
                     pInv.setItem(i, spItem);
                 }
             // swap armor
@@ -167,8 +170,7 @@ public:
             if (spArmorSize == pArmor.getContainerSize())
                 for (int i = 0; i < spArmorSize; ++i) {
                     const auto spItem = spArmor.getItem(i);
-                    const auto pItem  = pArmor.getItem(i);
-                    spArmor.setItem(i, pItem);
+                    spArmor.setItem(i, pArmor.getItem(i));
                     pArmor.setItem(i, spItem);
                 }
             // swap enderchest
@@ -176,8 +178,7 @@ public:
             if (spEnder.has_value() && pEnder.has_value() && spEnderSize == pEnder->getContainerSize())
                 for (int i = 0; i < spEnderSize; ++i) {
                     const auto spItem = spEnder->getItem(i);
-                    const auto pItem  = pEnder->getItem(i);
-                    spEnder->setItem(i, pItem);
+                    spEnder->setItem(i, pEnder->getItem(i));
                     pEnder->setItem(i, spItem);
                 }
             // refresh
@@ -199,19 +200,15 @@ public:
         CFSP_API int searchInInvWithId(int id, int start = 0) {
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
-            for (int i = start; i < size; ++i) {
+            for (int i = start; i < size; ++i)
                 if (inv.getItem(i).getId() == id) return i;
-            }
             return -1;
         }
         CFSP_API int searchInInvWithName(std::string const& itemName, int start = 0) {
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
-            for (int i = start; i < size; ++i) {
-                const auto& it         = inv.getItem(i);
-                const auto& customName = it.getCustomName();
-                if ((customName.empty() ? it.getName() : customName) == itemName) return i;
-            }
+            for (int i = start; i < size; ++i)
+                if (utils::removeMinecraftPrefix(inv.getItem(i).getTypeName()) == itemName) return i;
             return -1;
         }
         CFSP_API bool selectSlot(int slot) {
@@ -277,6 +274,38 @@ public:
             stopAction();
             if (scheduler->isRunning(scriptid)) cancelScript();
             scriptid = 0;
+        }
+        CFSP_API int getFirstEmptySlot() {
+            auto& inv  = simPlayer->getInventory();
+            int   size = inv.getContainerSize();
+            for (int i = 0; i < size; ++i)
+                if (inv.getItem(i) == ItemStack::EMPTY_ITEM) return i;
+            return -1;
+        }
+        enum ContainerOperationErrCode : int { Success, NoHit, NoContainer, NoBlockActor, CannotOpen, SlotOutOfRange };
+        CFSP_API ContainerOperationErrCode trySwapSlotWithContainer(int invSlot, int targetSlot) {
+            using errc      = ContainerOperationErrCode;
+            const auto& hit = simPlayer->traceRay(5.25f, false, true);
+            if (!hit) return errc::NoHit;
+            auto&       blockSource = simPlayer->getDimensionBlockSource();
+            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            if (!block.isContainerBlock()) return errc::NoContainer;
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            if (!blockActor) return errc::NoBlockActor;
+            auto type = blockActor->getType();
+            if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
+                auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
+                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+            }
+            auto* container = blockActor->getContainer();
+            if (!container) return errc::NoContainer;
+            auto& inv = simPlayer->getInventory();
+            if (invSlot >= inv.getContainerSize() || targetSlot >= container->getContainerSize())
+                return errc::SlotOutOfRange;
+            auto item = container->getItem(targetSlot);
+            container->setItem(targetSlot, inv.getItem(invSlot));
+            inv.setItem(invSlot, item);
+            return errc::Success;
         }
     };
 

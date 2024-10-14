@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cfsp/base/Utils.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/Tag.h"
@@ -53,7 +54,7 @@ public:
 public:
     ItemInfo(ItemStack const& item)
     : name(item.getCustomName().empty() ? item.getName() : item.getCustomName()),
-      type(item.getTypeName()),
+      type(utils::removeMinecraftPrefix(item.getTypeName())),
       id(item.getId()),
       count(item.mCount),
       aux(item.getAuxValue()),
