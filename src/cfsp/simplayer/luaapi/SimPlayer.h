@@ -75,7 +75,15 @@ int lua_api_simplayer_isTaskFree(lua_State*);
 
 int lua_api_simplayer_stopAction(lua_State*);
 
-extern const luaL_Reg lua_reg_simplayer_m[33];
+int lua_api_simplayer_getFirstEmptySlot(lua_State*);
+
+int lua_api_simplayer_tryPutIntoContainer(lua_State*);
+
+int lua_api_simplayer_tryGetFromContainerWithName(lua_State*);
+
+int lua_api_simplayer_meta_gc(lua_State*);
+
+extern const luaL_Reg lua_reg_simplayer_m[37];
 
 int lua_api_open_simplayer(lua_State*);
 
