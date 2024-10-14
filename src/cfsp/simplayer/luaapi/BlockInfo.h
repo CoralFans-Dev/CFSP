@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cfsp/base/Utils.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/Tag.h"
@@ -48,7 +49,7 @@ public:
 public:
     BlockInfo(BlockPos const bp, int d, Block const& bl)
     : name(bl.buildDescriptionName()),
-      type(bl.getTypeName()),
+      type(utils::removeMinecraftPrefix(bl.getTypeName())),
       id(bl.getBlockItemId()),
       pos(bp),
       dim(d),
