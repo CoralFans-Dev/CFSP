@@ -1,6 +1,6 @@
 {
     "format_version": 2,
-    "tooth": "CFSP",
+    "tooth": "github.com/CoralFans-Dev/CFSP",
     "version": "2.1.0",
     "info": {
         "name": "CFSP",
