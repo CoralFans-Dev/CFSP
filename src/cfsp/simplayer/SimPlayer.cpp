@@ -374,9 +374,11 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return {"translate.simplayer.error.cannotcreate"_tr(), false};
     if (rejoin) {
+        Vec3  offlinePos{spIt->second->offlinePosX, spIt->second->offlinePosY, spIt->second->offlinePosZ};
+        Vec2  offlineRot{spIt->second->offlineRotX, spIt->second->offlineRotY};
         auto* simPlayer = SimulatedPlayer::create(
             spname,
-            {spIt->second->offlinePosX, spIt->second->offlinePosY, spIt->second->offlinePosZ},
+            offlinePos,
             spIt->second->offlineDim,
             serverNetworkHandler,
             spIt->second->xuid
@@ -385,10 +387,10 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         simPlayer->setPlayerGameType(
             magic_enum::enum_cast<GameType>(spIt->second->offlineGameType).value_or(GameType::WorldDefault)
         );
-        simPlayer->teleport(
-            {spIt->second->offlinePosX, spIt->second->offlinePosY, spIt->second->offlinePosZ},
-            spIt->second->offlineDim,
-            {spIt->second->offlineRotX, spIt->second->offlineRotY}
+        simPlayer->teleport(offlinePos, spIt->second->offlineDim, offlineRot);
+        simPlayer->simulateLookAt(
+            simPlayer->getPosition() + Vec3::directionFromRotation(offlineRot),
+            ::sim::LookDuration{2}
         );
         spIt->second->status    = SimPlayerStatus::Alive;
         spIt->second->simPlayer = simPlayer;
@@ -409,6 +411,7 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         if (!simPlayer) return {"translate.simplayer.error.cannotcreate"_tr(), false};
         simPlayer->setPlayerGameType(player->getPlayerGameType());
         simPlayer->teleport(pos, player->getDimensionId(), rot);
+        simPlayer->simulateLookAt(simPlayer->getPosition() + Vec3::directionFromRotation(rot), ::sim::LookDuration{2});
         // add to map
         this->mNameSimPlayerMap[spname] = boost::shared_ptr<SimPlayerInfo>(new SimPlayerInfo{
             spname,
