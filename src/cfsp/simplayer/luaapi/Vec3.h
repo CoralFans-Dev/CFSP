@@ -37,7 +37,9 @@ int lua_api_vec3_newUnitZ(lua_State*);
 
 int lua_api_vec3_newZero(lua_State*);
 
-extern const luaL_Reg lua_reg_vec3_c[14];
+int lua_api_vec3_newFromRotation(lua_State*);
+
+extern const luaL_Reg lua_reg_vec3_c[15];
 
 int lua_api_vec3_get(lua_State*);
 

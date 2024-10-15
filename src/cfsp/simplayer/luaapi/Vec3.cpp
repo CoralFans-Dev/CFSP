@@ -126,21 +126,33 @@ LUAAPI(vec3_newZero) {
     return 1;
 }
 
-const luaL_Reg lua_reg_vec3_c[14] = {
-    {"new",         lua_api_vec3_new        },
-    {"newHalf",     lua_api_vec3_newHalf    },
-    {"newMax",      lua_api_vec3_newMax     },
-    {"newMin",      lua_api_vec3_newMin     },
-    {"newNegUnitX", lua_api_vec3_newNegUnitX},
-    {"newNegUnitY", lua_api_vec3_newNegUnitY},
-    {"newNegUnitZ", lua_api_vec3_newNegUnitZ},
-    {"newOne",      lua_api_vec3_newOne     },
-    {"newTwo",      lua_api_vec3_newTwo     },
-    {"newUnitX",    lua_api_vec3_newUnitX   },
-    {"newUnitY",    lua_api_vec3_newUnitY   },
-    {"newUnitZ",    lua_api_vec3_newUnitZ   },
-    {"newZero",     lua_api_vec3_newZero    },
-    {NULL,          NULL                    }
+LUAAPI(vec3_newFromRotation) {
+    LUA_ARG_COUNT_CHECK_C(1)
+    Vec2* rot = (Vec2*)luaL_checkudata(L, 1, "vec2_mt");
+    luaL_argcheck(L, rot != nullptr, 1, "invalid userdata");
+    lua_settop(L, 0);
+    Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
+    *pos      = Vec3::directionFromRotation(*rot);
+    luaL_setmetatable(L, "vec3_mt");
+    return 1;
+}
+
+const luaL_Reg lua_reg_vec3_c[15] = {
+    {"new",             lua_api_vec3_new            },
+    {"newHalf",         lua_api_vec3_newHalf        },
+    {"newMax",          lua_api_vec3_newMax         },
+    {"newMin",          lua_api_vec3_newMin         },
+    {"newNegUnitX",     lua_api_vec3_newNegUnitX    },
+    {"newNegUnitY",     lua_api_vec3_newNegUnitY    },
+    {"newNegUnitZ",     lua_api_vec3_newNegUnitZ    },
+    {"newOne",          lua_api_vec3_newOne         },
+    {"newTwo",          lua_api_vec3_newTwo         },
+    {"newUnitX",        lua_api_vec3_newUnitX       },
+    {"newUnitY",        lua_api_vec3_newUnitY       },
+    {"newUnitZ",        lua_api_vec3_newUnitZ       },
+    {"newZero",         lua_api_vec3_newZero        },
+    {"newFromRotation", lua_api_vec3_newFromRotation},
+    {NULL,              NULL                        }
 };
 
 LUAAPI(vec3_get) {
