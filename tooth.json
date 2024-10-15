@@ -1,7 +1,7 @@
 {
     "format_version": 2,
     "tooth": "github.com/CoralFans-Dev/CFSP",
-    "version": "2.1.2",
+    "version": "2.2.0",
     "info": {
         "name": "CFSP",
         "description": "CoralFans SimulatedPlayer",
