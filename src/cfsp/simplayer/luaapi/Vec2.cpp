@@ -1,6 +1,6 @@
 #include "mc/math/Vec2.h"
 #include "cfsp/base/Macros.h"
-#include "cfsp/simplayer/luaapi/Utils.h"
+#include "mc/math/Vec3.h"
 #include <string>
 
 extern "C" {
@@ -98,18 +98,30 @@ LUAAPI(vec2_newZero) {
     return 1;
 }
 
-static const luaL_Reg lua_reg_vec2_c[11] = {
-    {"new",         lua_api_vec2_new        },
-    {"newLowest",   lua_api_vec2_newLowest  },
-    {"newMax",      lua_api_vec2_newMax     },
-    {"newMin",      lua_api_vec2_newMin     },
-    {"newNegUnitX", lua_api_vec2_newNegUnitX},
-    {"newNegUnitY", lua_api_vec2_newNegUnitY},
-    {"newOne",      lua_api_vec2_newOne     },
-    {"newUnitX",    lua_api_vec2_newUnitX   },
-    {"newUnitY",    lua_api_vec2_newUnitY   },
-    {"newZero",     lua_api_vec2_newZero    },
-    {NULL,          NULL                    }
+LUAAPI(vec2_newFromDirection) {
+    LUA_ARG_COUNT_CHECK_C(1)
+    Vec3* pos = (Vec3*)luaL_checkudata(L, 1, "vec3_mt");
+    luaL_argcheck(L, pos != nullptr, 1, "invalid userdata");
+    lua_settop(L, 0);
+    Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
+    *rot      = Vec3::rotationFromDirection(*pos);
+    luaL_setmetatable(L, "vec2_mt");
+    return 1;
+}
+
+static const luaL_Reg lua_reg_vec2_c[12] = {
+    {"new",              lua_api_vec2_new             },
+    {"newLowest",        lua_api_vec2_newLowest       },
+    {"newMax",           lua_api_vec2_newMax          },
+    {"newMin",           lua_api_vec2_newMin          },
+    {"newNegUnitX",      lua_api_vec2_newNegUnitX     },
+    {"newNegUnitY",      lua_api_vec2_newNegUnitY     },
+    {"newOne",           lua_api_vec2_newOne          },
+    {"newUnitX",         lua_api_vec2_newUnitX        },
+    {"newUnitY",         lua_api_vec2_newUnitY        },
+    {"newZero",          lua_api_vec2_newZero         },
+    {"newFromDirection", lua_api_vec2_newFromDirection},
+    {NULL,               NULL                         }
 };
 
 LUAAPI(vec2_get) {

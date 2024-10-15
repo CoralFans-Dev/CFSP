@@ -34,6 +34,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -92,16 +93,36 @@ public:
         CFSP_API inline std::string getName() { return name; }
         CFSP_API inline std::string getXuid() { return xuid; }
         CFSP_API inline int         getStatus() { return status; }
-        CFSP_API inline Vec3        getPos() { return simPlayer->getPosition(); }
-        CFSP_API inline Vec3        getFeetPos() { return simPlayer->getFeetPos(); }
-        CFSP_API inline BlockPos    getStandingOn() { return simPlayer->getBlockPosCurrentlyStandingOn(simPlayer); }
-        CFSP_API inline Vec2        getRot() { return simPlayer->getRotation(); }
-        CFSP_API inline int         getHealth() { return simPlayer->getHealth(); }
-        CFSP_API inline float getHunger() { return simPlayer->getAttribute(SimulatedPlayer::HUNGER).getCurrentValue(); }
-        CFSP_API inline bool  sneaking(bool enable) {
+        CFSP_API Vec3               getPos() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getPosition();
+        }
+        CFSP_API Vec3 getFeetPos() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getFeetPos();
+        }
+        CFSP_API BlockPos getStandingOn() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getBlockPosCurrentlyStandingOn(simPlayer);
+        }
+        CFSP_API Vec2 getRot() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getRotation();
+        }
+        CFSP_API int getHealth() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getHealth();
+        }
+        CFSP_API float getHunger() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->getAttribute(SimulatedPlayer::HUNGER).getCurrentValue();
+        }
+        CFSP_API bool sneaking(bool enable) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             return enable ? simPlayer->simulateSneaking() : simPlayer->simulateStopSneaking();
         }
         CFSP_API void swimming(bool enable) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             if (enable) {
                 simPlayer->startSwimming();
                 taskid = scheduler->add(1, [sp = this->simPlayer](unsigned long long) {
@@ -117,12 +138,17 @@ public:
             }
         }
         CFSP_API bool attack() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             const auto& hit = simPlayer->traceRay(5.25f, true, false);
             if (hit) return simPlayer->simulateAttack(hit.getEntity());
             else return false;
         }
-        CFSP_API inline void chat(std::string const& msg) { simPlayer->simulateChat(msg); }
-        CFSP_API bool        destroy() {
+        CFSP_API void chat(std::string const& msg) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->simulateChat(msg);
+        }
+        CFSP_API bool destroy() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (hit)
                 return simPlayer->simulateDestroyBlock(
@@ -131,8 +157,12 @@ public:
                 );
             else return false;
         }
-        CFSP_API inline bool dropSelectedItem() { return simPlayer->simulateDropSelectedItem(); }
-        CFSP_API bool        dropInv() {
+        CFSP_API bool dropSelectedItem() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->simulateDropSelectedItem();
+        }
+        CFSP_API bool dropInv() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             bool rst = true;
             if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM) rst &= simPlayer->simulateDropSelectedItem();
             int   sel  = simPlayer->getSelectedItemSlot();
@@ -146,6 +176,8 @@ public:
             return rst;
         }
         CFSP_API void swap(Player* player) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            if (!player) throw std::invalid_argument("Player is null");
             // get data
             auto&      spInv    = simPlayer->getInventory();
             auto&      spArmor  = ActorEquipment::getArmorContainer(simPlayer->getEntityContext());
@@ -185,6 +217,7 @@ public:
             player->refreshInventory();
         }
         CFSP_API bool runCmd(std::string const& cmd) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             CommandContext ctx(cmd, std::make_unique<PlayerCommandOrigin>(PlayerCommandOrigin(*simPlayer)));
             auto           mc = ll::service::getMinecraft();
             if (mc) {
@@ -194,10 +227,12 @@ public:
             return false;
         }
         CFSP_API std::pair<BlockPos, bool> getBlockPosFromView() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             return {hit.mBlockPos, hit.mType == HitResultType::Tile};
         }
         CFSP_API int searchInInvWithId(int id, int start = 0) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i)
@@ -205,6 +240,7 @@ public:
             return -1;
         }
         CFSP_API int searchInInvWithName(std::string const& itemName, int start = 0) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i)
@@ -212,12 +248,14 @@ public:
             return -1;
         }
         CFSP_API bool selectSlot(int slot) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             if (slot < 0 || slot >= simPlayer->getInventory().getContainerSize()) return false;
             int sel = simPlayer->getSelectedItemSlot();
             utils::swapItemInContainer(simPlayer, sel, slot);
             return true;
         }
         CFSP_API bool select(int id) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             int sel    = simPlayer->getSelectedItemSlot();
             int target = searchInInvWithId(id);
             if (target == sel) target = searchInInvWithId(id, sel + 1);
@@ -226,22 +264,42 @@ public:
             return true;
         }
         CFSP_API const ItemStack& getItemFromInv(int slot) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             auto& inv = simPlayer->getInventory();
             return inv.getItem(slot);
         }
-        CFSP_API inline bool interact() { return simPlayer->simulateInteract(); }
-        CFSP_API inline bool jump() { return simPlayer->simulateJump(); }
-        CFSP_API void        useItem(int delay) {
+        CFSP_API bool interact() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->simulateInteract();
+        }
+        CFSP_API bool jump() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            return simPlayer->simulateJump();
+        }
+        CFSP_API void useItem(int delay) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             simPlayer->simulateUseItemInSlot(simPlayer->getSelectedItemSlot());
             taskid = scheduler->add(delay, [sp = this->simPlayer](unsigned long long) {
                 if (sp) sp->simulateStopUsingItem();
                 return false;
             });
         }
-        CFSP_API inline void startBuild() { simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot()); }
-        CFSP_API inline void lookAt(Vec3 const& pos) { simPlayer->simulateLookAt(pos, ::sim::LookDuration{}); }
-        CFSP_API inline void moveTo(Vec3 const& pos) { simPlayer->simulateMoveToLocation(pos, 4.3f, true); }
-        CFSP_API inline void navigateTo(Vec3 const& pos) { simPlayer->simulateNavigateToLocation(pos, 4.3f); }
+        CFSP_API void startBuild() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot());
+        }
+        CFSP_API void lookAt(Vec3 const& pos) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->simulateLookAt(pos, ::sim::LookDuration{2});
+        }
+        CFSP_API void moveTo(Vec3 const& pos) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->simulateMoveToLocation(pos, 4.3f, true);
+        }
+        CFSP_API void navigateTo(Vec3 const& pos) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->simulateNavigateToLocation(pos, 4.3f);
+        }
         CFSP_API inline void cancelTask() { scheduler->cancel(taskid); }
         CFSP_API inline void cancelScript() { scheduler->cancel(scriptid); }
         CFSP_API bool        isTaskFree() {
@@ -260,6 +318,7 @@ public:
         }
         CFSP_API inline bool isFree() { return isTaskFree() && isScriptFree(); }
         CFSP_API void        stopAction() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             simPlayer->simulateStopBuild();
             simPlayer->simulateStopDestroyingBlock();
             simPlayer->simulateStopFlying();
@@ -275,6 +334,7 @@ public:
             scriptid = 0;
         }
         CFSP_API int getFirstEmptySlot() {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = 0; i < size; ++i)
@@ -292,6 +352,7 @@ public:
             NoItem         = 7
         };
         CFSP_API ContainerOperationErrCode trySwapSlotWithContainer(int invSlot, int targetSlot) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             using errc      = ContainerOperationErrCode;
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
@@ -316,6 +377,7 @@ public:
             return errc::Success;
         }
         CFSP_API ContainerOperationErrCode tryPutIntoContainer(int invSlot) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             using errc      = ContainerOperationErrCode;
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
@@ -344,6 +406,7 @@ public:
             return errc::NoEnoughSpace;
         }
         CFSP_API ContainerOperationErrCode tryGetFromContainerWithName(std::string const& typeName) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             using errc      = ContainerOperationErrCode;
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
