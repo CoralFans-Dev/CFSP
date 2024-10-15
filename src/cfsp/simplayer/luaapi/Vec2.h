@@ -31,7 +31,9 @@ int lua_api_vec2_newUnitY(lua_State*);
 
 int lua_api_vec2_newZero(lua_State*);
 
-extern const luaL_Reg lua_reg_vec2_c[11];
+int lua_api_vec2_newFromDirection(lua_State*);
+
+extern const luaL_Reg lua_reg_vec2_c[12];
 
 int lua_api_vec2_get(lua_State*);
 
