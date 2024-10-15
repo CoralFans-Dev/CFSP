@@ -1,6 +1,5 @@
 #include "mc/math/Vec3.h"
 #include "cfsp/base/Macros.h"
-#include "cfsp/simplayer/luaapi/Utils.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include <string>
