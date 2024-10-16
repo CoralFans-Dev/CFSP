@@ -469,7 +469,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
                 false,
-                self["message"].get<ll::command::ParamKind::String>(),
+                self["str"].get<ll::command::ParamKind::String>(),
                 self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
                 self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
             );
@@ -478,7 +478,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupChat(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["message"].get<ll::command::ParamKind::String>(),
+                self["str"].get<ll::command::ParamKind::String>(),
                 self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
                 self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
             );
