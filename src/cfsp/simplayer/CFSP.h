@@ -4,6 +4,7 @@
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Utils.h"
 #include "ll/api/service/Bedrock.h"
+#include "magic_enum.hpp"
 #include "mc/entity/utilities/ActorEquipment.h"
 #include "mc/external/scripting/gametest/ScriptNavigationResult.h"
 #include "mc/math/Vec2.h"
@@ -70,6 +71,52 @@ public:
         std::shared_ptr<timewheel::TimeWheel> scheduler; // no-save
         unsigned long long                    taskid;    // no-save
         unsigned long long                    scriptid;  // no-save
+        // construction
+        SimPlayerInfo()
+        : name(),
+          xuid(),
+          ownerUuid(),
+          groups(),
+          status(0),
+          offlinePosX(0),
+          offlinePosY(0),
+          offlinePosZ(0),
+          offlineDim(0),
+          offlineRotX(0),
+          offlineRotY(0),
+          offlineGameType(),
+          offlineEmptyInv(true),
+          simPlayer(nullptr),
+          scheduler(),
+          taskid(0),
+          scriptid(0) {}
+        SimPlayerInfo(
+            std::string const&                           name,
+            Player*                                      player,
+            Vec3                                         pos,
+            Vec2                                         rot,
+            SimulatedPlayer*                             simPlayer,
+            std::shared_ptr<timewheel::TimeWheel> const& timeWheel
+        )
+        : name(name),
+          xuid("-" + std::to_string(std::hash<std::string>()(name))),
+          ownerUuid(player->getUuid().asString()),
+          groups(),
+          status(SimPlayerStatus::Alive),
+          offlinePosX(pos.x),
+          offlinePosY(pos.y),
+          offlinePosZ(pos.z),
+          offlineDim(player->getDimensionId()),
+          offlineRotX(rot.x),
+          offlineRotY(rot.y),
+          offlineGameType(std::string{magic_enum::enum_name(player->getPlayerGameType())}),
+          offlineEmptyInv(true),
+          simPlayer(simPlayer),
+          scheduler(timeWheel),
+          taskid(0),
+          scriptid(0) {}
+        SimPlayerInfo(const SimPlayerInfo&)            = delete;
+        SimPlayerInfo& operator=(const SimPlayerInfo&) = delete;
         // serialization
         template <typename Archive>
         void serialize(Archive& ar, const unsigned int version) {

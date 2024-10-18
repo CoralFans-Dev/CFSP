@@ -7,7 +7,6 @@
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
-#include "magic_enum.hpp"
 #include "mc/_HeaderOutputPredefine.h"
 #include "mc/deps/core/mce/UUID.h"
 #include "mc/entity/utilities/ActorEquipment.h"
@@ -413,25 +412,8 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         simPlayer->teleport(pos, player->getDimensionId(), rot);
         simPlayer->simulateLookAt(simPlayer->getPosition() + Vec3::directionFromRotation(rot), ::sim::LookDuration{2});
         // add to map
-        this->mNameSimPlayerMap[spname] = boost::shared_ptr<SimPlayerInfo>(new SimPlayerInfo{
-            spname,
-            "-" + std::to_string(std::hash<std::string>()(spname)),
-            player->getUuid().asString(),
-            {},
-            SimPlayerStatus::Alive,
-            pos.x,
-            pos.y,
-            pos.z,
-            player->getDimensionId(),
-            rot.x,
-            rot.y,
-            std::string{magic_enum::enum_name(player->getPlayerGameType())},
-            true,
-            simPlayer,
-            this->mScheduler,
-            0,
-            0
-        });
+        this->mNameSimPlayerMap[spname] =
+            boost::make_shared<SimPlayerInfo>(spname, player, pos, rot, simPlayer, this->mScheduler);
         this->mOwnerNameMap[player->getUuid().asString()].emplace(spname);
     }
     // add to softenum
