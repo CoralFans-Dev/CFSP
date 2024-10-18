@@ -1,4 +1,3 @@
-#include "boost/smart_ptr/make_shared_array.hpp"
 #include "cfsp/CFSP.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Mod.h"
