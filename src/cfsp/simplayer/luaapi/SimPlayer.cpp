@@ -1,7 +1,7 @@
 #include "cfsp/base/Macros.h"
 #include "cfsp/simplayer/CFSP.h"
-#include "mc/math/Vec2.h"
-#include "mc/math/Vec3.h"
+#include "mc/deps/core/math/Vec2.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include <string>

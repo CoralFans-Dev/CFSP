@@ -38,7 +38,7 @@ LUAAPI(level_getGameTime) {
         lua_pushinteger(L, -1);
         return 1;
     }
-    lua_pushinteger(L, level->getCurrentTick().t);
+    lua_pushinteger(L, level->getCurrentTick().tickID);
     return 1;
 }
 
@@ -59,7 +59,10 @@ LUAAPI(level_getMspt) {
     LUA_ARG_COUNT_CHECK_M(0)
     luaL_checkudata(L, 1, "level_mt");
     lua_settop(L, 0);
-    lua_pushnumber(L, static_cast<double>(ProfilerLite::gProfilerLiteInstance.getServerTickTime().count() / 1000000.0));
+    lua_pushnumber(
+        L,
+        static_cast<double>(ProfilerLite::gProfilerLiteInstance().getServerTickTime().count() / 1000000.0)
+    );
     return 1;
 }
 

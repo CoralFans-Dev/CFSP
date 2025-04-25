@@ -1,7 +1,9 @@
-#include "mc/math/Vec2.h"
+
+#include "mc/deps/core/math/Vec2.h"
 #include "cfsp/base/Macros.h"
-#include "mc/math/Vec3.h"
+#include "mc/deps/core/math/Vec3.h"
 #include <string>
+
 
 extern "C" {
 #include "lauxlib.h"
@@ -29,7 +31,7 @@ LUAAPI(vec2_new) {
 LUAAPI(vec2_newLowest) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::LOWEST;
+    *rot      = Vec2::LOWEST();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -37,7 +39,7 @@ LUAAPI(vec2_newLowest) {
 LUAAPI(vec2_newMax) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::MAX;
+    *rot      = Vec2::MAX();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -45,7 +47,7 @@ LUAAPI(vec2_newMax) {
 LUAAPI(vec2_newMin) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::MIN;
+    *rot      = Vec2::MIN();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -53,7 +55,7 @@ LUAAPI(vec2_newMin) {
 LUAAPI(vec2_newNegUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::NEG_UNIT_X;
+    *rot      = Vec2::NEG_UNIT_X();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -61,7 +63,7 @@ LUAAPI(vec2_newNegUnitX) {
 LUAAPI(vec2_newNegUnitY) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::NEG_UNIT_Y;
+    *rot      = Vec2::NEG_UNIT_Y();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -69,7 +71,7 @@ LUAAPI(vec2_newNegUnitY) {
 LUAAPI(vec2_newOne) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::ONE;
+    *rot      = Vec2::ONE();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -77,7 +79,7 @@ LUAAPI(vec2_newOne) {
 LUAAPI(vec2_newUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::UNIT_X;
+    *rot      = Vec2::UNIT_X();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -85,7 +87,7 @@ LUAAPI(vec2_newUnitX) {
 LUAAPI(vec2_newUnitY) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::UNIT_Y;
+    *rot      = Vec2::UNIT_Y();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -93,7 +95,7 @@ LUAAPI(vec2_newUnitY) {
 LUAAPI(vec2_newZero) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::ZERO;
+    *rot      = Vec2::ZERO();
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }

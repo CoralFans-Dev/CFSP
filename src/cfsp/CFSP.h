@@ -9,7 +9,7 @@ class CFSP {
 public:
     static CFSP& getInstance();
 
-    CFSP(ll::mod::NativeMod& self) : mSelf(self) {}
+    CFSP() : mSelf(*ll::mod::NativeMod::current()) {}
 
     [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
 
