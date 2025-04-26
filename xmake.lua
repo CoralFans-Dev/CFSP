@@ -7,8 +7,9 @@ add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.
 -- add_requires("levilamina develop") to use develop version
 -- please note that you should add bdslibrary yourself if using dev version
 add_requires(
-    "levilamina",
+    "levilamina 1.0.1",
     "lua 5.4.7",
+    "levibuildscript",
     "timewheel"
 )
 add_requires("boost", {configs = {all = true}})
@@ -18,6 +19,7 @@ if not has_config("vs_runtime") then
 end
 
 target("CFSP") -- Change this to your mod name.
+    add_rules("@levibuildscript/linkrule")
     add_cxflags(
         "/EHa",
         "/utf-8",
@@ -38,6 +40,7 @@ target("CFSP") -- Change this to your mod name.
     add_packages(
         "levilamina",
         "boost",
+        "levibuildscript",
         "lua",
         "timewheel"
     )

@@ -200,15 +200,6 @@ LUAAPI(blockinfo_isUnbreakable) {
     return 1;
 }
 
-LUAAPI(blockinfo_isWaterBlockingBlock) {
-    LUA_ARG_COUNT_CHECK_M(0)
-    BlockInfo** binfo = (BlockInfo**)luaL_checkudata(L, 1, "blockinfo_mt");
-    luaL_argcheck(L, (binfo != nullptr) && ((*binfo) != nullptr), 1, "invalid userdata");
-    lua_settop(L, 0);
-    lua_pushboolean(L, (*binfo)->isWaterBlockingBlock);
-    return 1;
-}
-
 LUAAPI(blockinfo_getNbtTable) {
     LUA_ARG_COUNT_CHECK_M(0)
     BlockInfo** binfo = (BlockInfo**)luaL_checkudata(L, 1, "blockinfo_mt");
@@ -260,33 +251,32 @@ LUAAPI(blockinfo_meta_gc) {
 }
 
 const luaL_Reg lua_reg_blockinfo_m[27] = {
-    {"getName",              lua_api_blockinfo_getName             },
-    {"getType",              lua_api_blockinfo_getType             },
-    {"getId",                lua_api_blockinfo_getId               },
-    {"getPos",               lua_api_blockinfo_getPos              },
-    {"getDim",               lua_api_blockinfo_getDim              },
-    {"getVariant",           lua_api_blockinfo_getVariant          },
-    {"getTranslucency",      lua_api_blockinfo_getTranslucency     },
-    {"getThickness",         lua_api_blockinfo_getThickness        },
-    {"isAir",                lua_api_blockinfo_isAir               },
-    {"isBounceBlock",        lua_api_blockinfo_isBounceBlock       },
-    {"isButtonBlock",        lua_api_blockinfo_isButtonBlock       },
-    {"isCropBlock",          lua_api_blockinfo_isCropBlock         },
-    {"isDoorBlock",          lua_api_blockinfo_isDoorBlock         },
-    {"isFallingBlock",       lua_api_blockinfo_isFallingBlock      },
-    {"isFenceBlock",         lua_api_blockinfo_isFenceBlock        },
-    {"isFenceGateBlock",     lua_api_blockinfo_isFenceGateBlock    },
-    {"isSlabBlock",          lua_api_blockinfo_isSlabBlock         },
-    {"isStemBlock",          lua_api_blockinfo_isStemBlock         },
-    {"isThinFenceBlock",     lua_api_blockinfo_isThinFenceBlock    },
-    {"isUnbreakable",        lua_api_blockinfo_isUnbreakable       },
-    {"isWaterBlockingBlock", lua_api_blockinfo_isWaterBlockingBlock},
-    {"getNbtTable",          lua_api_blockinfo_getNbtTable         },
-    {"getSnbt",              lua_api_blockinfo_getSnbt             },
-    {"getSnbtWithPath",      lua_api_blockinfo_getSnbtWithPath     },
-    {"__eq",                 lua_api_blockinfo_meta_eq             },
-    {"__gc",                 lua_api_blockinfo_meta_gc             },
-    {NULL,                   NULL                                  }
+    {"getName",          lua_api_blockinfo_getName         },
+    {"getType",          lua_api_blockinfo_getType         },
+    {"getId",            lua_api_blockinfo_getId           },
+    {"getPos",           lua_api_blockinfo_getPos          },
+    {"getDim",           lua_api_blockinfo_getDim          },
+    {"getVariant",       lua_api_blockinfo_getVariant      },
+    {"getTranslucency",  lua_api_blockinfo_getTranslucency },
+    {"getThickness",     lua_api_blockinfo_getThickness    },
+    {"isAir",            lua_api_blockinfo_isAir           },
+    {"isBounceBlock",    lua_api_blockinfo_isBounceBlock   },
+    {"isButtonBlock",    lua_api_blockinfo_isButtonBlock   },
+    {"isCropBlock",      lua_api_blockinfo_isCropBlock     },
+    {"isDoorBlock",      lua_api_blockinfo_isDoorBlock     },
+    {"isFallingBlock",   lua_api_blockinfo_isFallingBlock  },
+    {"isFenceBlock",     lua_api_blockinfo_isFenceBlock    },
+    {"isFenceGateBlock", lua_api_blockinfo_isFenceGateBlock},
+    {"isSlabBlock",      lua_api_blockinfo_isSlabBlock     },
+    {"isStemBlock",      lua_api_blockinfo_isStemBlock     },
+    {"isThinFenceBlock", lua_api_blockinfo_isThinFenceBlock},
+    {"isUnbreakable",    lua_api_blockinfo_isUnbreakable   },
+    {"getNbtTable",      lua_api_blockinfo_getNbtTable     },
+    {"getSnbt",          lua_api_blockinfo_getSnbt         },
+    {"getSnbtWithPath",  lua_api_blockinfo_getSnbtWithPath },
+    {"__eq",             lua_api_blockinfo_meta_eq         },
+    {"__gc",             lua_api_blockinfo_meta_gc         },
+    {NULL,               NULL                              }
 };
 
 LUAAPI(open_blockinfo) {

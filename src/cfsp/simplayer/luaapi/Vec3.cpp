@@ -1,8 +1,9 @@
-#include "mc/math/Vec3.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "cfsp/base/Macros.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include <string>
+
 
 extern "C" {
 #include "lauxlib.h"
@@ -32,7 +33,7 @@ LUAAPI(vec3_new) {
 LUAAPI(vec3_newHalf) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::HALF;
+    *pos      = Vec3::HALF();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -40,7 +41,7 @@ LUAAPI(vec3_newHalf) {
 LUAAPI(vec3_newMax) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::MAX;
+    *pos      = Vec3::MAX();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -48,7 +49,7 @@ LUAAPI(vec3_newMax) {
 LUAAPI(vec3_newMin) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::MIN;
+    *pos      = Vec3::MIN();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -56,7 +57,7 @@ LUAAPI(vec3_newMin) {
 LUAAPI(vec3_newNegUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::NEG_UNIT_X;
+    *pos      = Vec3::NEG_UNIT_X();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -64,7 +65,7 @@ LUAAPI(vec3_newNegUnitX) {
 LUAAPI(vec3_newNegUnitY) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::NEG_UNIT_Y;
+    *pos      = Vec3::NEG_UNIT_Y();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -72,7 +73,7 @@ LUAAPI(vec3_newNegUnitY) {
 LUAAPI(vec3_newNegUnitZ) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::NEG_UNIT_Z;
+    *pos      = Vec3::NEG_UNIT_Z();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -80,7 +81,7 @@ LUAAPI(vec3_newNegUnitZ) {
 LUAAPI(vec3_newOne) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::ONE;
+    *pos      = Vec3::ONE();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -88,7 +89,7 @@ LUAAPI(vec3_newOne) {
 LUAAPI(vec3_newTwo) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::TWO;
+    *pos      = Vec3::TWO();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -96,7 +97,7 @@ LUAAPI(vec3_newTwo) {
 LUAAPI(vec3_newUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::UNIT_X;
+    *pos      = Vec3::UNIT_X();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -104,7 +105,7 @@ LUAAPI(vec3_newUnitX) {
 LUAAPI(vec3_newUnitY) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::UNIT_Y;
+    *pos      = Vec3::UNIT_Y();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -112,7 +113,7 @@ LUAAPI(vec3_newUnitY) {
 LUAAPI(vec3_newUnitZ) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::UNIT_Z;
+    *pos      = Vec3::UNIT_Z();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -120,7 +121,7 @@ LUAAPI(vec3_newUnitZ) {
 LUAAPI(vec3_newZero) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::ZERO;
+    *pos      = Vec3::ZERO();
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }

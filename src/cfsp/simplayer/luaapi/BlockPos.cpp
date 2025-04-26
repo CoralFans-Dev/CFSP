@@ -2,7 +2,7 @@
 #include "cfsp/base/Macros.h"
 #include "cfsp/simplayer/luaapi/Vec3.h"
 #include "ll/api/base/StdInt.h"
-#include "mc/math/Vec3.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/world/level/BlockSource.h"
 #include <string>
 
@@ -34,7 +34,7 @@ LUAAPI(blockpos_new) {
 LUAAPI(blockpos_newMax) {
     LUA_ARG_COUNT_CHECK_C(0)
     BlockPos* bp = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *bp          = BlockPos::MAX;
+    *bp          = BlockPos::MAX();
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }
@@ -42,7 +42,7 @@ LUAAPI(blockpos_newMax) {
 LUAAPI(blockpos_newMin) {
     LUA_ARG_COUNT_CHECK_C(0)
     BlockPos* bp = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *bp          = BlockPos::MIN;
+    *bp          = BlockPos::MIN();
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }
@@ -50,7 +50,7 @@ LUAAPI(blockpos_newMin) {
 LUAAPI(blockpos_newOne) {
     LUA_ARG_COUNT_CHECK_C(0)
     BlockPos* bp = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *bp          = BlockPos::ONE;
+    *bp          = BlockPos::ONE();
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }
@@ -58,7 +58,7 @@ LUAAPI(blockpos_newOne) {
 LUAAPI(blockpos_newZero) {
     LUA_ARG_COUNT_CHECK_C(0)
     BlockPos* bp = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *bp          = BlockPos::ZERO;
+    *bp          = BlockPos::ZERO();
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }

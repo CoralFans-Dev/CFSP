@@ -5,26 +5,29 @@
 #include "cfsp/base/Utils.h"
 #include "ll/api/service/Bedrock.h"
 #include "magic_enum.hpp"
-#include "mc/entity/utilities/ActorEquipment.h"
-#include "mc/external/scripting/gametest/ScriptNavigationResult.h"
-#include "mc/math/Vec2.h"
-#include "mc/math/Vec3.h"
+#include "mc/deps/core/math/Vec2.h"
+#include "mc/deps/core/math/Vec3.h"
+#include "mc/deps/core/utility/MCRESULT.h"
+#include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
 #include "mc/scripting/modules/minecraft/ScriptFacing.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/commands/CommandContext.h"
+#include "mc/server/commands/CommandVersion.h"
 #include "mc/server/commands/MinecraftCommands.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
 #include "mc/server/sim/LookDuration.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
+#include "mc/world/actor/provider/ActorEquipment.h"
 #include "mc/world/attribute/AttributeInstance.h"
-#include "mc/world/item/registry/ItemStack.h"
+#include "mc/world/item/ItemStack.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/actor/BlockActor.h"
+#include "mc/world/level/block/actor/BlockActorType.h"
 #include "mc/world/level/block/actor/ChestBlockActor.h"
-#include "mc/world/level/block/utils/BlockActorType.h"
+#include "mc/world/phys/HitResult.h"
 #include "mc/world/phys/HitResultType.h"
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/shared_ptr.hpp>
@@ -40,6 +43,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+
 
 #define MANAGER_VERSION 2
 #define INFO_VERSION    1
@@ -162,7 +166,7 @@ public:
         }
         CFSP_API float getHunger() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            return simPlayer->getAttribute(SimulatedPlayer::HUNGER).getCurrentValue();
+            return simPlayer->getAttribute(SimulatedPlayer::HUNGER()).getCurrentValue();
         }
         CFSP_API bool sneaking(bool enable) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -199,7 +203,7 @@ public:
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (hit)
                 return simPlayer->simulateDestroyBlock(
-                    hit.mBlockPos,
+                    hit.mBlock,
                     static_cast<ScriptModuleMinecraft::ScriptFacing>(hit.mFacing)
                 );
             else return false;
@@ -211,12 +215,12 @@ public:
         CFSP_API bool dropInv() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             bool rst = true;
-            if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM) rst &= simPlayer->simulateDropSelectedItem();
+            if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM()) rst &= simPlayer->simulateDropSelectedItem();
             int   sel  = simPlayer->getSelectedItemSlot();
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = 0; i < size; ++i) {
-                if (i == sel || inv.getItem(i) == ItemStack::EMPTY_ITEM) continue;
+                if (i == sel || inv.getItem(i) == ItemStack::EMPTY_ITEM()) continue;
                 utils::swapItemInContainer(simPlayer, sel, i);
                 rst &= dropSelectedItem();
             }
@@ -265,10 +269,14 @@ public:
         }
         CFSP_API bool runCmd(std::string const& cmd) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            CommandContext ctx(cmd, std::make_unique<PlayerCommandOrigin>(PlayerCommandOrigin(*simPlayer)));
-            auto           mc = ll::service::getMinecraft();
+            CommandContext ctx(
+                cmd,
+                std::make_unique<PlayerCommandOrigin>(PlayerCommandOrigin(*simPlayer)),
+                CommandVersion::CurrentVersion()
+            );
+            auto mc = ll::service::getMinecraft();
             if (mc) {
-                auto rst = mc->getCommands().executeCommand(ctx);
+                auto rst = mc->getCommands().executeCommand(ctx, false);
                 return rst.isSuccess();
             }
             return false;
@@ -276,7 +284,7 @@ public:
         CFSP_API std::pair<BlockPos, bool> getBlockPosFromView() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
-            return {hit.mBlockPos, hit.mType == HitResultType::Tile};
+            return {hit.mBlock, hit.mType == HitResultType::Tile};
         }
         CFSP_API int searchInInvWithId(int id, int start = 0) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -385,7 +393,7 @@ public:
             auto& inv  = simPlayer->getInventory();
             int   size = inv.getContainerSize();
             for (int i = 0; i < size; ++i)
-                if (inv.getItem(i) == ItemStack::EMPTY_ITEM) return i;
+                if (inv.getItem(i) == ItemStack::EMPTY_ITEM()) return i;
             return -1;
         }
         enum ContainerOperationErrCode : int {
@@ -404,9 +412,9 @@ public:
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
-            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            const auto& block       = blockSource.getBlock(hit.mBlock);
             if (!block.isContainerBlock()) return errc::NoContainer;
-            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
             auto type = blockActor->getType();
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
@@ -429,9 +437,9 @@ public:
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
-            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            const auto& block       = blockSource.getBlock(hit.mBlock);
             if (!block.isContainerBlock()) return errc::NoContainer;
-            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
             auto type = blockActor->getType();
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
@@ -444,9 +452,9 @@ public:
             if (invSlot >= inv.getContainerSize()) return errc::SlotOutOfRange;
             int size = container->getContainerSize();
             for (int i = 0; i < size; ++i) {
-                if (container->getItem(i) == ItemStack::EMPTY_ITEM) {
+                if (container->getItem(i) == ItemStack::EMPTY_ITEM()) {
                     container->setItem(i, inv.getItem(invSlot));
-                    inv.setItem(invSlot, ItemStack::EMPTY_ITEM);
+                    inv.setItem(invSlot, ItemStack::EMPTY_ITEM());
                     return errc::Success;
                 }
             }
@@ -458,9 +466,9 @@ public:
             const auto& hit = simPlayer->traceRay(5.25f, false, true);
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
-            const auto& block       = blockSource.getBlock(hit.mBlockPos);
+            const auto& block       = blockSource.getBlock(hit.mBlock);
             if (!block.isContainerBlock()) return errc::NoContainer;
-            auto* blockActor = blockSource.getBlockEntity(hit.mBlockPos);
+            auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
             auto type = blockActor->getType();
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
@@ -476,7 +484,7 @@ public:
                     const auto& item = container->getItem(i);
                     if (utils::removeMinecraftPrefix(item.getTypeName()) == typeName) {
                         inv.setItem(emptySlot, item);
-                        container->setItem(i, ItemStack::EMPTY_ITEM);
+                        container->setItem(i, ItemStack::EMPTY_ITEM());
                         return errc::Success;
                     }
                 }

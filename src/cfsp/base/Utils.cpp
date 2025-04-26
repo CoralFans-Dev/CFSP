@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ll/api/i18n/I18n.h"
+#include "ll/api/utils/StringUtils.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/ListTag.h"
