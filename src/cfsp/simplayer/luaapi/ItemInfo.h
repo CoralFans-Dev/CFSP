@@ -4,11 +4,13 @@
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/Tag.h"
-#include "mc/world/item/registry/ItemStack.h"
+#include "mc/world/item/ItemStack.h"
+#include "mc/world/item/SaveContextFactory.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/block/Block.h"
 #include <memory>
 #include <string>
+
 
 extern "C" {
 #include "lauxlib.h"
@@ -79,7 +81,7 @@ public:
       isPotionItem(item.isPotionItem()),
       isStackable(item.isStackable()),
       isWearableItem(item.isHumanoidWearableItem()),
-      tag(item.save()) {}
+      tag(item.save(*SaveContextFactory::createCloneSaveContext())) {}
     bool operator==(const ItemInfo& rt) const {
         return name == rt.name && type == rt.type && id == rt.id && count == rt.count && aux == rt.aux
             && damage == rt.damage && attackDamage == rt.attackDamage && maxDamage == rt.maxDamage

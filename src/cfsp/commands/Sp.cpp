@@ -263,7 +263,9 @@ void registerSpCommand(CommandPermissionLevel permission) {
             auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().spawnSimPlayer(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos()),
+                self["pos"]
+                    .get<ll::command::ParamKind::Vec3>()
+                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
                 player->getRotation()
             );
             if (rst.second) output.success(rst.first);
@@ -286,7 +288,9 @@ void registerSpCommand(CommandPermissionLevel permission) {
             auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().spawnSimPlayer(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos()),
+                self["pos"]
+                    .get<ll::command::ParamKind::Vec3>()
+                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
                 {self["rotx"].get<ll::command::ParamKind::Float>(), self["roty"].get<ll::command::ParamKind::Float>()}
             );
             if (rst.second) output.success(rst.first);
@@ -719,7 +723,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f);
                 if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
@@ -732,7 +736,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f);
                 if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
@@ -752,7 +756,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f, false, true);
                 if (hit) pos = hit.mPos;
@@ -764,7 +768,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f, false, true);
                 if (hit) pos = hit.mPos;
@@ -783,7 +787,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f, false, true);
                 if (hit) pos = hit.mPos;
@@ -795,7 +799,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         [](Player* player, ll::command::RuntimeCommand const& self) {
             Vec3 pos;
             if (self["pos"].has_value())
-                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos());
+                pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(player->getFeetPos(), {0, 0, 0});
             else {
                 const auto& hit = player->traceRay(5.25f, false, true);
                 if (hit) pos = hit.mPos;

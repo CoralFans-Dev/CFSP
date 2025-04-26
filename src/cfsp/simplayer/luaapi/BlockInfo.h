@@ -43,7 +43,6 @@ public:
     bool                         isStemBlock;
     bool                         isThinFenceBlock;
     bool                         isUnbreakable;
-    bool                         isWaterBlockingBlock;
     std::unique_ptr<CompoundTag> tag;
 
 public:
@@ -68,7 +67,6 @@ public:
       isStemBlock(bl.isStemBlock()),
       isThinFenceBlock(bl.isThinFenceBlock()),
       isUnbreakable(bl.isUnbreakable()),
-      isWaterBlockingBlock(bl.isWaterBlocking()),
       tag(std::make_unique<CompoundTag>(bl.getSerializationId())) {}
 
     bool operator==(const BlockInfo& bi) const {
@@ -78,7 +76,6 @@ public:
             && isCropBlock == bi.isCropBlock && isDoorBlock == bi.isDoorBlock && isFallingBlock == bi.isFallingBlock
             && isFenceBlock == bi.isFenceBlock && isFenceGateBlock == bi.isFenceGateBlock
             && isSlabBlock == bi.isSlabBlock && isStemBlock == bi.isStemBlock && isThinFenceBlock == bi.isThinFenceBlock
-            && isUnbreakable == bi.isUnbreakable && isWaterBlockingBlock == bi.isWaterBlockingBlock
             && *tag == (*bi.tag);
     }
 };
@@ -122,8 +119,6 @@ int lua_api_blockinfo_isStemBlock(lua_State*);
 int lua_api_blockinfo_isThinFenceBlock(lua_State*);
 
 int lua_api_blockinfo_isUnbreakable(lua_State*);
-
-int lua_api_blockinfo_isWaterBlockingBlock(lua_State*);
 
 int lua_api_blockinfo_getNbtTable(lua_State*);
 

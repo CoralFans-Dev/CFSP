@@ -8,21 +8,23 @@
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 #include "mc/_HeaderOutputPredefine.h"
-#include "mc/deps/core/mce/UUID.h"
-#include "mc/entity/utilities/ActorEquipment.h"
-#include "mc/enums/GameType.h"
-#include "mc/math/Vec3.h"
+#include "mc/dataloadhelper/DataLoadHelper.h"
+#include "mc/dataloadhelper/DefaultDataLoadHelper.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/Tag.h"
+#include "mc/platform/UUID.h"
 #include "mc/server/ServerInstance.h"
 #include "mc/server/SimulatedPlayer.h"
-#include "mc/server/common/commands/StopCommand.h"
+#include "mc/server/commands/StopCommand.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
 #include "mc/world/actor/player/Player.h"
-#include "mc/world/item/registry/ItemStack.h"
+#include "mc/world/actor/provider/ActorEquipment.h"
+#include "mc/world/item/ItemStack.h"
+#include "mc/world/level/GameType.h"
 #include "mc/world/level/Level.h"
-#include "mc/world/level/LevelStorageManager.h"
+#include "mc/world/level/storage/LevelStorageManager.h"
 #include <boost/algorithm/string/join.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -36,6 +38,7 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
+
 
 namespace coral_fans::cfsp {
 
@@ -75,7 +78,8 @@ bool emptyInv(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp) {
     bool ender = true;
     auto ec    = sp->simPlayer->getEnderChestContainer();
     if (ec.has_value()) ender = ec->isEmpty();
-    return sp->simPlayer->getInventory().isEmpty() && ender && sp->simPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM
+    return sp->simPlayer->getInventory().isEmpty() && ender
+        && sp->simPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
         && ActorEquipment::getArmorContainer(sp->simPlayer->getEntityContext()).isEmpty();
 }
 
@@ -667,13 +671,7 @@ std::pair<std::string, bool> SimPlayerManager::groupScript(
     return {"translate.simplayer.success"_tr(), true};
 }
 
-LL_TYPE_INSTANCE_HOOK(
-    CoralFansSimPlayerTickHook,
-    ll::memory::HookPriority::Normal,
-    Level,
-    "?tick@Level@@UEAAXXZ",
-    void
-) {
+LL_TYPE_INSTANCE_HOOK(CoralFansSimPlayerTickHook, ll::memory::HookPriority::Normal, Level, &Level::$tick, void) {
     origin();
     SimPlayerManager::getInstance().tick();
 }
@@ -682,7 +680,7 @@ LL_TYPE_INSTANCE_HOOK(
     CoralFansSimPlayerDieEventHook,
     ll::memory::HookPriority::Normal,
     Player,
-    "?die@Player@@UEAAXAEBVActorDamageSource@@@Z",
+    &Player::$die,
     void,
     ActorDamageSource const& source
 ) {
@@ -698,7 +696,7 @@ LL_TYPE_INSTANCE_HOOK(
     CoralFansSimPlayerServerStopSaveHook,
     ll::memory::HookPriority::Normal,
     StopCommand,
-    "?execute@StopCommand@@UEBAXAEBVCommandOrigin@@AEAVCommandOutput@@@Z",
+    &StopCommand::$execute,
     void,
     CommandOrigin const& arg1,
     CommandOutput&       arg2

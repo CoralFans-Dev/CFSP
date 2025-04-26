@@ -10,9 +10,10 @@
 
 namespace coral_fans::cfsp {
 
-static std::unique_ptr<CFSP> instance;
-
-CFSP& CFSP::getInstance() { return *instance; }
+CFSP& CFSP::getInstance() {
+    static CFSP instance;
+    return instance;
+}
 
 bool CFSP::load() {
     const auto& logger = getSelf().getLogger();
@@ -36,8 +37,7 @@ bool CFSP::load() {
 
     // load i18n
     logger.debug("Loading I18n");
-    ll::i18n::load(getSelf().getLangDir());
-    ll::i18n::getInstance()->mDefaultLocaleName = mod.getConfig().locateName;
+    if (!ll::i18n::getInstance().load(getSelf().getLangDir())) logger.error("Failed to load I18n");
     return true;
 }
 
@@ -61,4 +61,4 @@ bool CFSP::disable() {
 
 } // namespace coral_fans::cfsp
 
-LL_REGISTER_MOD(coral_fans::cfsp::CFSP, coral_fans::cfsp::instance);
+LL_REGISTER_MOD(coral_fans::cfsp::CFSP, coral_fans::cfsp::CFSP::getInstance());
