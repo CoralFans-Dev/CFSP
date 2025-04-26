@@ -7,6 +7,10 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+      - uses: actions/setup-python@v4
+        with:
+            python-version: '3.9'
+            architecture: x64
       - uses: actions/checkout@v4
 
       - uses: xmake-io/github-action-setup-xmake@v1
