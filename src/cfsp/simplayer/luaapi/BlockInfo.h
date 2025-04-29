@@ -7,6 +7,7 @@
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
 #include "mc/world/level/block/Block.h"
+#include "mc/world/level/block/components/BlockComponentDirectData.h"
 #include <memory>
 #include <string>
 
@@ -52,22 +53,23 @@ public:
       id(bl.getBlockItemId()),
       pos(bp),
       dim(d),
-      variant(bl.getVariant()),
-      translucency(bl.getTranslucency()),
-      thickness(bl.getThickness()),
+      variant(bl.mLegacyBlock->getVariant(bl)),
+      translucency(bl.mLegacyBlock->mTranslucency),
+      thickness(bl.mLegacyBlock->mThickness),
       isAir(bl.isAir()),
-      isBounceBlock(bl.isBounceBlock()),
+      isBounceBlock(bl.mLegacyBlock->isBounceBlock()),
       isButtonBlock(bl.isButtonBlock()),
       isCropBlock(bl.isCropBlock()),
       isDoorBlock(bl.isDoorBlock()),
-      isFallingBlock(bl.isFallingBlock()),
-      isFenceBlock(bl.isFenceBlock()),
-      isFenceGateBlock(bl.isFenceGateBlock()),
-      isSlabBlock(bl.isSlabBlock()),
-      isStemBlock(bl.isStemBlock()),
-      isThinFenceBlock(bl.isThinFenceBlock()),
-      isUnbreakable(bl.isUnbreakable()),
-      tag(std::make_unique<CompoundTag>(bl.getSerializationId())) {}
+      isFallingBlock(bl.mLegacyBlock->mFalling),
+      isFenceBlock(bl.mLegacyBlock->isFenceBlock()),
+      isFenceGateBlock(bl.mLegacyBlock->isFenceGateBlock()),
+      isSlabBlock(bl.mLegacyBlock->isSlabBlock()),
+      isStemBlock(bl.mLegacyBlock->isStemBlock()),
+      isThinFenceBlock(bl.mLegacyBlock->isThinFenceBlock()),
+      //   isUnbreakable(bl.isUnbreakable()),
+      isUnbreakable((*(float*)(&bl.mDirectData->mUnkc58c4d)) < 0.0),
+      tag(std::make_unique<CompoundTag>(bl.mSerializationId)) {}
 
     bool operator==(const BlockInfo& bi) const {
         return name == bi.name && type == bi.type && id == bi.id && pos == bi.pos && dim == bi.dim

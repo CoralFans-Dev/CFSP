@@ -63,7 +63,7 @@ int lua_api_simplayer_jump(lua_State*);
 
 int lua_api_simplayer_useItem(lua_State*);
 
-int lua_api_simplayer_startBuild(lua_State*);
+// int lua_api_simplayer_startBuild(lua_State*);
 
 int lua_api_simplayer_lookAt(lua_State*);
 

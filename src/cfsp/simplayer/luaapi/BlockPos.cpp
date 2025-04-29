@@ -123,7 +123,8 @@ LUAAPI(blockpos_neighbor) {
     uchar facing = static_cast<uchar>(luaL_checkinteger(L, 2));
     lua_settop(L, 0);
     BlockPos* ret_bp = (BlockPos*)lua_newuserdata(L, sizeof(BlockPos));
-    *ret_bp          = bp->neighbor(facing);
+    // *ret_bp                       = bp->neighbor(facing);
+    ret_bp[(facing / 2 + 1) % 3] += (facing & 1) * 2 - 1;
     luaL_setmetatable(L, "blockpos_mt");
     return 1;
 }

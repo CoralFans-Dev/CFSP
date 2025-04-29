@@ -17,6 +17,7 @@
 #include "mc/server/ServerInstance.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/commands/StopCommand.h"
+#include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
 #include "mc/world/actor/player/Player.h"
@@ -78,7 +79,7 @@ bool emptyInv(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp) {
     bool ender = true;
     auto ec    = sp->simPlayer->getEnderChestContainer();
     if (ec.has_value()) ender = ec->isEmpty();
-    return sp->simPlayer->getInventory().isEmpty() && ender
+    return sp->simPlayer->mInventory->mInventory->isEmpty() && ender
         && sp->simPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
         && ActorEquipment::getArmorContainer(sp->simPlayer->getEntityContext()).isEmpty();
 }
@@ -111,8 +112,8 @@ void SimPlayerManager::save() {
             sp->offlinePosY      = sp->simPlayer->getFeetPos().y;
             sp->offlinePosZ      = sp->simPlayer->getFeetPos().z;
             sp->offlineDim       = sp->simPlayer->getDimensionId();
-            sp->offlineRotX      = sp->simPlayer->getRotation().x;
-            sp->offlineRotY      = sp->simPlayer->getRotation().y;
+            sp->offlineRotX      = sp->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->x;
+            sp->offlineRotY      = sp->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->y;
             sp->offlineGameType  = magic_enum::enum_name(sp->simPlayer->getPlayerGameType());
             sp->offlineEmptyInv  = sputils::emptyInv(sp);
             const auto& basePath = dataDir / sp->xuid;
@@ -391,10 +392,8 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
             magic_enum::enum_cast<GameType>(spIt->second->offlineGameType).value_or(GameType::WorldDefault)
         );
         simPlayer->teleport(offlinePos, spIt->second->offlineDim, offlineRot);
-        simPlayer->simulateLookAt(
-            simPlayer->getPosition() + Vec3::directionFromRotation(offlineRot),
-            ::sim::LookDuration{2}
-        );
+        Vec3 vec3 = simPlayer->getPosition() + Vec3::directionFromRotation(offlineRot);
+        sim::lookAt(*simPlayer, glm::vec3(vec3.x, vec3.y, vec3.z), ::sim::LookDuration{2});
         spIt->second->status    = SimPlayerStatus::Alive;
         spIt->second->simPlayer = simPlayer;
         spIt->second->scheduler = this->mScheduler;
@@ -414,7 +413,8 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         if (!simPlayer) return {"translate.simplayer.error.cannotcreate"_tr(), false};
         simPlayer->setPlayerGameType(player->getPlayerGameType());
         simPlayer->teleport(pos, player->getDimensionId(), rot);
-        simPlayer->simulateLookAt(simPlayer->getPosition() + Vec3::directionFromRotation(rot), ::sim::LookDuration{2});
+        Vec3 vec3 = simPlayer->getPosition() + Vec3::directionFromRotation(rot);
+        sim::lookAt(*simPlayer, glm::vec3(vec3.x, vec3.y, vec3.z), ::sim::LookDuration{2});
         // add to map
         this->mNameSimPlayerMap[spname] =
             boost::make_shared<SimPlayerInfo>(spname, player, pos, rot, simPlayer, this->mScheduler);
@@ -462,16 +462,23 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
         if (it->second->simPlayer) {
             const auto& basePath = CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / it->second->xuid;
             sputils::saveSpNbt(it->second, basePath);
-            it->second->offlinePosX     = it->second->simPlayer->getFeetPos().x;
-            it->second->offlinePosY     = it->second->simPlayer->getFeetPos().y;
-            it->second->offlinePosZ     = it->second->simPlayer->getFeetPos().z;
-            it->second->offlineDim      = it->second->simPlayer->getDimensionId();
-            it->second->offlineRotX     = it->second->simPlayer->getRotation().x;
-            it->second->offlineRotY     = it->second->simPlayer->getRotation().y;
+            it->second->offlinePosX = it->second->simPlayer->getFeetPos().x;
+            it->second->offlinePosY = it->second->simPlayer->getFeetPos().y;
+            it->second->offlinePosZ = it->second->simPlayer->getFeetPos().z;
+            it->second->offlineDim  = it->second->simPlayer->getDimensionId();
+            it->second->offlineRotX =
+                it->second->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->x;
+            it->second->offlineRotY =
+                it->second->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->y;
             it->second->offlineGameType = magic_enum::enum_name(it->second->simPlayer->getPlayerGameType());
             it->second->offlineEmptyInv = sputils::emptyInv(it->second);
             it->second->stop();
-            it->second->simPlayer->simulateDisconnect();
+
+            // it->second->simPlayer->simulateDisconnect();
+            it->second->simPlayer->disconnect();
+            it->second->simPlayer->remove();
+            it->second->simPlayer->setGameTestHelper(nullptr);
+
             it->second->simPlayer = nullptr;
         };
         // change status
@@ -556,7 +563,20 @@ std::pair<std::string, bool> SimPlayerManager::respawnSimPlayer(Player* player, 
         // check: dead
         if (it->second->status != SimPlayerStatus::Dead) return {"translate.simplayer.error.statuserror"_tr(), false};
         // run
-        if (it->second->simPlayer) it->second->simPlayer->simulateRespawn();
+
+        // if (it->second->simPlayer) it->second->simPlayer->simulateRespawn();
+        auto& spawnPos = it->second->simPlayer->mPlayerRespawnPoint->mPlayerPosition;
+        Vec3  respawnPos;
+        respawnPos.x                                     = (float)spawnPos->x + 0.5f;
+        respawnPos.y                                     = (float)spawnPos->y + 1.62001f;
+        respawnPos.z                                     = (float)spawnPos->z + 0.5f;
+        it->second->simPlayer->mRespawnPositionCandidate = respawnPos;
+        it->second->simPlayer->mRespawnReady             = true;
+        it->second->simPlayer->mRespawningFromTheEnd     = false;
+        if (!it->second->simPlayer->isAlive() && it->second->simPlayer->mRespawnReady) {
+            it->second->simPlayer->respawn();
+        }
+
         // change status
         it->second->status = SimPlayerStatus::Alive;
         // return

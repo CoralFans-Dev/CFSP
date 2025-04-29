@@ -3,11 +3,14 @@
 #include "TimeWheel.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Utils.h"
+#include "glm/fwd.hpp"
 #include "ll/api/service/Bedrock.h"
 #include "magic_enum.hpp"
 #include "mc/deps/core/math/Vec2.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/deps/core/utility/MCRESULT.h"
+#include "mc/entity/components/ActorRotationComponent.h"
+#include "mc/entity/components_json_legacy/NavigationComponent.h"
 #include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
 #include "mc/scripting/modules/minecraft/ScriptFacing.h"
 #include "mc/server/SimulatedPlayer.h"
@@ -15,11 +18,29 @@
 #include "mc/server/commands/CommandVersion.h"
 #include "mc/server/commands/MinecraftCommands.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
+#include "mc/server/sim/BuildIntent.h"
+#include "mc/server/sim/ContinuousBuildIntent.h"
+#include "mc/server/sim/LookAtIntent.h"
 #include "mc/server/sim/LookDuration.h"
+#include "mc/server/sim/MoveInDirectionIntent.h"
+#include "mc/server/sim/MoveToPositionIntent.h"
+#include "mc/server/sim/MovementIntent.h"
+#include "mc/server/sim/NavigateToEntityIntent.h"
+#include "mc/server/sim/NavigateToPositionsIntent.h"
+#include "mc/server/sim/VoidBuildIntent.h"
+#include "mc/server/sim/VoidMoveIntent.h"
+#include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
+#include "mc/world/actor/BuiltInActorComponents.h"
+#include "mc/world/actor/ai/navigation/PathNavigation.h"
+#include "mc/world/actor/player/Inventory.h"
+#include "mc/world/actor/player/PlayerInventory.h"
+#include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
+#include "mc/world/actor/provider/MobMovement.h"
 #include "mc/world/attribute/AttributeInstance.h"
+#include "mc/world/gamemode/GameMode.h"
 #include "mc/world/item/ItemStack.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
@@ -43,6 +64,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 
 #define MANAGER_VERSION 2
@@ -158,15 +180,16 @@ public:
         }
         CFSP_API Vec2 getRot() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            return simPlayer->getRotation();
+            // return simPlayer->getRotation();
+            return *simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
         }
         CFSP_API int getHealth() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            return simPlayer->getHealth();
+            return ActorAttribute::getHealth(simPlayer->getEntityContext());
         }
         CFSP_API float getHunger() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            return simPlayer->getAttribute(SimulatedPlayer::HUNGER()).getCurrentValue();
+            return simPlayer->getAttribute(SimulatedPlayer::HUNGER()).mCurrentValue;
         }
         CFSP_API bool sneaking(bool enable) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -190,9 +213,7 @@ public:
         }
         CFSP_API bool attack() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            const auto& hit = simPlayer->traceRay(5.25f, true, false);
-            if (hit) return simPlayer->simulateAttack(hit.getEntity());
-            else return false;
+            return simPlayer->simulateAttack();
         }
         CFSP_API void chat(std::string const& msg) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -210,14 +231,20 @@ public:
         }
         CFSP_API bool dropSelectedItem() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            return simPlayer->simulateDropSelectedItem();
+            // return simPlayer->simulateDropSelectedItem();
+            auto const& item = simPlayer->getSelectedItem();
+            if (simPlayer->drop(item, 0)) {
+                simPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
+                return true;
+            }
+            return false;
         }
         CFSP_API bool dropInv() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             bool rst = true;
-            if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM()) rst &= simPlayer->simulateDropSelectedItem();
+            if (simPlayer->getSelectedItem() != ItemStack::EMPTY_ITEM()) rst &= dropSelectedItem();
             int   sel  = simPlayer->getSelectedItemSlot();
-            auto& inv  = simPlayer->getInventory();
+            auto& inv  = *simPlayer->mInventory->mInventory;
             int   size = inv.getContainerSize();
             for (int i = 0; i < size; ++i) {
                 if (i == sel || inv.getItem(i) == ItemStack::EMPTY_ITEM()) continue;
@@ -230,9 +257,9 @@ public:
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             if (!player) throw std::invalid_argument("Player is null");
             // get data
-            auto&      spInv    = simPlayer->getInventory();
+            auto&      spInv    = *simPlayer->mInventory->mInventory;
             auto&      spArmor  = ActorEquipment::getArmorContainer(simPlayer->getEntityContext());
-            auto&      pInv     = player->getInventory();
+            auto&      pInv     = *player->mInventory->mInventory;
             const auto pOffhand = player->getOffhandSlot();
             auto&      pArmor   = ActorEquipment::getArmorContainer(player->getEntityContext());
             auto       spEnder  = simPlayer->getEnderChestContainer();
@@ -276,8 +303,8 @@ public:
             );
             auto mc = ll::service::getMinecraft();
             if (mc) {
-                auto rst = mc->getCommands().executeCommand(ctx, false);
-                return rst.isSuccess();
+                auto rst = mc->mCommands->executeCommand(ctx, false);
+                return rst.mSuccess;
             }
             return false;
         }
@@ -288,7 +315,7 @@ public:
         }
         CFSP_API int searchInInvWithId(int id, int start = 0) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            auto& inv  = simPlayer->getInventory();
+            auto& inv  = *simPlayer->mInventory->mInventory;
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i)
                 if (inv.getItem(i).getId() == id) return i;
@@ -296,7 +323,7 @@ public:
         }
         CFSP_API int searchInInvWithName(std::string const& itemName, int start = 0) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            auto& inv  = simPlayer->getInventory();
+            auto& inv  = *simPlayer->mInventory->mInventory;
             int   size = inv.getContainerSize();
             for (int i = start; i < size; ++i)
                 if (utils::removeMinecraftPrefix(inv.getItem(i).getTypeName()) == itemName) return i;
@@ -304,7 +331,7 @@ public:
         }
         CFSP_API bool selectSlot(int slot) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            if (slot < 0 || slot >= simPlayer->getInventory().getContainerSize()) return false;
+            if (slot < 0 || slot >= simPlayer->mInventory->mInventory->getContainerSize()) return false;
             int sel = simPlayer->getSelectedItemSlot();
             utils::swapItemInContainer(simPlayer, sel, slot);
             return true;
@@ -320,7 +347,7 @@ public:
         }
         CFSP_API const ItemStack& getItemFromInv(int slot) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            auto& inv = simPlayer->getInventory();
+            auto& inv = *simPlayer->mInventory->mInventory;
             return inv.getItem(slot);
         }
         CFSP_API bool interact() {
@@ -335,17 +362,24 @@ public:
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             simPlayer->simulateUseItemInSlot(simPlayer->getSelectedItemSlot());
             taskid = scheduler->add(delay, [sp = this->simPlayer](unsigned long long) {
-                if (sp) sp->simulateStopUsingItem();
+                // if (sp) sp->simulateStopUsingItem();
+                if (sp) {
+                    if (sp->isAlive()) {
+                        sp->releaseUsingItem();
+                    }
+                }
                 return false;
             });
         }
         CFSP_API void startBuild() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot());
+            // simPlayer->simulateStartBuildInSlot(simPlayer->getSelectedItemSlot());
+            simPlayer->mBuildIntention =
+                ::sim::startBuild(*simPlayer, simPlayer->_getRegion(), simPlayer->getSelectedItemSlot());
         }
         CFSP_API void lookAt(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            simPlayer->simulateLookAt(pos, ::sim::LookDuration{2});
+            sim::lookAt(*simPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration{2});
         }
         CFSP_API void moveTo(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -374,12 +408,42 @@ public:
         CFSP_API inline bool isFree() { return isTaskFree() && isScriptFree(); }
         CFSP_API void        stopAction() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            simPlayer->simulateStopBuild();
+
+            // simPlayer->simulateStopBuild();
+            int8& isbuilding = ((int8*)&simPlayer->mBuildIntention)[1];
+            if (isbuilding) {
+                simPlayer->mGameMode->stopBuildBlock();
+                isbuilding = 0;
+            }
+
             simPlayer->simulateStopDestroyingBlock();
-            simPlayer->simulateStopFlying();
-            simPlayer->simulateStopInteracting();
-            simPlayer->simulateStopMoving();
-            simPlayer->simulateStopUsingItem();
+
+            // simPlayer->simulateStopFlying();
+
+            // simPlayer->simulateStopInteracting();
+            simPlayer->deleteContainerManager();
+
+            // simPlayer->simulateStopMoving();
+            auto& type = simPlayer->mSimulatedMovement->mType.get();
+            if (std::holds_alternative<sim::MoveInDirectionIntent>(type)
+                || std::holds_alternative<sim::MoveToPositionIntent>(type)) {
+                MobMovement::setLocalMoveVelocity(simPlayer->getEntityContext(), Vec3::ZERO());
+            } else if (std::holds_alternative<sim::NavigateToPositionsIntent>(type)
+                       || std::holds_alternative<sim::NavigateToEntityIntent>(type)) {
+                MobMovement::setLocalMoveVelocity(simPlayer->getEntityContext(), Vec3::ZERO());
+                auto component = simPlayer->getEntityContext().tryGetComponent<NavigationComponent>();
+                if (component) {
+                    component->mNavigation->stop(component, *simPlayer);
+                }
+            }
+
+            // simPlayer->simulateStopUsingItem();
+            if (simPlayer) {
+                if (simPlayer->isAlive()) {
+                    simPlayer->releaseUsingItem();
+                }
+            }
+
             if (scheduler->isRunning(taskid)) cancelTask();
             taskid = 0;
         }
@@ -390,7 +454,7 @@ public:
         }
         CFSP_API int getFirstEmptySlot() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            auto& inv  = simPlayer->getInventory();
+            auto& inv  = *simPlayer->mInventory->mInventory;
             int   size = inv.getContainerSize();
             for (int i = 0; i < size; ++i)
                 if (inv.getItem(i) == ItemStack::EMPTY_ITEM()) return i;
@@ -413,17 +477,17 @@ public:
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
             const auto& block       = blockSource.getBlock(hit.mBlock);
-            if (!block.isContainerBlock()) return errc::NoContainer;
+            if (!block.mLegacyBlock->isContainerBlock()) return errc::NoContainer;
             auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
-            auto type = blockActor->getType();
+            auto type = blockActor->mType;
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
                 auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
-                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+                if (!chestBlockActor->_canOpenThis(blockSource)) return errc::CannotOpen;
             }
             auto* container = blockActor->getContainer();
             if (!container) return errc::NoContainer;
-            auto& inv = simPlayer->getInventory();
+            auto& inv = *simPlayer->mInventory->mInventory;
             if (invSlot >= inv.getContainerSize() || targetSlot >= container->getContainerSize())
                 return errc::SlotOutOfRange;
             auto item = container->getItem(targetSlot);
@@ -438,17 +502,17 @@ public:
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
             const auto& block       = blockSource.getBlock(hit.mBlock);
-            if (!block.isContainerBlock()) return errc::NoContainer;
+            if (!block.mLegacyBlock->isContainerBlock()) return errc::NoContainer;
             auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
-            auto type = blockActor->getType();
+            auto type = blockActor->mType;
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
                 auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
-                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+                if (!chestBlockActor->_canOpenThis(blockSource)) return errc::CannotOpen;
             }
             auto* container = blockActor->getContainer();
             if (!container) return errc::NoContainer;
-            auto& inv = simPlayer->getInventory();
+            auto& inv = *simPlayer->mInventory->mInventory;
             if (invSlot >= inv.getContainerSize()) return errc::SlotOutOfRange;
             int size = container->getContainerSize();
             for (int i = 0; i < size; ++i) {
@@ -467,17 +531,17 @@ public:
             if (!hit) return errc::NoHit;
             auto&       blockSource = simPlayer->getDimensionBlockSource();
             const auto& block       = blockSource.getBlock(hit.mBlock);
-            if (!block.isContainerBlock()) return errc::NoContainer;
+            if (!block.mLegacyBlock->isContainerBlock()) return errc::NoContainer;
             auto* blockActor = blockSource.getBlockEntity(hit.mBlock);
             if (!blockActor) return errc::NoBlockActor;
-            auto type = blockActor->getType();
+            auto type = blockActor->mType;
             if (type == BlockActorType::Chest || type == BlockActorType::ShulkerBox) {
                 auto* chestBlockActor = reinterpret_cast<ChestBlockActor*>(blockActor);
-                if (!chestBlockActor->canOpen(blockSource)) return errc::CannotOpen;
+                if (!chestBlockActor->_canOpenThis(blockSource)) return errc::CannotOpen;
             }
             auto* container = blockActor->getContainer();
             if (!container) return errc::NoContainer;
-            auto& inv = simPlayer->getInventory();
+            auto& inv = *simPlayer->mInventory->mInventory;
             if (int emptySlot = getFirstEmptySlot(); emptySlot != -1) {
                 int size = container->getContainerSize();
                 for (int i = 0; i < size; ++i) {
