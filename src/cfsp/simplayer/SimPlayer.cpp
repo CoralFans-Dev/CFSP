@@ -402,6 +402,20 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
             spIt->second,
             CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / spIt->second->xuid
         );
+        if (simPlayer->isDead()) {
+            // simPlayer->simulateRespawn();
+            auto& spawnPos = simPlayer->mPlayerRespawnPoint->mPlayerPosition;
+            Vec3  respawnPos;
+            respawnPos.x                         = (float)spawnPos->x + 0.5f;
+            respawnPos.y                         = (float)spawnPos->y + 1.62001f;
+            respawnPos.z                         = (float)spawnPos->z + 0.5f;
+            simPlayer->mRespawnPositionCandidate = respawnPos;
+            simPlayer->mRespawnReady             = true;
+            simPlayer->mRespawningFromTheEnd     = false;
+            if (!simPlayer->isAlive() && simPlayer->mRespawnReady) {
+                simPlayer->respawn();
+            }
+        }
     } else {
         auto* simPlayer = SimulatedPlayer::create(
             spname,
@@ -707,8 +721,8 @@ LL_TYPE_INSTANCE_HOOK(
     origin(source);
     if (this->isSimulatedPlayer()) {
         auto& manager = SimPlayerManager::getInstance();
-        manager.setDead(this->getRealName());
-        if (manager.getAutoRespawn()) manager.respawnSimPlayer(this, this->getRealName(), true);
+        manager.setDead(*this->mName);
+        if (manager.getAutoRespawn()) manager.respawnSimPlayer(this, *this->mName, true);
     }
 }
 
