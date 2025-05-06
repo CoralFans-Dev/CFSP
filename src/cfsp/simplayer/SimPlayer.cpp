@@ -403,6 +403,7 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
             spIt->second,
             CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / spIt->second->xuid
         );
+        if (simPlayer->isDead()) simPlayer->simulateRespawn();
     } else {
         auto* simPlayer = SimulatedPlayer::create(
             spname,
@@ -545,11 +546,16 @@ std::pair<std::string, bool> SimPlayerManager::rmGroup(Player* player, std::stri
 }
 
 std::pair<std::string, bool> SimPlayerManager::respawnSimPlayer(Player* player, std::string const& name, bool noCheck) {
+    for (auto i : this->mNameSimPlayerMap) {
+        CFSP::getInstance().getSelf().getLogger().warn(i.first);
+    }
     using ll::i18n_literals::operator""_tr;
     auto uuid = player->getUuid();
     auto it   = this->mNameSimPlayerMap.find(name);
+
     // check: simplayer
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
+    CFSP::getInstance().getSelf().getLogger().warn("0");
     // check: admin
     if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission || noCheck
         || uuid == it->second->ownerUuid) {
@@ -687,8 +693,8 @@ LL_TYPE_INSTANCE_HOOK(
     origin(source);
     if (this->isSimulatedPlayer()) {
         auto& manager = SimPlayerManager::getInstance();
-        manager.setDead(this->getRealName());
-        if (manager.getAutoRespawn()) manager.respawnSimPlayer(this, this->getRealName(), true);
+        manager.setDead(*this->mName);
+        if (manager.getAutoRespawn()) manager.respawnSimPlayer(this, *this->mName, true);
     }
 }
 
