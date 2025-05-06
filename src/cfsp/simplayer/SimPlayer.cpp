@@ -546,16 +546,12 @@ std::pair<std::string, bool> SimPlayerManager::rmGroup(Player* player, std::stri
 }
 
 std::pair<std::string, bool> SimPlayerManager::respawnSimPlayer(Player* player, std::string const& name, bool noCheck) {
-    for (auto i : this->mNameSimPlayerMap) {
-        CFSP::getInstance().getSelf().getLogger().warn(i.first);
-    }
     using ll::i18n_literals::operator""_tr;
     auto uuid = player->getUuid();
     auto it   = this->mNameSimPlayerMap.find(name);
 
     // check: simplayer
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
-    CFSP::getInstance().getSelf().getLogger().warn("0");
     // check: admin
     if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission || noCheck
         || uuid == it->second->ownerUuid) {
@@ -719,7 +715,6 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     std::chrono::steady_clock::time_point unknown
 ) {
-    CFSP::getInstance().getSelf().getLogger().debug("call LevelStorageManager::saveGameData");
     SimPlayerManager::getInstance().save();
     origin(unknown);
 }
