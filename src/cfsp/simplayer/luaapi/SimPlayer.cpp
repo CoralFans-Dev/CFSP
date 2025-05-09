@@ -448,7 +448,7 @@ LUAAPI(simplayer_useItem) {
     return 0;
 }
 
-LUAAPI(simplayer_startBuild) {
+LUAAPI(simplayer_Build) {
     LUA_ARG_COUNT_CHECK_M(0)
     boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
         (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
@@ -459,7 +459,7 @@ LUAAPI(simplayer_startBuild) {
         "invalid userdata"
     );
     lua_settop(L, 0);
-    (**spinfo)->startBuild();
+    (**spinfo)->Build();
     return 0;
 }
 
@@ -544,6 +544,31 @@ LUAAPI(simplayer_stopAction) {
     return 0;
 }
 
+LUAAPI(simplayer_tp) {
+    int count = lua_gettop(L);
+    if (count < 2 || count > 3) return luaL_error(L, "1 or 2 args expected (without \"self\")");
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
+    luaL_argcheck(
+        L,
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
+        1,
+        "invalid userdata"
+    );
+    Vec3* pos = (Vec3*)luaL_checkudata(L, 2, "vec3_mt");
+    int   dim;
+    if (count == 3) {
+        dim = static_cast<int>(luaL_checkinteger(L, 3));
+        if (dim < 0 || dim > 2) {
+            return luaL_error(L, "unexpected dimId");
+        }
+    } else dim = (**spinfo)->simPlayer->getDimensionId();
+    lua_settop(L, 0);
+    (**spinfo)->tp(*pos, dim);
+    return 0;
+}
+
+
 LUAAPI(simplayer_getFirstEmptySlot) {
     LUA_ARG_COUNT_CHECK_M(0);
     boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
@@ -601,7 +626,7 @@ LUAAPI(simplayer_meta_gc) {
     return 0;
 }
 
-const luaL_Reg lua_reg_simplayer_m[37] = {
+const luaL_Reg lua_reg_simplayer_m[] = {
     {"getName",                     lua_api_simplayer_getName                    },
     {"getXuid",                     lua_api_simplayer_getXuid                    },
     {"getStatus",                   lua_api_simplayer_getStatus                  },
@@ -628,12 +653,13 @@ const luaL_Reg lua_reg_simplayer_m[37] = {
     {"interact",                    lua_api_simplayer_interact                   },
     {"jump",                        lua_api_simplayer_jump                       },
     {"useItem",                     lua_api_simplayer_useItem                    },
-    {"startBuild",                  lua_api_simplayer_startBuild                 },
+    {"Build",                       lua_api_simplayer_Build                      },
     {"lookAt",                      lua_api_simplayer_lookAt                     },
     {"moveTo",                      lua_api_simplayer_moveTo                     },
     {"navigateTo",                  lua_api_simplayer_navigateTo                 },
     {"isTaskFree",                  lua_api_simplayer_isTaskFree                 },
     {"stopAction",                  lua_api_simplayer_stopAction                 },
+    {"tp",                          lua_api_simplayer_tp                         },
     {"getFirstEmptySlot",           lua_api_simplayer_getFirstEmptySlot          },
     {"tryPutIntoContainer",         lua_api_simplayer_tryPutIntoContainer        },
     {"tryGetFromContainerWithName", lua_api_simplayer_tryGetFromContainerWithName},

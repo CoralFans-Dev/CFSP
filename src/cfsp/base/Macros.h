@@ -41,10 +41,12 @@
         SimPlayerManager::simPlayer##NAME(Player* player, std::string const& spname, bool noCheck, ARG_TYPE arg) {     \
         using ll::i18n_literals::operator""_tr;                                                                        \
         auto uuid = player->getUuid();                                                                                 \
-        auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
+        auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
-        if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+        if (noCheck                                                                                                    \
+            || player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission    \
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)                                   \
+            || uuid == it->second->ownerUuid) {                                                                        \
             if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
             if (it->second->simPlayer) it->second->ACTION(arg);                                                        \
@@ -58,13 +60,52 @@
         ARG_TYPE           arg                                                                                         \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto adminIt = this -> mGroupAdminMap.find(gname);                                                             \
-        auto it      = this -> mGroupNameMap.find(gname);                                                              \
-        if (it == this->mGroupNameMap.end() || adminIt == this->mGroupAdminMap.end())                                  \
-            return {"translate.simplayer.error.notfound"_tr(), false};                                                 \
-        if (adminIt->second.find(player->getUuid().asString()) == adminIt->second.end())                               \
+        auto it = this->mGroupMap.find(gname);                                                                         \
+        if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};                    \
+        auto const& UUID = player->getUuid().asString();                                                               \
+        if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission                          \
+            && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID     \
+            && it->second->admin.find(UUID) == it->second->admin.end())                                                \
             return {"translate.simplayer.error.permissiondenied"_tr(), false};                                         \
-        for (auto const& v : it->second) this->simPlayer##NAME(player, v, true, arg);                                  \
+        for (auto const& v : it->second->splist) this->simPlayer##NAME(player, v, true, arg);                          \
+        return {"translate.simplayer.success"_tr(), true};                                                             \
+    }
+
+// SimPlayer def with two arg
+#define SP_DEF_WA2(NAME, ACTION, ARG_TYPE1, ARG_TYPE2)                                                                 \
+    std::pair<std::string, bool> SimPlayerManager::simPlayer##NAME(                                                    \
+        Player*            player,                                                                                     \
+        std::string const& spname,                                                                                     \
+        bool               noCheck,                                                                                    \
+        ARG_TYPE1          arg1,                                                                                       \
+        ARG_TYPE2          arg2                                                                                        \
+    ) {                                                                                                                \
+        using ll::i18n_literals::operator""_tr;                                                                        \
+        auto uuid = player->getUuid();                                                                                 \
+        auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
+        if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
+        if (noCheck                                                                                                    \
+            || player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission    \
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)                                   \
+            || uuid == it->second->ownerUuid) {                                                                        \
+            if (it->second->status != SimPlayerStatus::Alive)                                                          \
+                return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
+            if (it->second->simPlayer) it->second->ACTION(arg1, arg2);                                                 \
+            return {"translate.simplayer.success"_tr(), true};                                                         \
+        }                                                                                                              \
+        return {"translate.simplayer.error.permissiondenied"_tr(), false};                                             \
+    }                                                                                                                  \
+    std::pair<std::string, bool>                                                                                       \
+        SimPlayerManager::group##NAME(Player* player, std::string const& gname, ARG_TYPE1 arg1, ARG_TYPE2 arg2) {      \
+        using ll::i18n_literals::operator""_tr;                                                                        \
+        auto it = this->mGroupMap.find(gname);                                                                         \
+        if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};                    \
+        auto const& UUID = player->getUuid().asString();                                                               \
+        if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission                          \
+            && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID     \
+            && it->second->admin.find(UUID) == it->second->admin.end())                                                \
+            return {"translate.simplayer.error.permissiondenied"_tr(), false};                                         \
+        for (auto const& v : it->second->splist) this->simPlayer##NAME(player, v, true, arg1, arg2);                   \
         return {"translate.simplayer.success"_tr(), true};                                                             \
     }
 
@@ -77,10 +118,12 @@
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
         auto uuid = player->getUuid();                                                                                 \
-        auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
+        auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
-        if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+        if (noCheck                                                                                                    \
+            || player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission    \
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)                                   \
+            || uuid == it->second->ownerUuid) {                                                                        \
             if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
             if (it->second->simPlayer) it->second->ACTION();                                                           \
@@ -90,13 +133,14 @@
     }                                                                                                                  \
     std::pair<std::string, bool> SimPlayerManager::group##NAME(Player* player, std::string const& gname) {             \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto adminIt = this -> mGroupAdminMap.find(gname);                                                             \
-        auto it      = this -> mGroupNameMap.find(gname);                                                              \
-        if (it == this->mGroupNameMap.end() || adminIt == this->mGroupAdminMap.end())                                  \
-            return {"translate.simplayer.error.notfound"_tr(), false};                                                 \
-        if (adminIt->second.find(player->getUuid().asString()) == adminIt->second.end())                               \
+        auto it = this->mGroupMap.find(gname);                                                                         \
+        if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};                    \
+        auto const& UUID = player->getUuid().asString();                                                               \
+        if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission                          \
+            && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID     \
+            && it->second->admin.find(UUID) == it->second->admin.end())                                                \
             return {"translate.simplayer.error.permissiondenied"_tr(), false};                                         \
-        for (auto const& v : it->second) this->simPlayer##NAME(player, v, true);                                       \
+        for (auto const& v : it->second->splist) this->simPlayer##NAME(player, v, true);                               \
         return {"translate.simplayer.success"_tr(), true};                                                             \
     }
 
@@ -112,10 +156,12 @@
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
         auto uuid = player->getUuid();                                                                                 \
-        auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
+        auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
-        if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+        if (noCheck                                                                                                    \
+            || player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission    \
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)                                   \
+            || uuid == it->second->ownerUuid) {                                                                        \
             if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
             if (!it->second->isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                       \
@@ -143,13 +189,14 @@
         int                times                                                                                       \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto adminIt = this -> mGroupAdminMap.find(gname);                                                             \
-        auto it      = this -> mGroupNameMap.find(gname);                                                              \
-        if (it == this->mGroupNameMap.end() || adminIt == this->mGroupAdminMap.end())                                  \
-            return {"translate.simplayer.error.notfound"_tr(), false};                                                 \
-        if (adminIt->second.find(player->getUuid().asString()) == adminIt->second.end())                               \
+        auto it = this->mGroupMap.find(gname);                                                                         \
+        if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};                    \
+        auto const& UUID = player->getUuid().asString();                                                               \
+        if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission                          \
+            && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID     \
+            && it->second->admin.find(UUID) == it->second->admin.end())                                                \
             return {"translate.simplayer.error.permissiondenied"_tr(), false};                                         \
-        for (auto const& v : it->second) this->simPlayer##NAME(player, v, true, arg, interval, times);                 \
+        for (auto const& v : it->second->splist) this->simPlayer##NAME(player, v, true, arg, interval, times);         \
         return {"translate.simplayer.success"_tr(), true};                                                             \
     }
 
@@ -164,10 +211,12 @@
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
         auto uuid = player->getUuid();                                                                                 \
-        auto it   = this -> mNameSimPlayerMap.find(spname);                                                            \
+        auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
-        if (player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission       \
-            || noCheck || uuid == it->second->ownerUuid) {                                                             \
+        if (noCheck                                                                                                    \
+            || player->getCommandPermissionLevel() >= coral_fans::cfsp::mod().getConfig().simPlayer.adminPermission    \
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)                                   \
+            || uuid == it->second->ownerUuid) {                                                                        \
             if (it->second->status != SimPlayerStatus::Alive)                                                          \
                 return {"translate.simplayer.error.statuserror"_tr(), false};                                          \
             if (!it->second->isFree()) return {"translate.simplayer.error.nonfree"_tr(), false};                       \
@@ -190,13 +239,14 @@
     std::pair<std::string, bool>                                                                                       \
         SimPlayerManager::group##NAME(Player* player, std::string const& gname, int interval, int times) {             \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto adminIt = this -> mGroupAdminMap.find(gname);                                                             \
-        auto it      = this -> mGroupNameMap.find(gname);                                                              \
-        if (it == this->mGroupNameMap.end() || adminIt == this->mGroupAdminMap.end())                                  \
-            return {"translate.simplayer.error.notfound"_tr(), false};                                                 \
-        if (adminIt->second.find(player->getUuid().asString()) == adminIt->second.end())                               \
+        auto it = this->mGroupMap.find(gname);                                                                         \
+        if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};                    \
+        auto const& UUID = player->getUuid().asString();                                                               \
+        if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission                          \
+            && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID     \
+            && it->second->admin.find(UUID) == it->second->admin.end())                                                \
             return {"translate.simplayer.error.permissiondenied"_tr(), false};                                         \
-        for (auto const& v : it->second) this->simPlayer##NAME(player, v, true, interval, times);                      \
+        for (auto const& v : it->second->splist) this->simPlayer##NAME(player, v, true, interval, times);              \
         return {"translate.simplayer.success"_tr(), true};                                                             \
     }
 

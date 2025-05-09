@@ -1,6 +1,7 @@
 #include "cfsp/Config.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Mod.h"
+#include "cfsp/gui/GuiForm.h"
 #include "cfsp/simplayer/CFSP.h"
 #include "ll/api/command/CommandHandle.h"
 #include "ll/api/command/CommandRegistrar.h"
@@ -11,12 +12,14 @@
 #include "mc/server/commands/CommandOrigin.h"
 #include "mc/server/commands/CommandOutput.h"
 #include "mc/server/commands/CommandVersion.h"
+#include "mc/world/level/dimension/Dimension.h"
 #include "mc/world/phys/HitResultType.h"
 #include <functional>
 #include <memory>
 #include <span>
 #include <string>
 #include <utility>
+
 
 namespace {
 
@@ -123,6 +126,19 @@ void registerSpCommand(CommandPermissionLevel permission) {
         output.success("SimPlayerManager Version: {}\n - SimPlayerInfo Version: {}", MANAGER_VERSION, INFO_VERSION);
     });
 
+    // sp
+    spCommand.overload().execute([](CommandOrigin const& origin, CommandOutput& output) {
+        COMMAND_CHECK_PLAYER
+        if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
+            || mod().getConfig().simPlayer.superManagerList.contains(*player->mName))
+            coral_fans::cfsp::gui::sendManagerMainMenu(player);
+        else {
+            auto grouplist = SimPlayerManager::getInstance().fetchGroupList(player);
+            if (grouplist.size()) coral_fans::cfsp::gui::sendMainMenu(player);
+            else coral_fans::cfsp::gui::sendSplist(player);
+        }
+    });
+
     // sp c autorespawn <isopen: bool>
     spCommand.runtimeOverload()
         .text("c")
@@ -130,10 +146,21 @@ void registerSpCommand(CommandPermissionLevel permission) {
         .required("isopen", ll::command::ParamKind::Bool)
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto& mod = coral_fans::cfsp::mod();
-            if (origin.getPermissionsLevel() < mod.getConfig().simPlayer.adminPermission)
-                return output.error("command.sp.error.permissiondenied"_tr());
-            SimPlayerManager::getInstance().setAutoRespawn(self["isopen"].get<ll::command::ParamKind::Bool>());
-            output.success("command.sp.success"_tr());
+            if (origin.getPermissionsLevel() >= mod.getConfig().simPlayer.adminPermission) {
+                SimPlayerManager::getInstance().setAutoRespawn(self["isopen"].get<ll::command::ParamKind::Bool>());
+                return output.success("command.sp.success"_tr());
+            } else {
+                auto* entity = origin.getEntity();
+                if (entity != nullptr || entity->isType(ActorType::Player)) {
+                    auto* player = static_cast<Player*>(entity);
+                    if (mod.getConfig().simPlayer.superManagerList.contains(*player->mName)) {
+                        SimPlayerManager::getInstance().setAutoRespawn(self["isopen"].get<ll::command::ParamKind::Bool>(
+                        ));
+                        return output.success("command.sp.success"_tr());
+                    }
+                }
+            }
+            output.error("command.sp.error.permissiondenied"_tr());
         });
 
     // sp c autojoin <isopen: bool>
@@ -143,10 +170,44 @@ void registerSpCommand(CommandPermissionLevel permission) {
         .required("isopen", ll::command::ParamKind::Bool)
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto& mod = coral_fans::cfsp::mod();
-            if (origin.getPermissionsLevel() < mod.getConfig().simPlayer.adminPermission)
-                return output.error("command.sp.error.permissiondenied"_tr());
-            SimPlayerManager::getInstance().setAutoJoin(self["isopen"].get<ll::command::ParamKind::Bool>());
-            output.success("command.sp.success"_tr());
+            if (origin.getPermissionsLevel() >= mod.getConfig().simPlayer.adminPermission) {
+                SimPlayerManager::getInstance().setAutoJoin(self["isopen"].get<ll::command::ParamKind::Bool>());
+                return output.success("command.sp.success"_tr());
+            } else {
+                auto* entity = origin.getEntity();
+                if (entity != nullptr || entity->isType(ActorType::Player)) {
+                    auto* player = static_cast<Player*>(entity);
+                    if (mod.getConfig().simPlayer.superManagerList.contains(*player->mName)) {
+                        SimPlayerManager::getInstance().setAutoJoin(self["isopen"].get<ll::command::ParamKind::Bool>());
+                        return output.success("command.sp.success"_tr());
+                    }
+                }
+            }
+            output.error("command.sp.error.permissiondenied"_tr());
+        });
+
+    // sp c autodespawn <isopen: bool>
+    spCommand.runtimeOverload()
+        .text("c")
+        .text("autodespawn")
+        .required("isopen", ll::command::ParamKind::Bool)
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto& mod = coral_fans::cfsp::mod();
+            if (origin.getPermissionsLevel() >= mod.getConfig().simPlayer.adminPermission) {
+                SimPlayerManager::getInstance().setAutoDespawn(self["isopen"].get<ll::command::ParamKind::Bool>());
+                return output.success("command.sp.success"_tr());
+            } else {
+                auto* entity = origin.getEntity();
+                if (entity != nullptr || entity->isType(ActorType::Player)) {
+                    auto* player = static_cast<Player*>(entity);
+                    if (mod.getConfig().simPlayer.superManagerList.contains(*player->mName)) {
+                        SimPlayerManager::getInstance().setAutoDespawn(self["isopen"].get<ll::command::ParamKind::Bool>(
+                        ));
+                        return output.success("command.sp.success"_tr());
+                    }
+                }
+            }
+            output.error("command.sp.error.permissiondenied"_tr());
         });
 
     // sp list g
@@ -353,6 +414,34 @@ void registerSpCommand(CommandPermissionLevel permission) {
         });
 
 
+    // sp p <name: string> sneaking
+    spCommand.runtimeOverload()
+        .text("p")
+        .required("name", ll::command::ParamKind::SoftEnum, "spname")
+        .text("sneaking")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            COMMAND_SIMPLAYER_CHECKPERMLIST
+            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance()
+                           .simPlayerSneaking(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
+            if (rst.second) output.success(rst.first);
+            else output.error(rst.first);
+        });
+
+    // sp p <name: string> swimming
+    spCommand.runtimeOverload()
+        .text("p")
+        .required("name", ll::command::ParamKind::SoftEnum, "spname")
+        .text("swimming")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            COMMAND_SIMPLAYER_CHECKPERMLIST
+            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance()
+                           .simPlayerSwimming(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
+            if (rst.second) output.success(rst.first);
+            else output.error(rst.first);
+        });
+
     ::regSubCmd(
         spCommand,
         "despawn",
@@ -506,24 +595,20 @@ void registerSpCommand(CommandPermissionLevel permission) {
         spCommand,
         "chat",
         strArg,
-        taskArg,
+        {},
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerChat(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
                 false,
-                self["str"].get<ll::command::ParamKind::String>(),
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+                self["str"].get<ll::command::ParamKind::String>()
             );
         },
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupChat(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["str"].get<ll::command::ParamKind::String>(),
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+                self["str"].get<ll::command::ParamKind::String>()
             );
         }
     );
@@ -605,24 +690,20 @@ void registerSpCommand(CommandPermissionLevel permission) {
         spCommand,
         "runcmd",
         strArg,
-        taskArg,
+        {},
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerRunCmd(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
                 false,
-                self["str"].get<ll::command::ParamKind::String>(),
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+                self["str"].get<ll::command::ParamKind::String>()
             );
         },
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupRunCmd(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["str"].get<ll::command::ParamKind::String>(),
-                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
-                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+                self["str"].get<ll::command::ParamKind::String>()
             );
         }
     );
@@ -737,15 +818,22 @@ void registerSpCommand(CommandPermissionLevel permission) {
         spCommand,
         "build",
         {},
-        {},
+        taskArg,
         [](Player* player, ll::command::RuntimeCommand const& self) {
-            return coral_fans::cfsp::SimPlayerManager::getInstance()
-                .simPlayerBuild(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
+            return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerBuild(
+                player,
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                false,
+                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
+                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
+            );
         },
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupBuild(
                 player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>()
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
+                self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
             );
         }
     );
@@ -773,7 +861,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
                 const auto& hit = player->traceRay(5.25f);
                 if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
                 else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
-                else pos = player->getPosition();
+                else pos = player->getFeetPos();
             }
             return coral_fans::cfsp::SimPlayerManager::getInstance()
                 .simPlayerLookAt(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false, pos);
@@ -798,6 +886,63 @@ void registerSpCommand(CommandPermissionLevel permission) {
                 .groupLookAt(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), pos);
         }
     );
+
+    std::array<std::pair<std::string, ll::command::ParamKind::Kind>, 2> posArgWithDim{
+        std::make_pair("pos", ll::command::ParamKind::Vec3),
+        std::make_pair("dim", ll::command::ParamKind::Dimension)
+    };
+
+    if (mod().getConfig().simPlayer.allowTp)
+        ::regSubCmd(
+            spCommand,
+            "tp",
+            {},
+            posArgWithDim,
+            [](CommandOrigin const& origin, ll::command::RuntimeCommand const& self) {
+                auto* entity = origin.getEntity();
+                auto* player = static_cast<Player*>(entity);
+                Vec3  pos;
+                int   dimId;
+                if (self["pos"].has_value())
+                    pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(
+                        CommandVersion::CurrentVersion(),
+                        origin,
+                        {0, 0, 0}
+                    );
+                else {
+                    const auto& hit = player->traceRay(5.25f);
+                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
+                    else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
+                    else pos = player->getFeetPos();
+                }
+                if (self["dim"].has_value()) dimId = self["dim"].get<ll::command::ParamKind::Dimension>().id;
+                else dimId = player->getDimensionId();
+                return coral_fans::cfsp::SimPlayerManager::getInstance()
+                    .simPlayerTp(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false, pos, dimId);
+            },
+            [](CommandOrigin const& origin, ll::command::RuntimeCommand const& self) {
+                auto* entity = origin.getEntity();
+                auto* player = static_cast<Player*>(entity);
+                Vec3  pos;
+                int   dimId;
+                if (self["pos"].has_value())
+                    pos = self["pos"].get<ll::command::ParamKind::Vec3>().getPosition(
+                        CommandVersion::CurrentVersion(),
+                        origin,
+                        {0, 0, 0}
+                    );
+                else {
+                    const auto& hit = player->traceRay(5.25f);
+                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
+                    else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
+                    else pos = player->getFeetPos();
+                }
+                if (self["dim"].has_value()) dimId = self["dim"].get<ll::command::ParamKind::Dimension>().id;
+                else dimId = player->getDimensionId();
+                return coral_fans::cfsp::SimPlayerManager::getInstance()
+                    .groupTp(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), pos, dimId);
+            }
+        );
 
     ::regSubCmd(
         spCommand,

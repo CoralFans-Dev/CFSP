@@ -15,9 +15,10 @@
             "error": {
                 "maxspawn": "Spawned too many SimPlayer. Please restart the server.",
                 "exist": "Already exists",
-                "toomanyonline": "Too many SimPlayers online",
+                "toomanyonline": "The total number of SimPlayers online exceeds the max limit \"{}\"",
+                "toomanyonlineperplayer": "The number of SimPlayers online belong to you exceeds the max limit \"{}\"",
                 "toomanyown": "You own too many SimPlayers",
-                "toomanygroup": "Too many groups",
+                "toomanygroup": "The number of the groups you create has over the max limit",
                 "cannotcreate": "Cannot create SimPlayer",
                 "notfound": "Not found",
                 "permissiondenied": "Permission Denied",
@@ -30,7 +31,7 @@
             "info": {
                 "online": "Online: {}",
                 "simplayer": "\n- Name: {}\n - XUID: {}\n - OwnerUUID: {}\n - Status: {}\n - Group: {}",
-                "group": "- Name: {}\n - Admin: {}\n - SimPlayer: {}\n"
+                "group": "- Name: {}\n -Owner:{}\n - Admin: {}\n - SimPlayer: {}\n"
             }
         }
     }
