@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Utils.h"
 #include "ll/api/i18n/I18n.h"
+#include "ll/api/service/Bedrock.h"
 #include "ll/api/utils/StringUtils.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
@@ -9,6 +11,7 @@
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/Player.h"
 #include "mc/world/actor/player/PlayerInventory.h"
+#include "mc/world/level/Level.h"
 #include <string>
 
 
@@ -79,6 +82,12 @@ void swapItemInContainer(Player* player, int slot1, int slot2) {
         if (slot2 == -1) player->setOffhandSlot(i1);
         else container.setItem(slot2, i1);
     }
+}
+
+std::string tryGetPlayerName(std::string UUID) {
+    auto player = ll::service::getLevel()->getPlayer(mce::UUID(UUID));
+    if (player) return *player->mName;
+    else return UUID;
 }
 
 } // namespace coral_fans::cfsp::utils

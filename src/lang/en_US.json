@@ -5,7 +5,8 @@
             "success": "Success",
             "error": {
                 "toomanyobj": "Too many objects",
-                "permissiondenied": "Permission Denied"
+                "permissiondenied": "Permission Denied",
+                "nosp": "SimulatedPlayer can't be the target"
             }
         }
     },
@@ -22,7 +23,6 @@
                 "cannotcreate": "Cannot create SimPlayer",
                 "notfound": "Not found",
                 "permissiondenied": "Permission Denied",
-                "rmself": "Cannot remove yourself from list",
                 "statuserror": "Status error",
                 "notempty": "SimPlayer Inventory not empty",
                 "nonpositive": "interval must be positive",

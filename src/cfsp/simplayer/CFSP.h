@@ -37,6 +37,7 @@
 #include "mc/world/actor/BuiltInActorComponents.h"
 #include "mc/world/actor/ai/navigation/PathNavigation.h"
 #include "mc/world/actor/player/Inventory.h"
+#include "mc/world/actor/player/LayeredAbilities.h"
 #include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
@@ -46,6 +47,7 @@
 #include "mc/world/item/ItemStack.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
+#include "mc/world/level/ILevel.h"
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/actor/BlockActor.h"
 #include "mc/world/level/block/actor/BlockActorType.h"
@@ -220,6 +222,16 @@ public:
                     return false;
                 });
             }
+        }
+        CFSP_API bool flying(bool enable) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            if (simPlayer->canFly()) return simPlayer->getAbilities().setAbility(AbilitiesIndex::Flying, enable);
+            return false;
+        }
+        CFSP_API bool sprinting(bool enable) {
+            if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->setSprinting(enable);
+            return true;
         }
         CFSP_API bool attack() {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -576,6 +588,7 @@ public:
         }
     };
     struct GroupInfo {
+        std::string                     name;
         std::unordered_set<std::string> splist;
         std::string                     owner;
         std::unordered_set<std::string> admin;
@@ -585,7 +598,10 @@ public:
             owner  = "";
             admin  = std::unordered_set<std::string>{};
         }
-        GroupInfo(std::string _owner) { owner = _owner; }
+        GroupInfo(std::string _name, std::string _owner) {
+            name  = _name;
+            owner = _owner;
+        }
         // GroupInfo(std::unordered_set<std::string> _splist, std::string _owner, std::unordered_set<std::string>
         // _admin) {
         //     splist = _splist;
@@ -597,6 +613,7 @@ public:
         template <typename Archive>
         void serialize(Archive& ar, const unsigned int version) {
             if (version == GROUPINFO_VERSION) {
+                ar & name;
                 ar & splist;
                 ar & owner;
                 ar & admin;
@@ -674,7 +691,7 @@ public:
     CFSP_API std::pair<std::string, bool> addSpToGroup(Player*, std::string const&, std::string const&);
     CFSP_API std::pair<std::string, bool> rmSpFromGroup(Player*, std::string const&, std::string const&);
     CFSP_API std::pair<std::string, bool> addAdminToGroup(Player*, std::string const&, Player*);
-    CFSP_API std::pair<std::string, bool> rmAdminFromGroup(Player*, std::string const&, Player*);
+    CFSP_API std::pair<std::string, bool> rmAdminFromGroup(Player*, std::string const&, std::string const&);
 
 public:
     CFSP_API std::pair<std::string, bool> spawnSimPlayer(Player*, std::string const&, Vec3 const&, Vec2 const&);
@@ -724,6 +741,8 @@ public:
     SP_REG_DEF(Tp, Vec3 const&, int)
     SP_REG_DEF(Sneaking, bool)
     SP_REG_DEF(Swimming, bool)
+    SP_REG_DEF(Flying, bool)
+    SP_REG_DEF(Sprinting, bool)
     SP_REG_DEF(Attack, int, int)
     SP_REG_DEF(Chat, std::string const&)
     SP_REG_DEF(Destroy, int, int)
@@ -744,6 +763,8 @@ public:
 public:
     CFSP_API std ::pair<std ::string, bool> simPlayerSneaking(Player*, std ::string const&, bool);
     CFSP_API std ::pair<std ::string, bool> simPlayerSwimming(Player*, std ::string const&, bool);
+    CFSP_API std ::pair<std ::string, bool> simPlayerFlying(Player*, std ::string const&, bool);
+    CFSP_API std ::pair<std ::string, bool> simPlayerSprinting(Player*, std ::string const&, bool);
 };
 } // namespace coral_fans::cfsp
 

@@ -203,6 +203,46 @@ LUAAPI(simplayer_swimming) {
     return 0;
 }
 
+LUAAPI(simplayer_flying) {
+    LUA_ARG_COUNT_CHECK_M(1)
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
+    luaL_argcheck(
+        L,
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
+        1,
+        "invalid userdata"
+    );
+    luaL_argcheck(
+        L,
+        lua_isboolean(L, 2),
+        2,
+        std::string{"boolean expected, got " + std::string{lua_typename(L, lua_type(L, 2))}}.c_str()
+    );
+    (**spinfo)->flying(lua_toboolean(L, 2));
+    return 0;
+}
+
+LUAAPI(simplayer_sprinting) {
+    LUA_ARG_COUNT_CHECK_M(1)
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
+        (boost::shared_ptr<SimPlayerManager::SimPlayerInfo>**)luaL_checkudata(L, 1, "simplayer_mt");
+    luaL_argcheck(
+        L,
+        (spinfo != nullptr) && ((*spinfo) != nullptr) && ((**spinfo) != nullptr) && ((**spinfo)->simPlayer != nullptr),
+        1,
+        "invalid userdata"
+    );
+    luaL_argcheck(
+        L,
+        lua_isboolean(L, 2),
+        2,
+        std::string{"boolean expected, got " + std::string{lua_typename(L, lua_type(L, 2))}}.c_str()
+    );
+    (**spinfo)->sprinting(lua_toboolean(L, 2));
+    return 0;
+}
+
 LUAAPI(simplayer_attack) {
     LUA_ARG_COUNT_CHECK_M(0)
     boost::shared_ptr<SimPlayerManager::SimPlayerInfo>** spinfo =
@@ -638,6 +678,8 @@ const luaL_Reg lua_reg_simplayer_m[] = {
     {"getHunger",                   lua_api_simplayer_getHunger                  },
     {"sneaking",                    lua_api_simplayer_sneaking                   },
     {"swimming",                    lua_api_simplayer_swimming                   },
+    {"flying",                      lua_api_simplayer_flying                     },
+    {"sprinting",                   lua_api_simplayer_sprinting                  },
     {"attack",                      lua_api_simplayer_attack                     },
     {"chat",                        lua_api_simplayer_chat                       },
     {"destroy",                     lua_api_simplayer_destroy                    },

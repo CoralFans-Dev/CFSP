@@ -33,6 +33,10 @@ int lua_api_simplayer_sneaking(lua_State*);
 
 int lua_api_simplayer_swimming(lua_State*);
 
+int lua_api_simplayer_flying(lua_State*);
+
+int lua_api_simplayer_sprinting(lua_State*);
+
 int lua_api_simplayer_attack(lua_State*);
 
 int lua_api_simplayer_chat(lua_State*);

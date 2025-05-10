@@ -139,6 +139,49 @@ void registerSpCommand(CommandPermissionLevel permission) {
         }
     });
 
+    // sp p <name: string>
+    spCommand.runtimeOverload()
+        .text("p")
+        .optional("name", ll::command::ParamKind::SoftEnum, "spname")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            if (self["name"].has_value()) {
+                auto tem =
+                    SimPlayerManager::getInstance().fetchSimPlayer(self["name"].get<ll::command::ParamKind::SoftEnum>()
+                    );
+                if (tem.has_value()) {
+                    std::string UUID = player->getUuid().asString();
+                    if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
+                        || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)
+                        || tem.value()->ownerUuid == UUID)
+                        coral_fans::cfsp::gui::sendSpOperatorList(player, tem.value());
+                    else return output.error("sommand.sp.error.permissiondenied"_tr());
+                } else return output.error("sommand.sp.error.spnofind"_tr());
+            } else coral_fans::cfsp::gui::sendSplist(player);
+            return output.success("command.sp.success"_tr());
+        });
+
+    // sp g <name: string>
+    spCommand.runtimeOverload()
+        .text("g")
+        .optional("name", ll::command::ParamKind::SoftEnum, "gname")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            if (self["name"].has_value()) {
+                auto tem =
+                    SimPlayerManager::getInstance().fetchGroup(self["name"].get<ll::command::ParamKind::SoftEnum>());
+                if (tem.has_value()) {
+                    std::string UUID = player->getUuid().asString();
+                    if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
+                        || mod().getConfig().simPlayer.superManagerList.contains(*player->mName)
+                        || tem.value()->owner == UUID || tem.value()->admin.contains(UUID))
+                        coral_fans::cfsp::gui::sendGroupOperatorList(player, tem.value());
+                    else return output.error("sommand.sp.error.permissiondenied"_tr());
+                } else return output.error("sommand.sp.error.groupnofind"_tr());
+            } else coral_fans::cfsp::gui::sendGroupList(player);
+            return output.success("command.sp.success"_tr());
+        });
+
     // sp c autorespawn <isopen: bool>
     spCommand.runtimeOverload()
         .text("c")
@@ -232,12 +275,14 @@ void registerSpCommand(CommandPermissionLevel permission) {
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             COMMAND_CHECK_PLAYER
             COMMAND_SIMPLAYER_CHECKPERMLIST
-            auto rst = SimPlayerManager::getInstance().createGroup(
-                player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>()
-            );
-            if (rst.second) output.success(rst.first);
-            else output.error(rst.first);
+            if (!player->isSimulatedPlayer()) {
+                auto rst = SimPlayerManager::getInstance().createGroup(
+                    player,
+                    self["name"].get<ll::command::ParamKind::SoftEnum>()
+                );
+                if (rst.second) output.success(rst.first);
+                else output.error(rst.first);
+            }
         });
 
     // sp g <name: string> delete
@@ -301,8 +346,10 @@ void registerSpCommand(CommandPermissionLevel permission) {
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             COMMAND_CHECK_PLAYER
             COMMAND_SIMPLAYER_CHECKPERMLIST
-            if (self["player"].get<ll::command::ParamKind::Player>().results(origin).size() != 1)
-                return output.error("command.sp.error.toomanyobj"_tr());
+
+            auto targetPlayer = self["player"].get<ll::command::ParamKind::Player>().results(origin).data;
+            if (targetPlayer->size() > 1) return output.error("command.sp.error.toomanyobj"_tr());
+            if (targetPlayer->front()->isSimulatedPlayer()) return output.error("command.sp.error.nosp"_tr());
             auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().addAdminToGroup(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
@@ -321,12 +368,12 @@ void registerSpCommand(CommandPermissionLevel permission) {
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             COMMAND_CHECK_PLAYER
             COMMAND_SIMPLAYER_CHECKPERMLIST
-            if (self["player"].get<ll::command::ParamKind::Player>().results(origin).size() != 1)
-                return output.error("command.sp.error.toomanyobj"_tr());
+            auto targetPlayer = self["player"].get<ll::command::ParamKind::Player>().results(origin).data;
+            if (targetPlayer->size() != 1) return output.error("command.sp.error.toomanyobj"_tr());
             auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().rmAdminFromGroup(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["player"].get<ll::command::ParamKind::Player>().results(origin).data->front()
+                targetPlayer->front()->getUuid().asString()
             );
             if (rst.second) output.success(rst.first);
             else output.error(rst.first);
@@ -442,6 +489,34 @@ void registerSpCommand(CommandPermissionLevel permission) {
             else output.error(rst.first);
         });
 
+    // sp p <name: string> flying
+    spCommand.runtimeOverload()
+        .text("p")
+        .required("name", ll::command::ParamKind::SoftEnum, "spname")
+        .text("flying")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            COMMAND_SIMPLAYER_CHECKPERMLIST
+            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance()
+                           .simPlayerFlying(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
+            if (rst.second) output.success(rst.first);
+            else output.error(rst.first);
+        });
+
+    // sp p <name: string> sprinting
+    spCommand.runtimeOverload()
+        .text("p")
+        .required("name", ll::command::ParamKind::SoftEnum, "spname")
+        .text("sprinting")
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            COMMAND_CHECK_PLAYER
+            COMMAND_SIMPLAYER_CHECKPERMLIST
+            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance()
+                           .simPlayerSprinting(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), false);
+            if (rst.second) output.success(rst.first);
+            else output.error(rst.first);
+        });
+
     ::regSubCmd(
         spCommand,
         "despawn",
@@ -551,6 +626,50 @@ void registerSpCommand(CommandPermissionLevel permission) {
         },
         [](Player* player, ll::command::RuntimeCommand const& self) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupSwimming(
+                player,
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                self["enable"].get<ll::command::ParamKind::Bool>()
+            );
+        }
+    );
+
+    ::regSubCmd(
+        spCommand,
+        "flying",
+        enableArg,
+        {},
+        [](Player* player, ll::command::RuntimeCommand const& self) {
+            return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerFlying(
+                player,
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                false,
+                self["enable"].get<ll::command::ParamKind::Bool>()
+            );
+        },
+        [](Player* player, ll::command::RuntimeCommand const& self) {
+            return coral_fans::cfsp::SimPlayerManager::getInstance().groupFlying(
+                player,
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                self["enable"].get<ll::command::ParamKind::Bool>()
+            );
+        }
+    );
+
+    ::regSubCmd(
+        spCommand,
+        "sprinting",
+        enableArg,
+        {},
+        [](Player* player, ll::command::RuntimeCommand const& self) {
+            return coral_fans::cfsp::SimPlayerManager::getInstance().simPlayerSprinting(
+                player,
+                self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                false,
+                self["enable"].get<ll::command::ParamKind::Bool>()
+            );
+        },
+        [](Player* player, ll::command::RuntimeCommand const& self) {
+            return coral_fans::cfsp::SimPlayerManager::getInstance().groupSprinting(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
                 self["enable"].get<ll::command::ParamKind::Bool>()

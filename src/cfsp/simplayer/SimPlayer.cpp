@@ -177,7 +177,7 @@ std::string SimPlayerManager::listSimPlayer() {
         retstr += "translate.simplayer.info.simplayer"_tr(
             name,
             sp->xuid,
-            sp->ownerUuid,
+            utils::tryGetPlayerName(sp->ownerUuid),
             magic_enum::enum_name(magic_enum::enum_cast<SimPlayerStatus>(sp->status).value_or(SimPlayerStatus::Offline)
             ),
             boost::algorithm::join(sp->groups, ", ")
@@ -185,16 +185,16 @@ std::string SimPlayerManager::listSimPlayer() {
     return retstr;
 }
 
+
 std::string SimPlayerManager::listGroup() {
     using ll::i18n_literals::operator""_tr;
     std::string retstr;
     for (const auto& [gname, groupInfo] : this->mGroupMap) {
-        retstr += "translate.simplayer.info.group"_tr(
-            gname,
-            groupInfo->owner,
-            boost::algorithm::join(groupInfo->admin, ", "),
-            boost::algorithm::join(groupInfo->splist, ", ")
-        );
+        std::string admin;
+        for (auto i : groupInfo->admin) admin += "\n    " + utils::tryGetPlayerName(i);
+        std::string splist;
+        for (auto i : groupInfo->admin) splist += "\n    " + i;
+        retstr += "translate.simplayer.info.group"_tr(gname, utils::tryGetPlayerName(groupInfo->owner), admin, splist);
     }
     return retstr.substr(0, retstr.length() - 1);
 }
@@ -211,7 +211,7 @@ std::pair<std::string, bool> SimPlayerManager::createGroup(Player* player, std::
             return {"translate.simplayer.error.toomanygroup"_tr(), false};
     }
     if (!(this->mGroupMap.contains(gname))) {
-        this->mGroupMap.emplace(gname, boost::make_shared<GroupInfo>(UUID));
+        this->mGroupMap.emplace(gname, boost::make_shared<GroupInfo>(gname, UUID));
         this->refreshSoftEnum();
         return {"translate.simplayer.success"_tr(), true};
     }
@@ -322,20 +322,18 @@ std::pair<std::string, bool> SimPlayerManager::addAdminToGroup(Player* player, s
     return {"translate.simplayer.error.notfound"_tr(), false};
 }
 
-std::pair<std::string, bool> SimPlayerManager::rmAdminFromGroup(Player* player, std::string const& gname, Player* obj) {
+std::pair<std::string, bool>
+SimPlayerManager::rmAdminFromGroup(Player* player, std::string const& gname, std::string const& UUID) {
     using ll::i18n_literals::operator""_tr;
     auto it = this->mGroupMap.find(gname);
     // check: exist
-    if (it != this->mGroupMap.end() && obj) {
+    if (it != this->mGroupMap.end()) {
         auto pUuid = player->getUuid().asString();
-        auto oUuid = obj->getUuid().asString();
         // check: admin
         if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
             || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || it->second->owner == pUuid) {
-            // check: self
-            if (pUuid == oUuid) return {"translate.simplayer.error.rmself"_tr(), false};
             // rm player from mGroupAdminMap
-            auto uuidIt = it->second->admin.find(oUuid);
+            auto uuidIt = it->second->admin.find(UUID);
             if (uuidIt == it->second->admin.end()) return {"translate.simplayer.error.notfound"_tr(), false};
             it->second->admin.erase(uuidIt);
             // return
@@ -654,6 +652,8 @@ SP_DEF(Stop, stop)
 SP_DEF_WA2(Tp, tp, Vec3 const&, int)
 SP_DEF_WA(Sneaking, sneaking, bool)
 SP_DEF_WA(Swimming, swimming, bool)
+SP_DEF_WA(Flying, flying, bool)
+SP_DEF_WA(Sprinting, sprinting, bool)
 SP_DEF_TASK(Attack, attack)
 SP_DEF_WA(Chat, chat, std::string const&)
 SP_DEF_TASK(Destroy, destroy)
@@ -710,6 +710,38 @@ SimPlayerManager::simPlayerSwimming(Player* player, std ::string const& spname, 
         || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
         if (it->second->status != SimPlayerStatus ::Alive) return {"translate.simplayer.error.statuserror"_tr(), false};
         if (it->second->simPlayer) it->second->swimming(!it->second->simPlayer->getStatusFlag(ActorFlags::Swimming));
+        return {"translate.simplayer.success"_tr(), true};
+    }
+    return {"translate.simplayer.error.permissiondenied"_tr(), false};
+}
+
+std ::pair<std ::string, bool>
+SimPlayerManager::simPlayerFlying(Player* player, std ::string const& spname, bool noCheck) {
+    using ll ::i18n_literals ::operator""_tr;
+    auto uuid = player->getUuid();
+    auto it   = this->mNameSimPlayerMap.find(spname);
+    if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
+    if (noCheck
+        || player->getCommandPermissionLevel() >= coral_fans ::cfsp ::mod().getConfig().simPlayer.adminPermission
+        || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
+        if (it->second->status != SimPlayerStatus ::Alive) return {"translate.simplayer.error.statuserror"_tr(), false};
+        if (it->second->simPlayer) it->second->flying(!it->second->simPlayer->isFlying());
+        return {"translate.simplayer.success"_tr(), true};
+    }
+    return {"translate.simplayer.error.permissiondenied"_tr(), false};
+}
+
+std ::pair<std ::string, bool>
+SimPlayerManager::simPlayerSprinting(Player* player, std ::string const& spname, bool noCheck) {
+    using ll ::i18n_literals ::operator""_tr;
+    auto uuid = player->getUuid();
+    auto it   = this->mNameSimPlayerMap.find(spname);
+    if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
+    if (noCheck
+        || player->getCommandPermissionLevel() >= coral_fans ::cfsp ::mod().getConfig().simPlayer.adminPermission
+        || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
+        if (it->second->status != SimPlayerStatus ::Alive) return {"translate.simplayer.error.statuserror"_tr(), false};
+        if (it->second->simPlayer) it->second->sprinting(!it->second->simPlayer->getStatusFlag(ActorFlags::Sprinting));
         return {"translate.simplayer.success"_tr(), true};
     }
     return {"translate.simplayer.error.permissiondenied"_tr(), false};
@@ -808,7 +840,7 @@ std::vector<std::string> SimPlayerManager::fetchGroupList(const Player* pl) {
     std::vector<std::string> res;
     std::string              UUID = pl->getUuid().asString();
     for (auto i : mGroupMap) {
-        if (i.second->owner == UUID) res.emplace_back(i.first);
+        if (i.second->owner == UUID || i.second->admin.contains(UUID)) res.emplace_back(i.first);
     }
     std::sort(res.begin(), res.end());
     return res;

@@ -30,19 +30,22 @@
             "success": "操作成功",
             "error": {
                 "toomanyobj": "对象过多",
-                "permissiondenied": "权限拒绝"
+                "permissiondenied": "权限拒绝",
+                "nosp": "对象不能为假人",
+                "spnofind": "未找到假人",
+                "groupnofind": "未找到假人组"
             }
         }
     },
     "gui": {
-        "mainmenu": {
-            "title": "CoralFans-SimulatedPlayer 主菜单",
+        "managermainmenu": {
+            "title": "CoralFans假人系统 管理员主菜单",
             "splistbutton": "假人列表",
             "grouplistbutton": "假人组列表",
             "managerlistbutton": "设置"
         },
-        "splist": {
-            "title": "假人列表",
+        "managersplist": {
+            "title": "管理员：假人列表",
             "newsp": "创建假人"
         },
         "operatelist": {
@@ -52,11 +55,11 @@
             "rm": "删除假人",
             "offline": "假人下线",
             "respawn": "假人重生",
-            "inv": "假人背包操作",
+            "inv": "假人物品栏操作",
             "move": "假人移动操作",
             "lookat": "假人看向指定坐标",
             "operate": "假人执行操作",
-            "stop": "假人停止交互操作",
+            "stop": "假人停止操作",
             "action": "假人行为操作",
             "message": "假人消息操作"
         },
@@ -68,7 +71,7 @@
             "pos": "假人坐标     : ",
             "respawnpos": "假人重生坐标 : ",
             "gamemode": "假人游戏模式 : ",
-            "isFree": "是否空闲     : ",
+            "isFree": "是否空闲      : ",
             "offlinepos": "假人离线坐标 : "
         },
         "invoperatelist": {
@@ -94,6 +97,7 @@
         },
         "operate": {
             "title": "假人执行操作",
+            "operate": "选择操作 :",
             "attack": "攻击",
             "interact": "交互",
             "build": "放置",
@@ -109,15 +113,22 @@
         },
         "actionoperate": {
             "title": "假人行为操作",
+            "flying": "假人飞行",
+            "fly": "飞行",
+            "releasefly": "取消飞行",
             "sneaking": "假人潜行",
             "sneak": "潜行",
             "releasesneak": "取消潜行",
             "swimming": "假人游泳",
             "swim": "游泳",
-            "releaseswim": "取消游泳"
+            "releaseswim": "取消游泳",
+            "sprinting": "假人疾跑",
+            "sprint": "疾跑",
+            "releasesprint": "取消疾跑"
         },
         "messageoperate": {
             "title": "假人消息操作",
+            "operate": "选择操作 :",
             "chat": "发送消息",
             "runcmd": "执行指令",
             "text": "输入文本"
@@ -129,14 +140,134 @@
             "targetdim": "目标维度 :",
             "poserror": "§c坐标参数错误§r"
         },
-        "grouplist": {
-            "title": "假人组列表",
+        "managergrouplist": {
+            "title": "管理员：假人组列表",
             "newgroup": "新建组"
         },
         "groupoperatelist": {
             "title": "假人组操作",
-            "groupinfo": "假人组信息",
-            "manage": "管理假人组"
+            "info": "假人组信息",
+            "manage": "管理假人组",
+            "online": "假人组上线",
+            "offline": "假人组下线",
+            "respawn": "假人组重生",
+            "inv": "假人组物品栏操作",
+            "move": "假人组移动操作",
+            "lookat": "假人组看向指定坐标",
+            "operate": "假人组执行操作",
+            "stop": "假人组停止操作",
+            "action": "假人组行为操作",
+            "message": "假人组消息操作",
+            "rm": "删除组内假人"
+        },
+        "groupinfo": {
+            "title": "假人组信息",
+            "name": "\n  假人组组名 : ",
+            "owner": "所有者     : ",
+            "admin": "\n  管理员     :\n  ",
+            "sp": "假人       :"
+        },
+        "groupmanage": {
+            "title": "管理假人组",
+            "managesp": "管理假人",
+            "addadmin": "添加管理员",
+            "removeadmin": "移除管理员",
+            "delete": "删除组"
+        },
+        "addsp": {
+            "title": "添加假人"
+        },
+        "removesp": {
+            "title": "移出假人"
+        },
+        "addadmin": {
+            "title": "添加管理员"
+        },
+        "rmadmin": {
+            "title": "移除管理员"
+        },
+        "groupinvoperatelist": {
+            "title": "假人组背包操作",
+            "drop": "假人组丢弃手持物品",
+            "dropinv": "假人组丢弃背包内全部物品"
+        },
+        "groupmoveoperate": {
+            "title": "假人组移动操作",
+            "operate": "选择操作 :",
+            "tp": "传送",
+            "moveto": "移动",
+            "navto": "寻路",
+            "targetpos": "目标坐标(不输入则默认玩家位置) : x y z",
+            "targetdim": "目标维度(仅使用tp时有效) : ",
+            "poserror": "§c坐标参数错误§r"
+        },
+        "grouplookatoperate": {
+            "title": "假人组看向指定坐标",
+            "targetpos": "目标坐标(不输入则默认看向玩家脚底) : x y z",
+            "poserror": "§c坐标参数错误§r"
+        },
+        "groupoperate": {
+            "title": "假人组执行操作",
+            "operate": "选择操作 :",
+            "attack": "攻击",
+            "interact": "交互",
+            "build": "放置",
+            "use": "使用",
+            "destroy": "破坏",
+            "jump": "跳跃",
+            "interval": "操作间隔/gt",
+            "times": "重复次数/gt",
+            "long": "操作时长(仅使用use时有效)/gt",
+            "intervalerror": "§c\"操作间隔\"参数错误§r",
+            "timeserror": "§c\"重复次数\"参数错误§r",
+            "longerror": "§c\"操作时长\"参数错误§r"
+        },
+        "groupactionoperate": {
+            "title": "假人组行为操作",
+            "flying": "假人组飞行",
+            "fly": "飞行",
+            "releasefly": "取消飞行",
+            "sneaking": "假人组潜行",
+            "sneak": "潜行",
+            "releasesneak": "取消潜行",
+            "swimming": "假人组游泳",
+            "swim": "游泳",
+            "releaseswim": "取消游泳",
+            "sprinting": "假人组疾跑",
+            "sprint": "疾跑",
+            "releasesprint": "取消疾跑",
+            "notoperate": "不操作"
+        },
+        "groupmessageoperate": {
+            "title": "假人组消息操作",
+            "operate": "选择操作 :",
+            "chat": "发送消息",
+            "runcmd": "执行指令",
+            "text": "输入文本"
+        },
+        "creategroup": {
+            "title": "创建假人组",
+            "name": "假人组名称 :"
+        },
+        "manage": {
+            "title": "管理员：设置管理",
+            "autojoin": "服务器启动时假人自动加入",
+            "autorespawn": "假人死亡时自动重生",
+            "autodespawn": "假人频繁死亡自动离线"
+        },
+        "mainmenu": {
+            "title": "CoralFans假人系统 主菜单",
+            "splistbutton": "假人列表",
+            "grouplistbutton": "假人组列表",
+            "managerlistbutton": "设置"
+        },
+        "splist": {
+            "title": "假人列表",
+            "newsp": "创建假人"
+        },
+        "grouplist": {
+            "title": "管理员：假人组列表",
+            "newgroup": "新建组"
         }
     },
     "translate": {
@@ -152,7 +283,6 @@
                 "cannotcreate": "无法创建假人",
                 "notfound": "找不到对象",
                 "permissiondenied": "权限拒绝",
-                "rmself": "无法从列表中删除你自身",
                 "statuserror": "状态异常",
                 "notempty": "假人物品栏非空",
                 "nonpositive": "时间间隔必须为正整数",
@@ -160,8 +290,8 @@
             },
             "info": {
                 "online": "在线: {}",
-                "simplayer": "\n- 名称: {}\n - XUID: {}\n - 所有者UUID: {}\n - 状态: {}\n - 组: {}",
-                "group": "- 名称: {}\n -所有者：{}\n - 管理员: {}\n - 假人: {}\n"
+                "simplayer": "\n- 名称: {}\n - XUID: {}\n - 所有者: {}\n - 状态: {}\n - 组: {}",
+                "group": "- 名称: {}\n -所有者：{}\n - 管理员:{}\n - 假人:\n{}\n"
             }
         }
     }
