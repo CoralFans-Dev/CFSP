@@ -61,7 +61,7 @@ LUAAPI(level_getMspt) {
     lua_settop(L, 0);
     lua_pushnumber(
         L,
-        static_cast<double>(ProfilerLite::gProfilerLiteInstance().getServerTickTime().count() / 1000000.0)
+        static_cast<double>(ProfilerLite::gProfilerLiteInstance().mDebugServerTickTime->count() / 1000000.0)
     );
     return 1;
 }

@@ -27,16 +27,19 @@ LUAAPI(blocksource_getBlockInfo) {
     luaL_argcheck(L, bp != nullptr, 2, "invalid userdata");
     lua_settop(L, 0);
     auto level = ll::service::getLevel();
-    if (!level.has_value()) {
-        lua_pushnil(L);
-        lua_pushboolean(L, false);
-        return 2;
+    if (level.has_value()) {
+        auto sp = level->getDimension(*dimid).lock();
+        if (sp) {
+            const auto& block = sp->mBlockSource->get()->getBlock(*bp);
+            BlockInfo** binfo = (BlockInfo**)lua_newuserdata(L, sizeof(BlockInfo*));
+            *binfo            = new BlockInfo(*bp, *dimid, block);
+            luaL_setmetatable(L, "blockinfo_mt");
+            lua_pushboolean(L, true);
+            return 2;
+        }
     }
-    const auto& block = level->getDimension(*dimid)->getBlockSourceFromMainChunkSource().getBlock(*bp);
-    BlockInfo** binfo = (BlockInfo**)lua_newuserdata(L, sizeof(BlockInfo*));
-    *binfo            = new BlockInfo(*bp, *dimid, block);
-    luaL_setmetatable(L, "blockinfo_mt");
-    lua_pushboolean(L, true);
+    lua_pushnil(L);
+    lua_pushboolean(L, false);
     return 2;
 }
 

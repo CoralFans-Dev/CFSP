@@ -1,4 +1,3 @@
-
 #include "mc/deps/core/math/Vec2.h"
 #include "cfsp/base/Macros.h"
 #include "mc/deps/core/math/Vec3.h"
@@ -31,7 +30,8 @@ LUAAPI(vec2_new) {
 LUAAPI(vec2_newLowest) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::LOWEST();
+    // *rot      = Vec2::LOWEST();
+    *rot = Vec2(-FLT_MAX, -FLT_MAX);
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -55,7 +55,8 @@ LUAAPI(vec2_newMin) {
 LUAAPI(vec2_newNegUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::NEG_UNIT_X();
+    // *rot      = Vec2::NEG_UNIT_X();
+    *rot = Vec2(-1.0, 0.0);
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -63,7 +64,8 @@ LUAAPI(vec2_newNegUnitX) {
 LUAAPI(vec2_newNegUnitY) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::NEG_UNIT_Y();
+    // *rot      = Vec2::NEG_UNIT_Y();
+    *rot = Vec2(0.0, -1.0);
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -79,7 +81,8 @@ LUAAPI(vec2_newOne) {
 LUAAPI(vec2_newUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec2::UNIT_X();
+    // *rot      = Vec2::UNIT_X();
+    *rot = Vec2(1.0, 0.0);
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }
@@ -106,7 +109,9 @@ LUAAPI(vec2_newFromDirection) {
     luaL_argcheck(L, pos != nullptr, 1, "invalid userdata");
     lua_settop(L, 0);
     Vec2* rot = (Vec2*)lua_newuserdata(L, sizeof(Vec2));
-    *rot      = Vec3::rotationFromDirection(*pos);
+    // *rot      = Vec3::rotationFromDirection(*pos);
+    float len = sqrt(pos->x * pos->x + pos->y * pos->y + pos->z * pos->z);
+    *rot      = Vec2(atan2(pos->z / len, pos->x / len), asin(pos->y / len));
     luaL_setmetatable(L, "vec2_mt");
     return 1;
 }

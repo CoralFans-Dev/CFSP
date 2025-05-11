@@ -4,6 +4,7 @@
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/Tag.h"
+#include "mc/world/item/Item.h"
 #include "mc/world/item/ItemStack.h"
 #include "mc/world/item/SaveContextFactory.h"
 #include "mc/world/level/BlockSource.h"
@@ -61,7 +62,7 @@ public:
       count(item.mCount),
       aux(item.getAuxValue()),
       damage(item.getDamageValue()),
-      attackDamage(item.getAttackDamage()),
+      attackDamage(item.mItem->getAttackDamage()),
       maxDamage(item.getMaxDamage()),
       maxStackSize(item.getMaxStackSize()),
       lore(item.getCustomLore()),
@@ -71,16 +72,17 @@ public:
       isDamaged(item.isDamaged()),
       isEnchanted(item.isEnchanted()),
       isEnchantingBook(item.isEnchantingBook()),
-      isFireResistant(item.isFireResistant()),
+      isFireResistant(item.mItem->mFireResistant),
       isFullStack(item.isFullStack()),
       isGlint(item.isGlint()),
       isHorseArmorItem(item.isHorseArmorItem()),
-      isLiquidClipItem(item.isLiquidClipItem()),
-      isMusicDiscItem(item.isMusicDiscItem()),
-      isOffhandItem(item.isOffhandItem()),
+      isLiquidClipItem(item.mItem->isLiquidClipItem()),
+      isMusicDiscItem(item.mItem->isMusicDisk()),
+      //   isOffhandItem(item.isOffhandItem()),
+      isOffhandItem(item.mItem ? item.mItem->mAllowOffhand : false),
       isPotionItem(item.isPotionItem()),
       isStackable(item.isStackable()),
-      isWearableItem(item.isHumanoidWearableItem()),
+      isWearableItem(item.isHumanoidWearableBlockItem()),
       tag(item.save(*SaveContextFactory::createCloneSaveContext())) {}
     bool operator==(const ItemInfo& rt) const {
         return name == rt.name && type == rt.type && id == rt.id && count == rt.count && aux == rt.aux

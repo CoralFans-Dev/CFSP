@@ -9,46 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-+ Added GUI, you can open it with command /sp, /sp p, /sp g, /sp p <spname : string> and /sp g <groupname : string>
-+ Added flying operation
-+ Added sprinting operation
-+ Added tp operation and it's parameter allowTp in config file
-+ Added autoDespawn func, and it's parameters autoDespawnCount and autoDespawninterval in config file
-+ Added supermanager list, you can change config file to add super manager
-+ Added a new optional parameter maxOnlinePerPlayer in config file
-+ Now you can use Command /sp spawn, /sp despawn and /sp respawn on cmd
++ 新增图形用户界面（GUI），可通过命令 /sp、/sp p、/sp g、/sp p <spname : string> 和 /sp g <groupname : string> 打开
++ 新增飞行操作功能
++ 新增疾跑操作功能
++ 新增传送操作及配置文件中的allowTp参数
++ 新增自动下线功能，开启后当假人频繁死亡时会自动下线，死亡数与最短死亡间隔可通过配置文件参数autoDespawnCount和autoDespawnInterval设置
++ 新增超级管理员名单，可通过修改配置文件添加超级管理员
++ 新增配置文件可选参数maxOnlinePerPlayer
++ 现支持控制台使用/sp spawn、/sp despawn和/sp respawn命令
 
 ### Changed
 
-+ Changed the operation build, now it build once instead of building continously
-+ Changed the operation destroy, now it work with more strictly inspection
-+ Remove the interval and times optional parameters of the operation chat and runcmd
-+ the parameter maxGroup in config file changed, now it limit personal group number insteal of total
-+ Update the Config version to 2
-+ Differentiated the owner and administrator of the group in terms of permissions.
++ 调整了build操作，现在是使用build指令将是单次操作而非持续操作
++ 调整了destroy操作，现在他有更加严格的检测方式
++ 移除chat与runcmd操作的interval和times可选参数
++ 调整了配置文件maxGroup参数，现用于限制个人组数量而非总的组数
++ 配置文件版本更新至2
++ 实现群组所有者与管理员的权限分级
 
 ### Fixed
 
-+ Now you can't operate simulated plyaer to create new simulated player
-+ Fix a bug that could make autoJoin useless, now simulated player will join when the first player join the game
++ 禁止通过假人创建新的假人
++ 修复自动加入功能导致插件报错不启动的问题，现在假人将在首个玩家加入游戏时自动加入
 
 ## [2.4.0] - 2025-5-6
 
 ### Added
 
-+ Adapted to 1.21.60
++ 适配1.21.60
 
 ## [2.3.1] - 2025-5-6
 
 ### Fixed
 
-+ Fix the bug that cfsp don't respawn when dead
++ 修复了自动加入失效的问题
 
 ## [2.3.0] - 2025-4-26
 
 ### Added
 
-+ Adapted to 1.21.50
++ 适配1.21.50
 
 ## [2.2.2] - 2024-10-19
 
