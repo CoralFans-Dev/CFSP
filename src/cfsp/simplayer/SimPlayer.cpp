@@ -110,12 +110,9 @@ void SimPlayerManager::save() {
                 logger.debug("Save SimPlayer ({}) Data: SKIP", name);
                 continue;
             }
-            sp->offlinePosX      = sp->simPlayer->getFeetPos().x;
-            sp->offlinePosY      = sp->simPlayer->getFeetPos().y;
-            sp->offlinePosZ      = sp->simPlayer->getFeetPos().z;
+            sp->offlinePos       = sp->simPlayer->getFeetPos();
             sp->offlineDim       = sp->simPlayer->getDimensionId();
-            sp->offlineRotX      = sp->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->x;
-            sp->offlineRotY      = sp->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->y;
+            sp->offlineRot       = *sp->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
             sp->offlineGameType  = magic_enum::enum_name(sp->simPlayer->getPlayerGameType());
             sp->offlineEmptyInv  = sputils::emptyInv(sp);
             const auto& basePath = dataDir / sp->xuid;
@@ -158,12 +155,22 @@ void SimPlayerManager::load() {
         boost::archive::binary_iarchive ia(file);
         ia >> *this;
         file.close();
-        // for each simplayer
-        for (auto& [name, sp] : this->mNameSimPlayerMap) {
-            int stat   = sp->status;
-            sp->status = SimPlayerStatus::Offline;
-            if (this->autojoin && stat != SimPlayerStatus::Offline) this->spawnSimPlayer(nullptr, name, {}, {});
-        }
+
+        auto& eventBus = ll::event::EventBus::getInstance();
+
+        playerJoinEventListener =
+            eventBus.emplaceListener<ll::event::player::PlayerJoinEvent>([this](ll::event::player::PlayerJoinEvent&) {
+                ll::event::EventBus::getInstance().removeListener(playerJoinEventListener);
+
+                // for each simplayer
+                for (auto& [name, sp] : this->mNameSimPlayerMap) {
+                    int stat   = sp->status;
+                    sp->status = SimPlayerStatus::Offline;
+                    if (this->autojoin && stat != SimPlayerStatus::Offline)
+                        this->spawnSimPlayer(nullptr, name, {}, {}, 0);
+                }
+            });
+
         this->refreshSoftEnum();
     } catch (std::exception& e) {
         modself.getLogger().error("In SimPlayerManager::load: {}", e.what());
@@ -345,10 +352,10 @@ SimPlayerManager::rmAdminFromGroup(Player* player, std::string const& gname, std
 }
 
 std::pair<std::string, bool>
-SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 const& pos, Vec2 const& rot) {
+SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 const& pos, int dim, Vec2 const& rot) {
     using ll::i18n_literals::operator""_tr;
     // check: isSimulatedPlayer
-    if (player->isSimulatedPlayer()) return {"translate.simplayer.error.permissiondenied"_tr(), false};
+    if (player && player->isSimulatedPlayer()) return {"translate.simplayer.error.permissiondenied"_tr(), false};
     auto& cfspmod = mod();
     bool  rejoin  = false;
     auto  spname  = name;
@@ -362,7 +369,7 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         spIt   = this->mNameSimPlayerMap.find(spname);
         if (spIt != this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.exist"_tr(), false};
     }
-    if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
+    if (player && player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
         && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName)) {
         // check: spawn count
         if (this->mSpawnCount >= cfspmod.getConfig().simPlayer.maxSpawnCount)
@@ -396,8 +403,8 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return {"translate.simplayer.error.cannotcreate"_tr(), false};
     if (rejoin) {
-        Vec3  offlinePos{spIt->second->offlinePosX, spIt->second->offlinePosY, spIt->second->offlinePosZ};
-        Vec2  offlineRot{spIt->second->offlineRotX, spIt->second->offlineRotY};
+        Vec3  offlinePos{spIt->second->offlinePos};
+        Vec2  offlineRot{spIt->second->offlineRot};
         auto* simPlayer = SimulatedPlayer::create(
             spname,
             offlinePos,
@@ -416,6 +423,7 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         spIt->second->simPlayer = simPlayer;
         spIt->second->scheduler = this->mScheduler;
         spIt->second->taskid    = 0;
+        if (player) spIt->second->lastSpawner = player->getUuid().asString();
         sputils::loadSpNbt(
             spIt->second,
             CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / spIt->second->xuid
@@ -434,30 +442,34 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
                 simPlayer->respawn();
             }
         }
+        ++this->mOnlineCountPerPlayer[spIt->second->lastSpawner];
     } else {
         auto* simPlayer = SimulatedPlayer::create(
             spname,
             pos,
-            player->getDimensionId(),
+            dim,
             serverNetworkHandler,
             "-" + std::to_string(std::hash<std::string>()(spname))
         );
         if (!simPlayer) return {"translate.simplayer.error.cannotcreate"_tr(), false};
-        simPlayer->setPlayerGameType(player->getPlayerGameType());
-        simPlayer->teleport(pos, player->getDimensionId(), rot);
+        if (player) simPlayer->setPlayerGameType(player->getPlayerGameType());
+        simPlayer->teleport(pos, dim, rot);
         Vec3 vec3 = simPlayer->getPosition() + Vec3::directionFromRotation(rot);
         sim::lookAt(*simPlayer, glm::vec3(vec3.x, vec3.y, vec3.z), ::sim::LookDuration{2});
         // add to map
+        auto UUID = player ? player->getUuid().asString() : "";
         this->mNameSimPlayerMap[spname] =
-            boost::make_shared<SimPlayerInfo>(spname, player, pos, rot, simPlayer, this->mScheduler);
-        this->mOwnerNameMap[player->getUuid().asString()].emplace(spname);
+            boost::make_shared<SimPlayerInfo>(spname, UUID, pos, dim, rot, simPlayer, this->mScheduler);
+        this->mOwnerNameMap[UUID].emplace(spname);
+        ++this->mOnlineCountPerPlayer[UUID];
     }
     // add to softenum
     this->refreshSoftEnum();
     // add count
     ++this->mSpawnCount;
     ++this->mOnlineCount;
-    ++this->mOnlineCountPerPlayer[player->getUuid().asString()];
+
+
     // return
     return {"translate.simplayer.success"_tr(), true};
 }
@@ -474,7 +486,7 @@ std::pair<std::string, bool> SimPlayerManager::spawnGroup(Player* player, std::s
         && it->second->admin.find(UUID) == it->second->admin.end())
         return {"translate.simplayer.error.permissiondenied"_tr(), false};
     // run
-    for (auto const& v : it->second->splist) this->spawnSimPlayer(player, v, {}, {});
+    for (auto const& v : it->second->splist) this->spawnSimPlayer(player, v, {}, {}, 0);
     // return
     return {"translate.simplayer.success"_tr(), true};
 }
@@ -482,12 +494,12 @@ std::pair<std::string, bool> SimPlayerManager::spawnGroup(Player* player, std::s
 std::pair<std::string, bool>
 SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bool noCheck) {
     using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player ? player->getUuid().asString() : "";
     auto it   = this->mNameSimPlayerMap.find(spname);
     // check: simplayer
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     // check: admin
-    if (noCheck || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
+    if (noCheck || !player || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
         || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
         // check: offline
         if (!noCheck && it->second->status == SimPlayerStatus::Offline)
@@ -496,14 +508,10 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
         if (it->second->simPlayer) {
             const auto& basePath = CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / it->second->xuid;
             sputils::saveSpNbt(it->second, basePath);
-            it->second->offlinePosX = it->second->simPlayer->getFeetPos().x;
-            it->second->offlinePosY = it->second->simPlayer->getFeetPos().y;
-            it->second->offlinePosZ = it->second->simPlayer->getFeetPos().z;
-            it->second->offlineDim  = it->second->simPlayer->getDimensionId();
-            it->second->offlineRotX =
-                it->second->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->x;
-            it->second->offlineRotY =
-                it->second->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree->y;
+            it->second->offlinePos = it->second->simPlayer->getFeetPos();
+            it->second->offlineDim = it->second->simPlayer->getDimensionId();
+            it->second->offlineRot =
+                it->second->simPlayer->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
             it->second->offlineGameType = magic_enum::enum_name(it->second->simPlayer->getPlayerGameType());
             it->second->offlineEmptyInv = sputils::emptyInv(it->second);
             it->second->stop();
@@ -520,7 +528,7 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
         // change status
         it->second->status = SimPlayerStatus::Offline;
         --this->mOnlineCount;
-        --this->mOnlineCountPerPlayer[player->getUuid().asString()];
+        --this->mOnlineCountPerPlayer[it->second->lastSpawner];
         // return
         return {"translate.simplayer.success"_tr(), true};
     }
@@ -533,8 +541,8 @@ std::pair<std::string, bool> SimPlayerManager::despawnGroup(Player* player, std:
     // check: exist
     if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     // check: admin
-    auto const& UUID = player->getUuid().asString();
-    if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
+    auto const& UUID = player ? player->getUuid().asString() : "";
+    if (!player && player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
         && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID
         && it->second->admin.find(UUID) == it->second->admin.end())
         return {"translate.simplayer.error.permissiondenied"_tr(), false};
@@ -591,12 +599,12 @@ std::pair<std::string, bool> SimPlayerManager::rmGroup(Player* player, std::stri
 
 std::pair<std::string, bool> SimPlayerManager::respawnSimPlayer(Player* player, std::string const& name, bool noCheck) {
     using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player ? player->getUuid().asString() : "";
     auto it   = this->mNameSimPlayerMap.find(name);
     // check: simplayer
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     // check: admin
-    if (noCheck || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
+    if (noCheck || !player || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
         || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
         // check: dead
         if (it->second->status != SimPlayerStatus::Dead) return {"translate.simplayer.error.statuserror"_tr(), false};
@@ -629,8 +637,8 @@ std::pair<std::string, bool> SimPlayerManager::respawnGroup(Player* player, std:
     // check: exist
     if (it == this->mGroupMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     // check: admin
-    auto const& UUID = player->getUuid().asString();
-    if (player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
+    auto const& UUID = player ? player->getUuid().asString() : "";
+    if (!player && player->getCommandPermissionLevel() < mod().getConfig().simPlayer.adminPermission
         && !mod().getConfig().simPlayer.superManagerList.contains(*player->mName) && it->second->owner != UUID
         && it->second->admin.find(UUID) == it->second->admin.end())
         return {"translate.simplayer.error.permissiondenied"_tr(), false};
@@ -828,9 +836,8 @@ std::optional<boost::shared_ptr<SimPlayerManager::GroupInfo>> SimPlayerManager::
 
 std::vector<std::string> SimPlayerManager::fetchSplist(const Player* pl) {
     std::vector<std::string> res;
-    std::string              UUID = pl->getUuid().asString();
-    for (auto i : mNameSimPlayerMap) {
-        if (i.second->ownerUuid == UUID) res.emplace_back(i.first);
+    for (auto i : mOwnerNameMap[pl->getUuid().asString()]) {
+        res.emplace_back(i);
     }
     std::sort(res.begin(), res.end());
     return res;

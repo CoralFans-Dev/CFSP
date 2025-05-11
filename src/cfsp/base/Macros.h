@@ -3,25 +3,27 @@
 #define COMMAND_CHECK_PLAYER                                                                                           \
     auto* entity = origin.getEntity();                                                                                 \
     if (entity == nullptr || !entity->isType(ActorType::Player)) {                                                     \
-        output.error("Only players can run this command");                                                             \
+        output.error("command.sp.error.onlyplayer"_tr());                                                              \
         return;                                                                                                        \
     }                                                                                                                  \
     auto* player = static_cast<Player*>(entity);
 
 #define COMMAND_SIMPLAYER_CHECKPERMLIST                                                                                \
-    auto& mod  = coral_fans::cfsp::mod();                                                                              \
-    auto  uuid = player->getUuid().asString();                                                                         \
-    switch (mod.getConfig().simPlayer.listType) {                                                                      \
-    case coral_fans::cfsp::config::ListType::disabled:                                                                 \
-        break;                                                                                                         \
-    case coral_fans::cfsp::config::ListType::blacklist:                                                                \
-        if (mod.getConfig().simPlayer.list.find(uuid) != mod.getConfig().simPlayer.list.end())                         \
-            return output.error("command.sp.error.permissiondenied"_tr());                                             \
-        break;                                                                                                         \
-    case coral_fans::cfsp::config::ListType::whitelist:                                                                \
-        if (mod.getConfig().simPlayer.list.find(uuid) == mod.getConfig().simPlayer.list.end())                         \
-            return output.error("command.sp.error.permissiondenied"_tr());                                             \
-        break;                                                                                                         \
+    if (player) {                                                                                                      \
+        auto& mod  = coral_fans::cfsp::mod();                                                                          \
+        auto  uuid = player->getUuid().asString();                                                                     \
+        switch (mod.getConfig().simPlayer.listType) {                                                                  \
+        case coral_fans::cfsp::config::ListType::disabled:                                                             \
+            break;                                                                                                     \
+        case coral_fans::cfsp::config::ListType::blacklist:                                                            \
+            if (mod.getConfig().simPlayer.list.find(uuid) != mod.getConfig().simPlayer.list.end())                     \
+                return output.error("command.sp.error.permissiondenied"_tr());                                         \
+            break;                                                                                                     \
+        case coral_fans::cfsp::config::ListType::whitelist:                                                            \
+            if (mod.getConfig().simPlayer.list.find(uuid) == mod.getConfig().simPlayer.list.end())                     \
+                return output.error("command.sp.error.permissiondenied"_tr());                                         \
+            break;                                                                                                     \
+        }                                                                                                              \
     }
 
 #ifdef CFSPEXP

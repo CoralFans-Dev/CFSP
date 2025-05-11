@@ -3,7 +3,6 @@
 #include "mc/server/commands/CommandPermissionLevel.h"
 #include <string>
 #include <unordered_set>
-#include <utility>
 
 namespace coral_fans::cfsp::config {
 
@@ -37,7 +36,7 @@ struct SimPlayerStruct {
 };
 
 struct Config {
-    int         version    = 1;
+    int         version    = 2;
     std::string locateName = "zh_CN";
 
     SimPlayerStruct simPlayer;

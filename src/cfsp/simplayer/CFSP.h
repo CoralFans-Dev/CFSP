@@ -20,7 +20,6 @@
 #include "mc/server/commands/CommandVersion.h"
 #include "mc/server/commands/MinecraftCommands.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
-#include "mc/server/sim/BuildIntent.h"
 #include "mc/server/sim/ContinuousBuildIntent.h"
 #include "mc/server/sim/LookAtIntent.h"
 #include "mc/server/sim/LookDuration.h"
@@ -29,7 +28,6 @@
 #include "mc/server/sim/MovementIntent.h"
 #include "mc/server/sim/NavigateToEntityIntent.h"
 #include "mc/server/sim/NavigateToPositionsIntent.h"
-#include "mc/server/sim/VoidBuildIntent.h"
 #include "mc/server/sim/VoidMoveIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
@@ -61,6 +59,9 @@
 #include <boost/serialization/unordered_set.hpp>
 #include <boost/serialization/version.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <ll/api/event/EventBus.h>
+#include <ll/api/event/ListenerBase.h>
+#include <ll/api/event/player/PlayerJoinEvent.h>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -89,14 +90,12 @@ public:
         std::string                           name;
         std::string                           xuid;
         std::string                           ownerUuid;
+        std::string                           lastSpawner;
         std::unordered_set<std::string>       groups;
         int                                   status;
-        float                                 offlinePosX;
-        float                                 offlinePosY;
-        float                                 offlinePosZ;
+        Vec3                                  offlinePos;
         int                                   offlineDim;
-        float                                 offlineRotX;
-        float                                 offlineRotY;
+        Vec2                                  offlineRot;
         std::string                           offlineGameType;
         bool                                  offlineEmptyInv;
         SimulatedPlayer*                      simPlayer;        // no-save
@@ -112,12 +111,9 @@ public:
           ownerUuid(),
           groups(),
           status(0),
-          offlinePosX(0),
-          offlinePosY(0),
-          offlinePosZ(0),
+          offlinePos(0, 0, 0),
           offlineDim(0),
-          offlineRotX(0),
-          offlineRotY(0),
+          offlineRot(0, 0),
           offlineGameType(),
           offlineEmptyInv(true),
           simPlayer(nullptr),
@@ -128,24 +124,23 @@ public:
           autoDespawnI(0) {}
         SimPlayerInfo(
             std::string const&                           name,
-            Player*                                      player,
+            std::string                                  ownerUuid,
             Vec3                                         pos,
+            int                                          dim,
             Vec2                                         rot,
             SimulatedPlayer*                             simPlayer,
             std::shared_ptr<timewheel::TimeWheel> const& timeWheel
         )
         : name(name),
           xuid("-" + std::to_string(std::hash<std::string>()(name))),
-          ownerUuid(player->getUuid().asString()),
+          ownerUuid(ownerUuid),
+          lastSpawner(ownerUuid),
           groups(),
           status(SimPlayerStatus::Alive),
-          offlinePosX(pos.x),
-          offlinePosY(pos.y),
-          offlinePosZ(pos.z),
-          offlineDim(player->getDimensionId()),
-          offlineRotX(rot.x),
-          offlineRotY(rot.y),
-          offlineGameType(std::string{magic_enum::enum_name(player->getPlayerGameType())}),
+          offlinePos(pos),
+          offlineDim(dim),
+          offlineRot(rot),
+          offlineGameType(std::string{magic_enum::enum_name(simPlayer->getPlayerGameType())}),
           offlineEmptyInv(true),
           simPlayer(simPlayer),
           scheduler(timeWheel),
@@ -162,14 +157,15 @@ public:
                 ar & name;
                 ar & xuid;
                 ar & ownerUuid;
+                ar & lastSpawner;
                 ar & groups;
                 ar & status;
-                ar & offlinePosX;
-                ar & offlinePosY;
-                ar & offlinePosZ;
+                ar & offlinePos.x;
+                ar & offlinePos.y;
+                ar & offlinePos.z;
                 ar & offlineDim;
-                ar & offlineRotX;
-                ar & offlineRotY;
+                ar & offlineRot.x;
+                ar & offlineRot.y;
                 ar & offlineGameType;
                 ar & offlineEmptyInv;
             }
@@ -634,6 +630,9 @@ private:
     bool                                                              autodespawn;
 
 private:
+    ll::event::ListenerPtr playerJoinEventListener;
+
+private:
     SimPlayerManager()
     : mOnlineCount(0),
       mSpawnCount(0),
@@ -694,7 +693,7 @@ public:
     CFSP_API std::pair<std::string, bool> rmAdminFromGroup(Player*, std::string const&, std::string const&);
 
 public:
-    CFSP_API std::pair<std::string, bool> spawnSimPlayer(Player*, std::string const&, Vec3 const&, Vec2 const&);
+    CFSP_API std::pair<std::string, bool> spawnSimPlayer(Player*, std::string const&, Vec3 const&, int, Vec2 const&);
     CFSP_API std::pair<std::string, bool> spawnGroup(Player*, std::string const&);
     CFSP_API std::pair<std::string, bool> despawnSimPlayer(Player*, std::string const&, bool);
     CFSP_API std::pair<std::string, bool> despawnGroup(Player*, std::string const&);

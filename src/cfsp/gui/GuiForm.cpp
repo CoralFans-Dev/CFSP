@@ -8,6 +8,7 @@
 #include "mc/network/packet/TextPacket.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
 #include "mc/world/actor/ActorFlags.h"
+#include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/level/Level.h"
 #include <string>
 #include <utility>
@@ -89,10 +90,13 @@ void sendSpInfo(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlayerManager
         content += "gui.spinfo.respawnpos"_tr() + getDimName(spInfo->simPlayer->mPlayerRespawnPoint->mDimension->id)
                  + " " + spInfo->simPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
         content += "gui.spinfo.gamemode"_tr() + getGameModeStr((int)spInfo->simPlayer->getPlayerGameType()) + "\n  ";
+        content += "gui.spinfo.health"_tr()
+                 + std::to_string(ActorAttribute::getHealth(spInfo->simPlayer->getEntityContext())) + " / "
+                 + std::to_string(spInfo->simPlayer->getMaxHealth()) + "\n  ";
         content += "gui.spinfo.isFree"_tr() + (spInfo->isFree() ? "base.yesno.yes"_tr() : "base.yesno.no"_tr());
     } else {
-        content += "gui.spinfo.offlinepos"_tr() + getDimName(spInfo->offlineDim) + " "
-                 + Vec3(spInfo->offlinePosX, spInfo->offlinePosY, spInfo->offlinePosZ).toJsonString();
+        content +=
+            "gui.spinfo.offlinepos"_tr() + getDimName(spInfo->offlineDim) + " " + spInfo->offlinePos.toJsonString();
     }
     lse::form::SimpleForm("gui.spinfo.title"_tr(), content)
         .sendTo(pl, [spInfo](Player* player, int, lse::form::FormCancelReason cancelReason) {
@@ -315,8 +319,8 @@ void sendOperator(
         defOp
     );
     menu.addInput("interval", "gui.operate.interval"_tr(), "1", defInterval);
-    menu.addInput("times", "gui.operate.times"_tr(), "1", defTimes);
-    menu.addInput("long", "gui.operate.long"_tr(), "1", defLong);
+    menu.addInput("times", "gui.operate.times"_tr(), "20", defTimes);
+    menu.addInput("long", "gui.operate.long"_tr(), "10", defLong);
     menu.sendTo(
         pl,
         [spInfo](
@@ -330,7 +334,7 @@ void sendOperator(
                 auto const& eleInterval = elements["interval"]->value;
                 auto const& eleTimes    = elements["times"]->value;
                 auto const& eleLong     = elements["long"]->value;
-                int         interval = 1, times = 1, _long = 1;
+                int         interval = 1, times = 20, _long = 10;
                 if (eleInterval != "") {
                     std::istringstream iss(eleInterval);
                     char               test;
@@ -563,7 +567,7 @@ void sendSpOperatorList(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlaye
         });
         if (spInfo->status == SimPlayerManager::SimPlayerStatus::Offline) {
             menu.addButton("gui.operatelist.online"_tr(), "", [spInfo](Player* player, lse::form::FormCancelReason) {
-                auto       res = SimPlayerManager::getInstance().spawnSimPlayer(player, spInfo->name, {}, {});
+                auto       res = SimPlayerManager::getInstance().spawnSimPlayer(player, spInfo->name, {}, {}, 0);
                 TextPacket pkt = TextPacket();
                 pkt.mType      = TextPacketType::Raw;
                 if (res.second) pkt.mMessage.assign(res.first);
@@ -684,6 +688,7 @@ void sendNewSpPage(Player* pl, int defDim, std::string defName, std::string defP
                     player,
                     eleName,
                     targetPos,
+                    dim,
                     *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree
                 );
                 TextPacket pkt = TextPacket();
@@ -721,7 +726,7 @@ void sendGroupInfo(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlayerMana
 
 void sendManageSpInGroup(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlayerManager::GroupInfo> groupInfo) {
     using ll::i18n_literals::operator""_tr;
-    auto menu = lse::form::CustomForm("gui.addsp.title"_tr());
+    auto menu = lse::form::CustomForm("gui.managesp.title"_tr());
 
     std::vector<std::string> splist;
     if (pl->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
@@ -741,10 +746,13 @@ void sendManageSpInGroup(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlay
             if (cancelReason.has_value()) sendGroupManageList(player, groupInfo);
             else {
                 for (auto i : splist) {
-                    if (elements[i]->value == "1" && !groupInfo->splist.contains(i))
-                        SimPlayerManager::getInstance().addSpToGroup(player, groupInfo->name, i);
-                    else if (elements[i]->value == "0" && groupInfo->splist.contains(i))
-                        SimPlayerManager::getInstance().rmSpFromGroup(player, groupInfo->name, i);
+                    auto tem = elements[i];
+                    if (tem) {
+                        if (tem->value == "1" && !groupInfo->splist.contains(i))
+                            SimPlayerManager::getInstance().addSpToGroup(player, groupInfo->name, i);
+                        else if (tem->value == "0" && groupInfo->splist.contains(i))
+                            SimPlayerManager::getInstance().rmSpFromGroup(player, groupInfo->name, i);
+                    }
                 }
 
                 TextPacket pkt = TextPacket();
@@ -1039,8 +1047,8 @@ void sendGroupOperator(
         defOp
     );
     menu.addInput("interval", "gui.operate.interval"_tr(), "1", defInterval);
-    menu.addInput("times", "gui.operate.times"_tr(), "1", defTimes);
-    menu.addInput("long", "gui.operate.long"_tr(), "1", defLong);
+    menu.addInput("times", "gui.operate.times"_tr(), "20", defTimes);
+    menu.addInput("long", "gui.operate.long"_tr(), "10", defLong);
     menu.sendTo(
         pl,
         [groupInfo](
@@ -1054,7 +1062,7 @@ void sendGroupOperator(
                 auto const& eleInterval = elements["interval"]->value;
                 auto const& eleTimes    = elements["times"]->value;
                 auto const& eleLong     = elements["long"]->value;
-                int         interval = 1, times = 1, _long = 1;
+                int         interval = 1, times = 20, _long = 10;
                 if (eleInterval != "") {
                     std::istringstream iss(eleInterval);
                     char               test;

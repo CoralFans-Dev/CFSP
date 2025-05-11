@@ -6,8 +6,242 @@
             "error": {
                 "toomanyobj": "Too many objects",
                 "permissiondenied": "Permission Denied",
-                "nosp": "SimulatedPlayer can't be the target"
+                "nosp": "SimulatedPlayer can't be the target",
+                "spnofind": "not find Simulated Player",
+                "groupnofind": "not find Simulated Player Group",
+                "onlyplayer": "Only Player can use this Command",
+                "paraerror": "Parameter Error"
             }
+        }
+    },
+    "gui": {
+        "managermainmenu": {
+            "title": "CoralFans Simulated Player System : Manager Main Menu",
+            "splistbutton": "Simulated Player List",
+            "grouplistbutton": "Simulated Player Group List",
+            "managerlistbutton": "Setting"
+        },
+        "managersplist": {
+            "title": "Manager : Simulated Player List",
+            "newsp": "New Simulated Player"
+        },
+        "operatelist": {
+            "title": "Simulated Player Operation List",
+            "spinfo": "Simulated Player Information",
+            "online": "Online Simulated Player",
+            "rm": "delete Simulated Player",
+            "offline": "Offline Simulated Player",
+            "respawn": "Respawn Simulated Player",
+            "inv": "Simulated Player Inventory Operation",
+            "move": "Simulated Player Moving Operation",
+            "lookat": "Simulated Player Look At Operation",
+            "operate": "Simulated Player Excute Operation",
+            "stop": "Simulated Player Stop Operation",
+            "action": "Simulated Player Action Operation",
+            "message": "Simulated Player Message Operation"
+        },
+        "spinfo": {
+            "title": "Simulated Player Information",
+            "name": "Name : ",
+            "status": "Status : ",
+            "owner": "Owner : ",
+            "pos": "Position : ",
+            "respawnpos": "Respawn Position : ",
+            "gamemode": "Gamemode : ",
+            "health": "Health : ",
+            "isFree": "IsFree : ",
+            "offlinepos": "Offline Position : "
+        },
+        "invoperatelist": {
+            "title": "Simulated Player Inventory Operation",
+            "swap": "Swap Inventory with Simulated Player",
+            "drop": "Simulated Player drop selected item",
+            "dropinv": "Simulated Player drop all the items in inventory"
+        },
+        "moveoperate": {
+            "title": "Simulated Player Moving Operation",
+            "operate": "Select Operation :",
+            "tp": "Teleport",
+            "moveto": "Move To",
+            "navto": "Navigate To",
+            "targetpos": "Target Position(default player's position) : x y z",
+            "targetdim": "Target Dimension(only useful when use teleport) : ",
+            "poserror": "§cPosition Error§r"
+        },
+        "lookatoperate": {
+            "title": "Simulated Player Look At Operation",
+            "targetpos": "Target Position(default player's position) : x y z",
+            "poserror": "§cPosition Error§r"
+        },
+        "operate": {
+            "title": "Simulated Player Excute Operation",
+            "operate": "Select Operation :",
+            "attack": "Attack",
+            "interact": "Interact",
+            "build": "Build",
+            "use": "Use",
+            "destroy": "Destroy",
+            "jump": "Jump",
+            "interval": "Interval/gt",
+            "times": "times/gt",
+            "long": "Long(only useful when use Use operation)/gt",
+            "intervalerror": "§c\"interval\"Error§r",
+            "timeserror": "§c\"Times\"Error§r",
+            "longerror": "§c\"Long\"Error§r"
+        },
+        "actionoperate": {
+            "title": "Simulated Player Action Operation",
+            "flying": "Simulated Player Flying",
+            "fly": "Fly",
+            "releasefly": "Release Fly",
+            "sneaking": "Simulated Player Sneaking",
+            "sneak": "Sneak",
+            "releasesneak": "Release Sneak",
+            "swimming": "Simulated Player Swiming",
+            "swim": "Swim",
+            "releaseswim": "Release Swim",
+            "sprinting": "Simulated Player Sprinting",
+            "sprint": "Sprint",
+            "releasesprint": "Release Sprint"
+        },
+        "messageoperate": {
+            "title": "Simulated Player Message Operation",
+            "operate": "Select Operation :",
+            "chat": "Chat",
+            "runcmd": "Runcmd",
+            "text": "Input Text"
+        },
+        "createsp": {
+            "title": "Create Simulated Player",
+            "name": "Name :",
+            "targetpos": "Target Position(default player's position) : x y z",
+            "targetdim": "Target Dimension :",
+            "poserror": "§cPosition Error§r"
+        },
+        "managergrouplist": {
+            "title": "Manager : Simulated Player Group List",
+            "newgroup": "Create new Group"
+        },
+        "groupoperatelist": {
+            "title": "Simulated Player Group Operation List",
+            "info": "Simulated Player Group Information",
+            "manage": "Manage Simulated Player Group",
+            "online": "Online Simulated Player Group",
+            "offline": "Offline Simulated Player Group",
+            "respawn": "Respawn Simulated Player Group",
+            "inv": "Simulated Player Group Inventory Operation",
+            "move": "Simulated Player Group Moving Operation",
+            "lookat": "Simulated Player Group Look At Operation",
+            "operate": "Simulated Player Group Excute Operation",
+            "stop": "Simulated Player Group Stop Operation",
+            "action": "Simulated Player Group Action Operation",
+            "message": "Simulated Player Group Message Operation",
+            "rm": "Delete Simulated Player In Group"
+        },
+        "groupinfo": {
+            "title": "Simulated Player Group Information",
+            "name": "\n  Name : ",
+            "owner": "Owner     : ",
+            "admin": "\n  Admin     :\n  ",
+            "sp": "Simulated Player :"
+        },
+        "groupmanage": {
+            "title": "Manage Simulated Player Group",
+            "managesp": "Manage Simulated Player",
+            "addadmin": "Add Admin",
+            "removeadmin": "Remove Admin",
+            "delete": "Delete Group"
+        },
+        "managesp": {
+            "title": "Manage Simulated Player"
+        },
+        "addadmin": {
+            "title": "Add Administrator"
+        },
+        "rmadmin": {
+            "title": "Remove Administrator"
+        },
+        "groupinvoperatelist": {
+            "title": "Simulated Player Group Inventory Operation",
+            "drop": "Simulated Player Group drop selected items",
+            "dropinv": "Simulated Player Group drop all items"
+        },
+        "groupmoveoperate": {
+            "title": "Simulated Player Group Move Operation",
+            "operate": "Select Operation :",
+            "tp": "Teleport",
+            "moveto": "Move To",
+            "navto": "Navigate To",
+            "targetpos": "Target Position(default player's position) : x y z",
+            "targetdim": "Target Dimension(only useful when use teleport) : ",
+            "poserror": "§cPosition Error§r"
+        },
+        "grouplookatoperate": {
+            "title": "Simulated Player Group Look At Position",
+            "targetpos": "Target Position(default player's feetPos) : x y z",
+            "poserror": "§cPosition Error§r"
+        },
+        "groupoperate": {
+            "title": "Simulated Player Group Excute Operation",
+            "operate": "Select Operation :",
+            "attack": "Attack",
+            "interact": "Interact",
+            "build": "Build",
+            "use": "Use",
+            "destroy": "Destroy",
+            "jump": "Jump",
+            "interval": "Interval/gt",
+            "times": "times/gt",
+            "long": "Long(only useful when use Use operation)/gt",
+            "intervalerror": "§c\"interval\"Error§r",
+            "timeserror": "§c\"Times\"Error§r",
+            "longerror": "§c\"Long\"Error§r"
+        },
+        "groupactionoperate": {
+            "title": "Simulated Player Group Action Operation",
+            "flying": "Simulated Player Group Flying",
+            "fly": "Fly",
+            "releasefly": "Release Fly",
+            "sneaking": "Simulated Player Group Sneaking",
+            "sneak": "Sneak",
+            "releasesneak": "Release Sneak",
+            "swimming": "Simulated Player Group Swimming",
+            "swim": "Swim",
+            "releaseswim": "Release Swim",
+            "sprinting": "Simulated Player Group Sprinting",
+            "sprint": "Sprint",
+            "releasesprint": "Release Sprint",
+            "notoperate": "Not Operate"
+        },
+        "groupmessageoperate": {
+            "title": "Simulated Player Group Message Operation",
+            "operate": "Select Operation :",
+            "chat": "Chat",
+            "runcmd": "Runcmd",
+            "text": "Input Text"
+        },
+        "creategroup": {
+            "title": "Create Simulated Player Group",
+            "name": "Name : "
+        },
+        "manage": {
+            "title": "Manager : Setting Manage",
+            "autojoin": "Simulated Player Autojoin when server restart",
+            "autorespawn": "Simulated Player autorespawn when die",
+            "autodespawn": "Simulated Player autodespawn when frequently die"
+        },
+        "mainmenu": {
+            "title": "CoralFans Simulated Player - MainMenu",
+            "splistbutton": "Simulated Player List",
+            "grouplistbutton": "Simulated Player Group List"
+        },
+        "splist": {
+            "title": "Simulated Player List",
+            "newsp": "Create Simulated Player"
+        },
+        "grouplist": {
+            "title": "Simulated Player Group List",
+            "newgroup": "Create new Group"
         }
     },
     "translate": {

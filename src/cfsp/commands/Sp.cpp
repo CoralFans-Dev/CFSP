@@ -100,6 +100,57 @@ inline void regSubCmd(
         else output.error(rst.first);
     });
 }
+
+inline void regSubCmd2(
+    ll::command::CommandHandle&                                                              cmd,
+    std::string const&                                                                       tag,
+    std::span<std::pair<std::string, ll::command::ParamKind::Kind>> const&                   rArgs,
+    std::span<std::pair<std::string, ll::command::ParamKind::Kind>> const&                   oArgs,
+    std::function<std::pair<std::string, bool>(Player*, ll::command::RuntimeCommand const&)> spFn,
+    std::function<std::pair<std::string, bool>(Player*, ll::command::RuntimeCommand const&)> gFn
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto ro1 = std::make_unique<ll::command::RuntimeOverload>(std::move(
+        cmd.runtimeOverload().text("p").required("name", ll::command::ParamKind::SoftEnum, "spname").text(tag)
+    ));
+    auto ro2 = std::make_unique<ll::command::RuntimeOverload>(
+        std::move(cmd.runtimeOverload().text("g").required("name", ll::command::ParamKind::SoftEnum, "gname").text(tag))
+    );
+    for (const auto& i : rArgs) {
+        ro1 = std::make_unique<ll::command::RuntimeOverload>(std::move(ro1->required(i.first, i.second)));
+        ro2 = std::make_unique<ll::command::RuntimeOverload>(std::move(ro2->required(i.first, i.second)));
+    }
+    for (const auto& i : oArgs) {
+        ro1 = std::make_unique<ll::command::RuntimeOverload>(std::move(ro1->optional(i.first, i.second)));
+        ro2 = std::make_unique<ll::command::RuntimeOverload>(std::move(ro2->optional(i.first, i.second)));
+    }
+    ro1->execute([spFn](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+        auto*   entity = origin.getEntity();
+        Player* player;
+        if (entity == nullptr) player = nullptr;
+        else if (!entity->isType(ActorType ::Player)) {
+            output.error("command.sp.error.onlyplayer"_tr());
+            return;
+        } else player = static_cast<Player*>(entity);
+        COMMAND_SIMPLAYER_CHECKPERMLIST
+        auto rst = spFn(player, self);
+        if (rst.second) output.success(rst.first);
+        else output.error(rst.first);
+    });
+    ro2->execute([gFn](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+        auto*   entity = origin.getEntity();
+        Player* player;
+        if (entity == nullptr) player = nullptr;
+        else if (!entity->isType(ActorType ::Player)) {
+            output.error("command.sp.error.onlyplayer"_tr());
+            return;
+        } else player = static_cast<Player*>(entity);
+        COMMAND_SIMPLAYER_CHECKPERMLIST
+        auto rst = gFn(player, self);
+        if (rst.second) output.success(rst.first);
+        else output.error(rst.first);
+    });
+}
 } // namespace
 
 namespace coral_fans::cfsp::commands {
@@ -379,67 +430,83 @@ void registerSpCommand(CommandPermissionLevel permission) {
             else output.error(rst.first);
         });
 
-    // sp p <name: string> spawn
+    // sp p <name: string> spawn <pos: x y z> <dim: int> <rotx: float> <roty: float>
     spCommand.runtimeOverload()
         .text("p")
         .required("name", ll::command::ParamKind::SoftEnum, "spname")
         .text("spawn")
+        .optional("pos", ll::command::ParamKind::Vec3)
+        .optional("dim", ll::command::ParamKind::Dimension)
+        .optional("rotx", ll::command::ParamKind::Float)
+        .optional("roty", ll::command::ParamKind::Float)
         .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
-            COMMAND_CHECK_PLAYER
+            auto* entity = origin.getEntity();
+            if (entity == nullptr) {
+                if (!self["pos"].has_value()) {
+                    auto& name = self["name"].get<ll::command::ParamKind::SoftEnum>();
+                    if (SimPlayerManager::getInstance().fetchSimPlayer(name).has_value()) {
+                        SimPlayerManager::getInstance().spawnSimPlayer(nullptr, name, {}, 0, {});
+                        return;
+                    }
+                } else if (self["dim"].has_value()) {
+                    Vec2  rot;
+                    auto& tem3 = self["rotx"];
+                    if (tem3.has_value()) {
+                        rot.x      = tem3.get<ll::command::ParamKind::Float>();
+                        auto& tem4 = self["roty"];
+                        if (tem4.has_value()) rot.y = tem4.get<ll::command::ParamKind::Float>();
+                        else rot.y = 0;
+                    } else rot = Vec2(0, 0);
+                    auto rst = SimPlayerManager::getInstance().spawnSimPlayer(
+                        nullptr,
+                        self["name"].get<ll::command::ParamKind::SoftEnum>(),
+                        self["pos"]
+                            .get<ll::command::ParamKind::Vec3>()
+                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                        self["dim"].get<ll::command::ParamKind::Dimension>().id,
+                        rot
+                    );
+                    if (rst.second) output.success(rst.first);
+                    else output.error(rst.first);
+                    return;
+                }
+                output.error("command.sp.error.paraerror"_tr());
+                return;
+            } else if (!entity->isType(ActorType ::Player)) {
+                output.error("command.sp.error.onlyplayer"_tr());
+                return;
+            }
+            auto* player = static_cast<Player*>(entity);
             COMMAND_SIMPLAYER_CHECKPERMLIST
-            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().spawnSimPlayer(
-                player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                player->getFeetPos(),
-                *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree
-            );
-            if (rst.second) output.success(rst.first);
-            else output.error(rst.first);
-        });
+            Vec3  pos;
+            int   dim;
+            Vec2  rot;
+            auto& tem1 = self["pos"];
+            if (tem1.has_value()) {
+                pos = tem1.get<ll::command::ParamKind::Vec3>()
+                          .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0});
+                auto& tem2 = self["dim"];
+                if (tem2.has_value()) {
+                    dim        = tem2.get<ll::command::ParamKind::Dimension>().id;
+                    auto& tem3 = self["rotx"];
+                    if (tem3.has_value()) {
+                        rot.x      = tem3.get<ll::command::ParamKind::Float>();
+                        auto& tem4 = self["roty"];
+                        if (tem4.has_value()) rot.y = tem4.get<ll::command::ParamKind::Float>();
+                        else rot.y = 0;
+                    } else rot = *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
+                } else {
+                    dim = player->getDimensionId();
+                    rot = *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
+                }
+            } else {
+                pos = player->getFeetPos();
+                dim = player->getDimensionId();
+                rot = *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
+            }
 
-    // sp p <name: string> spawn pos <pos: x y z>
-    spCommand.runtimeOverload()
-        .text("p")
-        .required("name", ll::command::ParamKind::SoftEnum, "spname")
-        .text("spawn")
-        .text("pos")
-        .required("pos", ll::command::ParamKind::Vec3)
-        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
-            COMMAND_CHECK_PLAYER
-            COMMAND_SIMPLAYER_CHECKPERMLIST
-            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().spawnSimPlayer(
-                player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["pos"]
-                    .get<ll::command::ParamKind::Vec3>()
-                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
-                *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree
-            );
-            if (rst.second) output.success(rst.first);
-            else output.error(rst.first);
-        });
-
-    // sp p <name: string> spawn pos <pos: x y z> rot <rotx: float> <roty: float>
-    spCommand.runtimeOverload()
-        .text("p")
-        .required("name", ll::command::ParamKind::SoftEnum, "spname")
-        .text("spawn")
-        .text("pos")
-        .required("pos", ll::command::ParamKind::Vec3)
-        .text("rot")
-        .required("rotx", ll::command::ParamKind::Float)
-        .required("roty", ll::command::ParamKind::Float)
-        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
-            COMMAND_CHECK_PLAYER
-            COMMAND_SIMPLAYER_CHECKPERMLIST
-            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance().spawnSimPlayer(
-                player,
-                self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["pos"]
-                    .get<ll::command::ParamKind::Vec3>()
-                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
-                {self["rotx"].get<ll::command::ParamKind::Float>(), self["roty"].get<ll::command::ParamKind::Float>()}
-            );
+            auto rst = coral_fans::cfsp::SimPlayerManager::getInstance()
+                           .spawnSimPlayer(player, self["name"].get<ll::command::ParamKind::SoftEnum>(), pos, dim, rot);
             if (rst.second) output.success(rst.first);
             else output.error(rst.first);
         });
@@ -517,7 +584,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
             else output.error(rst.first);
         });
 
-    ::regSubCmd(
+    ::regSubCmd2(
         spCommand,
         "despawn",
         {},
@@ -551,7 +618,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
         }
     );
 
-    ::regSubCmd(
+    ::regSubCmd2(
         spCommand,
         "respawn",
         {},
@@ -917,7 +984,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
                 false,
-                self["tick"].has_value() ? self["tick"].get<ll::command::ParamKind::Int>() : 40,
+                self["tick"].has_value() ? self["tick"].get<ll::command::ParamKind::Int>() : 10,
                 self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
                 self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
             );
@@ -926,7 +993,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
             return coral_fans::cfsp::SimPlayerManager::getInstance().groupUse(
                 player,
                 self["name"].get<ll::command::ParamKind::SoftEnum>(),
-                self["tick"].has_value() ? self["tick"].get<ll::command::ParamKind::Int>() : 40,
+                self["tick"].has_value() ? self["tick"].get<ll::command::ParamKind::Int>() : 10,
                 self["interval"].has_value() ? self["interval"].get<ll::command::ParamKind::Int>() : 20,
                 self["times"].has_value() ? self["times"].get<ll::command::ParamKind::Int>() : 1
             );

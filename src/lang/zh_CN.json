@@ -33,7 +33,9 @@
                 "permissiondenied": "权限拒绝",
                 "nosp": "对象不能为假人",
                 "spnofind": "未找到假人",
-                "groupnofind": "未找到假人组"
+                "groupnofind": "未找到假人组",
+                "onlyplayer": "该指令仅玩家可执行",
+                "paraerror": "参数错误"
             }
         }
     },
@@ -71,6 +73,7 @@
             "pos": "假人坐标     : ",
             "respawnpos": "假人重生坐标 : ",
             "gamemode": "假人游戏模式 : ",
+            "health": "假人生命值   : ",
             "isFree": "是否空闲      : ",
             "offlinepos": "假人离线坐标 : "
         },
@@ -174,11 +177,8 @@
             "removeadmin": "移除管理员",
             "delete": "删除组"
         },
-        "addsp": {
-            "title": "添加假人"
-        },
-        "removesp": {
-            "title": "移出假人"
+        "managesp": {
+            "title": "管理假人"
         },
         "addadmin": {
             "title": "添加管理员"
@@ -258,15 +258,14 @@
         "mainmenu": {
             "title": "CoralFans假人系统 主菜单",
             "splistbutton": "假人列表",
-            "grouplistbutton": "假人组列表",
-            "managerlistbutton": "设置"
+            "grouplistbutton": "假人组列表"
         },
         "splist": {
             "title": "假人列表",
             "newsp": "创建假人"
         },
         "grouplist": {
-            "title": "管理员：假人组列表",
+            "title": "假人组列表",
             "newgroup": "新建组"
         }
     },
