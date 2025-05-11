@@ -9,6 +9,7 @@ std::pair<std::string, bool> getNbtFromTag(CompoundTag const, std::string const&
 
 std::string removeMinecraftPrefix(std::string const& s);
 
-void swapItemInContainer(Player* player, int slot1, int slot2);
+void        swapItemInContainer(Player* player, int slot1, int slot2);
+std::string tryGetPlayerName(std::string UUID);
 
 } // namespace coral_fans::cfsp::utils

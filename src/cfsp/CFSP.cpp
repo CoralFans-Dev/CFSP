@@ -6,7 +6,6 @@
 #include "ll/api/Config.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
-#include <memory>
 
 namespace coral_fans::cfsp {
 

@@ -57,7 +57,8 @@ LUAAPI(vec3_newMin) {
 LUAAPI(vec3_newNegUnitX) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::NEG_UNIT_X();
+    // *pos      = Vec3::NEG_UNIT_X();
+    *pos = Vec3(-1.0, 0.0, 0.0);
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -73,7 +74,7 @@ LUAAPI(vec3_newNegUnitY) {
 LUAAPI(vec3_newNegUnitZ) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::NEG_UNIT_Z();
+    *pos      = Vec3(0.0, 0.0, -1.0);
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
@@ -89,7 +90,8 @@ LUAAPI(vec3_newOne) {
 LUAAPI(vec3_newTwo) {
     LUA_ARG_COUNT_CHECK_C(0)
     Vec3* pos = (Vec3*)lua_newuserdata(L, sizeof(Vec3));
-    *pos      = Vec3::TWO();
+    // *pos      = Vec3::TWO();
+    *pos = Vec3(2.0, 2.0, 2.0);
     luaL_setmetatable(L, "vec3_mt");
     return 1;
 }
