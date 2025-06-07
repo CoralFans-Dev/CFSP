@@ -1,7 +1,7 @@
 #include "boost/algorithm/string/join.hpp"
 #include "cfsp/CFSP.h"
 #include "cfsp/base/Macros.h"
-#include "cfsp/simplayer/CFSP.h"
+// #include "cfsp/simplayer/CFSP.h"
 #include <string>
 
 extern "C" {

@@ -13,6 +13,7 @@
 #include "mc/deps/core/utility/MCRESULT.h"
 #include "mc/entity/components/ActorRotationComponent.h"
 #include "mc/entity/components_json_legacy/NavigationComponent.h"
+#include "mc/legacy/ActorUniqueID.h"
 #include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
 #include "mc/scripting/modules/minecraft/ScriptFacing.h"
 #include "mc/server/SimulatedPlayer.h"
@@ -20,7 +21,7 @@
 #include "mc/server/commands/CommandVersion.h"
 #include "mc/server/commands/MinecraftCommands.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
-#include "mc/server/sim/ContinuousBuildIntent.h"
+#include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/LookAtIntent.h"
 #include "mc/server/sim/LookDuration.h"
 #include "mc/server/sim/MoveInDirectionIntent.h"
@@ -28,7 +29,6 @@
 #include "mc/server/sim/MovementIntent.h"
 #include "mc/server/sim/NavigateToEntityIntent.h"
 #include "mc/server/sim/NavigateToPositionsIntent.h"
-#include "mc/server/sim/VoidMoveIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
@@ -88,6 +88,7 @@ public:
     };
     struct SimPlayerInfo {
         std::string                           name;
+        int64                                 uid;
         std::string                           xuid;
         std::string                           ownerUuid;
         std::string                           lastSpawner;
@@ -107,6 +108,7 @@ public:
         // construction
         SimPlayerInfo()
         : name(),
+          uid(),
           xuid(),
           ownerUuid(),
           groups(),
@@ -132,6 +134,7 @@ public:
             std::shared_ptr<timewheel::TimeWheel> const& timeWheel
         )
         : name(name),
+          uid(simPlayer->getOrCreateUniqueID().rawID),
           xuid("-" + std::to_string(std::hash<std::string>()(name))),
           ownerUuid(ownerUuid),
           lastSpawner(ownerUuid),
@@ -155,6 +158,7 @@ public:
         void serialize(Archive& ar, const unsigned int version) {
             if (version == INFO_VERSION) {
                 ar & name;
+                ar & uid;
                 ar & xuid;
                 ar & ownerUuid;
                 ar & lastSpawner;
@@ -221,7 +225,10 @@ public:
         }
         CFSP_API bool flying(bool enable) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            if (simPlayer->canFly()) return simPlayer->getAbilities().setAbility(AbilitiesIndex::Flying, enable);
+            auto& spAbilities = simPlayer->getAbilities();
+            if (spAbilities.getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
+                return simPlayer->getAbilities().setAbility(AbilitiesIndex::Flying, enable);
+            }
             return false;
         }
         CFSP_API bool sprinting(bool enable) {
@@ -397,12 +404,14 @@ public:
 
             const auto& hit = simPlayer->traceRay(5.25f);
             if (hit.mType == HitResultType::Tile) {
-                simPlayer->mGameMode->buildBlock(hit.mBlock, hit.mFacing, true);
+                simPlayer->mGameMode->buildBlock(hit.mBlock, hit.mFacing, false);
             }
         }
         CFSP_API void lookAt(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
-            sim::lookAt(*simPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration{2});
+            simPlayer->mLookAtIntent->mType = std::get<::sim::ContinuousLookAtPositionIntent>(
+                sim::lookAt(*simPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration{2}).mType.get()
+            );
         }
         CFSP_API void moveTo(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -447,6 +456,7 @@ public:
             simPlayer->deleteContainerManager();
 
             // simPlayer->simulateStopMoving();
+            // from lse
             auto& type = simPlayer->mSimulatedMovement->mType.get();
             if (std::holds_alternative<sim::MoveInDirectionIntent>(type)
                 || std::holds_alternative<sim::MoveToPositionIntent>(type)) {
@@ -585,9 +595,9 @@ public:
     };
     struct GroupInfo {
         std::string                     name;
-        std::unordered_set<std::string> splist;
-        std::string                     owner;
-        std::unordered_set<std::string> admin;
+        std::unordered_set<std::string> splist; // 假人名称
+        std::string                     owner;  // 所有者uuid
+        std::unordered_set<std::string> admin;  // 管理员uuid
 
         GroupInfo() {
             splist = std::unordered_set<std::string>{};
@@ -598,12 +608,6 @@ public:
             name  = _name;
             owner = _owner;
         }
-        // GroupInfo(std::unordered_set<std::string> _splist, std::string _owner, std::unordered_set<std::string>
-        // _admin) {
-        //     splist = _splist;
-        //     owner  = _owner;
-        //     admin  = _admin;
-        // }
 
         friend class boost::serialization::access;
         template <typename Archive>

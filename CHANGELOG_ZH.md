@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2025-6-6
+
+### Added
+
++ 适配1.21.70
++ 现在假人将锁定uuid，这意味着假人扔出的三叉戟不会随着假人重新上线失效
+
+### Fixed
+
++ 修复了假人加载实体的问题
++ 修复了创造模式假人无法飞行的问题
+
 ## [2.4.1] - 2025-5-10
 
 ### Added

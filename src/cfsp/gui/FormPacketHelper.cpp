@@ -89,7 +89,7 @@ void HandleFormPacket(Player* player, unsigned formId, const std::string& data, 
         if (form->callback) form->callback(player, chosen, reason);
         // Button Callback
         if (chosen >= 0) {
-            if (chosen >= form->elements.size()) return;
+            if ((size_t)chosen >= form->elements.size()) return;
             auto button = dynamic_pointer_cast<Button>(form->elements[chosen]);
             if (button->callback) button->callback(player, reason);
         }
@@ -169,7 +169,7 @@ LL_AUTO_TYPE_INSTANCE_HOOK(
     FormResponseHandler,
     HookPriority::Highest,
     PacketHandlerDispatcherInstance<ModalFormResponsePacket>,
-    &PacketHandlerDispatcherInstance<ModalFormResponsePacket>::handle,
+    &PacketHandlerDispatcherInstance<ModalFormResponsePacket>::$handle,
     void,
     NetworkIdentifier const& source,
     NetEventCallback&        callback,
