@@ -11,8 +11,10 @@
 #include "mc/dataloadhelper/DataLoadHelper.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/deps/core/math/Vec3.h"
+#include "mc/legacy/ActorUniqueID.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/Tag.h"
+#include "mc/network/packet/TextPacket.h"
 #include "mc/platform/UUID.h"
 #include "mc/server/ServerInstance.h"
 #include "mc/server/SimulatedPlayer.h"
@@ -200,7 +202,7 @@ std::string SimPlayerManager::listGroup() {
         std::string admin;
         for (auto i : groupInfo->admin) admin += "\n    " + utils::tryGetPlayerName(i);
         std::string splist;
-        for (auto i : groupInfo->admin) splist += "\n    " + i;
+        for (auto i : groupInfo->splist) splist += "\n    " + i;
         retstr += "translate.simplayer.info.group"_tr(gname, utils::tryGetPlayerName(groupInfo->owner), admin, splist);
     }
     return retstr.substr(0, retstr.length() - 1);
@@ -403,22 +405,21 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return {"translate.simplayer.error.cannotcreate"_tr(), false};
     if (rejoin) {
-        Vec3  offlinePos{spIt->second->offlinePos};
         Vec2  offlineRot{spIt->second->offlineRot};
         auto* simPlayer = SimulatedPlayer::create(
             spname,
-            offlinePos,
-            spIt->second->offlineDim,
+            {0, 400, 0},
+            0,
             serverNetworkHandler,
-            spIt->second->xuid
+            spIt->second->xuid,
+            ActorUniqueID(spIt->second->uid)
         );
         if (!simPlayer) return {"translate.simplayer.error.cannotcreate"_tr(), false};
+
         simPlayer->setPlayerGameType(
             magic_enum::enum_cast<GameType>(spIt->second->offlineGameType).value_or(GameType::WorldDefault)
         );
-        simPlayer->teleport(offlinePos, spIt->second->offlineDim, offlineRot);
-        Vec3 vec3 = simPlayer->getPosition() + Vec3::directionFromRotation(offlineRot);
-        sim::lookAt(*simPlayer, glm::vec3(vec3.x, vec3.y, vec3.z), ::sim::LookDuration{2});
+        simPlayer->teleport(spIt->second->offlinePos, spIt->second->offlineDim, spIt->second->offlineRot);
         spIt->second->status    = SimPlayerStatus::Alive;
         spIt->second->simPlayer = simPlayer;
         spIt->second->scheduler = this->mScheduler;
@@ -442,28 +443,29 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
                 simPlayer->respawn();
             }
         }
+        spIt->second->lookAt(simPlayer->getPosition() + Vec3::directionFromRotation(offlineRot));
         ++this->mOnlineCountPerPlayer[spIt->second->lastSpawner];
     } else {
         auto* simPlayer = SimulatedPlayer::create(
             spname,
-            pos,
-            dim,
+            {0, 400, 0},
+            0,
             serverNetworkHandler,
-            "-" + std::to_string(std::hash<std::string>()(spname))
+            "-" + std::to_string(std::hash<std::string>()(spname)),
+            std::nullopt
         );
         if (!simPlayer) return {"translate.simplayer.error.cannotcreate"_tr(), false};
         if (player) simPlayer->setPlayerGameType(player->getPlayerGameType());
         simPlayer->teleport(pos, dim, rot);
-        Vec3 vec3 = simPlayer->getPosition() + Vec3::directionFromRotation(rot);
-        sim::lookAt(*simPlayer, glm::vec3(vec3.x, vec3.y, vec3.z), ::sim::LookDuration{2});
-        // add to map
         auto UUID = player ? player->getUuid().asString() : "";
-        this->mNameSimPlayerMap[spname] =
-            boost::make_shared<SimPlayerInfo>(spname, UUID, pos, dim, rot, simPlayer, this->mScheduler);
+        auto tem  = boost::make_shared<SimPlayerInfo>(spname, UUID, pos, dim, rot, simPlayer, this->mScheduler);
+        tem->lookAt(simPlayer->getPosition() + Vec3::directionFromRotation(rot));
+        // add to map
+        this->mNameSimPlayerMap[spname] = std::move(tem);
         this->mOwnerNameMap[UUID].emplace(spname);
         ++this->mOnlineCountPerPlayer[UUID];
     }
-    // add to softenum
+    // add to softenumy
     this->refreshSoftEnum();
     // add count
     ++this->mSpawnCount;
@@ -522,6 +524,12 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
             it->second->simPlayer->setGameTestHelper(nullptr);
 
             it->second->simPlayer = nullptr;
+
+            TextPacketType type = TextPacketType::Raw;
+            TextPacket     pkt  = TextPacket();
+            pkt.mType           = type;
+            pkt.mMessage        = "§c" + it->second->name + "已下线";
+            pkt.sendToClients();
 
             it->second->autoDespawnCount.assign(it->second->autoDespawnCount.size(), 0);
         };

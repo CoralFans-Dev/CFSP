@@ -8,6 +8,8 @@
 #include "mc/network/packet/TextPacket.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
 #include "mc/world/actor/ActorFlags.h"
+#include "mc/world/actor/player/AbilitiesIndex.h"
+#include "mc/world/actor/player/Ability.h"
 #include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/level/Level.h"
 #include <string>
@@ -318,8 +320,8 @@ void sendOperator(
         },
         defOp
     );
-    menu.addInput("interval", "gui.operate.interval"_tr(), "1", defInterval);
-    menu.addInput("times", "gui.operate.times"_tr(), "20", defTimes);
+    menu.addInput("interval", "gui.operate.interval"_tr(), "20", defInterval);
+    menu.addInput("times", "gui.operate.times"_tr(), "1", defTimes);
     menu.addInput("long", "gui.operate.long"_tr(), "10", defLong);
     menu.sendTo(
         pl,
@@ -334,7 +336,7 @@ void sendOperator(
                 auto const& eleInterval = elements["interval"]->value;
                 auto const& eleTimes    = elements["times"]->value;
                 auto const& eleLong     = elements["long"]->value;
-                int         interval = 1, times = 20, _long = 10;
+                int         interval = 20, times = 1, _long = 10;
                 if (eleInterval != "") {
                     std::istringstream iss(eleInterval);
                     char               test;
@@ -425,7 +427,7 @@ void sendActionOperator(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlaye
     using ll::i18n_literals::operator""_tr;
     auto menu = lse::form::CustomForm("gui.actionoperate.title"_tr());
     if (spInfo->simPlayer) {
-        if (spInfo->simPlayer->canFly()) {
+        if (spInfo->simPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
             menu.addDropdown(
                 "flying",
                 "gui.actionoperate.flying"_tr(),

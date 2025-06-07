@@ -4,6 +4,7 @@
 #include "mc/network/packet/ModalFormRequestPacket.h"
 #include "mc/world/actor/player/Player.h"
 
+#include <cstddef>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <utility>
@@ -241,7 +242,7 @@ std::string StepSlider::serialize() {
         itemAdd["steps"] = items;
 
         size_t maxIndex = items.size() - 1;
-        if (def >= 0 && def <= maxIndex) {
+        if (def >= 0 && (size_t)def <= maxIndex) {
             itemAdd["default"] = def;
         }
         return itemAdd.dump();
@@ -424,7 +425,7 @@ CustomFormElement* CustomForm::getElement(const std::string& name) {
 }
 
 CustomFormElement* CustomForm::getElement(int index) {
-    return elements.size() > index ? elements[index].second.get() : nullptr;
+    return elements.size() > (size_t)index ? elements[index].second.get() : nullptr;
 }
 
 CustomFormElement::Type CustomForm::getType(int index) { return elements[index].second->getType(); }

@@ -500,7 +500,10 @@ void registerSpCommand(CommandPermissionLevel permission) {
                     rot = *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
                 }
             } else {
-                pos = player->getFeetPos();
+                const auto& hit = player->traceRay(5.25f);
+                if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getFeetPos();
+                else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
+                else pos = player->getFeetPos();
                 dim = player->getDimensionId();
                 rot = *player->mBuiltInComponents->mActorRotationComponent->mRotationDegree;
             }
@@ -1097,7 +1100,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
                     );
                 else {
                     const auto& hit = player->traceRay(5.25f);
-                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
+                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getFeetPos();
                     else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
                     else pos = player->getFeetPos();
                 }
@@ -1119,7 +1122,7 @@ void registerSpCommand(CommandPermissionLevel permission) {
                     );
                 else {
                     const auto& hit = player->traceRay(5.25f);
-                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getPosition();
+                    if (hit.mType == HitResultType::Entity) pos = hit.getEntity()->getFeetPos();
                     else if (hit.mType == HitResultType::Tile) pos = hit.mPos;
                     else pos = player->getFeetPos();
                 }

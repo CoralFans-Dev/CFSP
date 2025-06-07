@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2025-6-7
+
+### Added
+
++ Adapt to 1.21.70
++ now simulatedPlayer will lock it's uuid. This means tridents thrown by simulated player will not be unused when simulated player rejoined to the world
+
+### Fixed
+
++ fix the entities loading problem around simulated players
++ fix the bug that creative gamemode simulated player can't fly.
+
 ## [2.4.1] - 2025-5-10
 
 ### Added

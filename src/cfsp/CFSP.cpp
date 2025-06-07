@@ -1,11 +1,13 @@
 #include "cfsp/CFSP.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/commands/Command.h"
+#include "cfsp/fix/FeatureFix.h"
 #include "cfsp/simplayer/CFSP.h"
 #include "cfsp/simplayer/Hooks.h"
 #include "ll/api/Config.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
+
 
 namespace coral_fans::cfsp {
 
@@ -44,6 +46,7 @@ bool CFSP::enable() {
     auto& mod = coral_fans::cfsp::mod();
 
     hookSimPlayer(true);
+    fix::featureFix(true);
 
     if (mod.getConfig().command.sp.enabled) commands::registerSpCommand(mod.getConfig().command.sp.permission);
 
@@ -55,6 +58,7 @@ bool CFSP::enable() {
 
 bool CFSP::disable() {
     hookSimPlayer(false);
+    fix::featureFix(false);
     return true;
 }
 
