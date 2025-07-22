@@ -9,7 +9,7 @@ add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.
 add_requires(
     "levilamina 1.2.0",
     "lua 5.4.7",
-    "levibuildscript",
+    "levibuildscript 0.4.0",
     "timewheel"
 )
 add_requires("boost", {configs = {all = true}})
