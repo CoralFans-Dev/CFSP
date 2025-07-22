@@ -1,6 +1,7 @@
 #include "GuiForm.h"
 #include "FormUI.h"
 // #include "cfsp/CFSP.h"
+#include "cfsp/CFSP.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/simplayer/CFSP.h"
 #include "ll/api/i18n/I18n.h"
@@ -12,6 +13,7 @@
 #include "mc/world/actor/player/Ability.h"
 #include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/level/Level.h"
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -76,7 +78,7 @@ void sendAllSplist(Player* pl) {
         });
     }
     menu.addButton("gui.managersplist.newsp"_tr(), "", [](Player* player, lse::form::FormCancelReason) {
-        sendNewSpPage(player);
+        sendNewSpPage(player, player->getDimensionId());
     });
     menu.sendTo(pl);
 }
@@ -1473,7 +1475,7 @@ void sendSplist(Player* pl) {
         || mod().getConfig().simPlayer.superManagerList.contains(*pl->mName)
         || count < mod().getConfig().simPlayer.maxOwn)
         menu.addButton("gui.splist.newsp"_tr(), "", [](Player* player, lse::form::FormCancelReason) {
-            sendNewSpPage(player);
+            sendNewSpPage(player, player->getDimensionId());
         });
     menu.sendTo(pl);
 }

@@ -90,4 +90,9 @@ std::string tryGetPlayerName(std::string UUID) {
     else return UUID;
 }
 
+BlockPos neighbor(BlockPos pos, int face) {
+    pos[(face / 2 + 1) % 3] += (face & 1) * 2 - 1;
+    return pos;
+}
+
 } // namespace coral_fans::cfsp::utils

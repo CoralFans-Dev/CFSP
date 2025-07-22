@@ -14,12 +14,17 @@
 #include "mc/legacy/ActorUniqueID.h"
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/Tag.h"
+#include "mc/network/NetEventCallback.h"
+#include "mc/network/packet/AddPlayerPacket.h"
+#include "mc/network/packet/MobArmorEquipmentPacket.h"
+#include "mc/network/packet/RemoveActorPacket.h"
 #include "mc/network/packet/TextPacket.h"
 #include "mc/platform/UUID.h"
 #include "mc/server/ServerInstance.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/commands/StopCommand.h"
 #include "mc/server/sim/sim.h"
+#include "mc/world/ContainerID.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/SimpleContainer.h"
 #include "mc/world/actor/ActorFlags.h"
@@ -33,6 +38,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <exception>
 #include <filesystem>
@@ -43,13 +49,18 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 
 namespace coral_fans::cfsp {
 
 namespace sputils {
 
-bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::filesystem::path basePath) {
+bool saveSpNbt(
+    boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp,
+    std::filesystem::path                              basePath,
+    bool                                               isForce = false
+) {
     if (!sp->simPlayer) return false;
     auto tag = std::make_unique<CompoundTag>();
     if (!sp->simPlayer->save(*tag)) return false;
@@ -57,6 +68,7 @@ bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::files
     std::ofstream f(basePath / "nbt", std::ios_base::out | std::ios_base::trunc);
     if (!f.is_open()) return false;
     f << tag->toSnbt(SnbtFormat::Minimize);
+    if (isForce) f.flush();
     f.close();
     return true;
 }
@@ -64,15 +76,16 @@ bool saveSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::files
 bool loadSpNbt(boost::shared_ptr<SimPlayerManager::SimPlayerInfo> sp, std::filesystem::path basePath) {
     if (!sp->simPlayer) return false;
     if (!std::filesystem::exists(basePath / "nbt")) return false;
-    std::ifstream f(basePath / "nbt");
+    std::ifstream f(basePath / "nbt", std::ios::binary | std::ios::ate);
     if (!f.is_open()) return false;
-    std::string snbt;
-    f >> snbt;
-    f.close();
     try {
+        boost::iostreams::mapped_file_source mmap;
+        mmap.open((basePath / "nbt").string());
+        std::string_view      snbt{mmap.data(), mmap.size()};
         DefaultDataLoadHelper helper;
         sp->simPlayer->load(CompoundTag::fromSnbt(snbt).value(), helper);
-    } catch (...) {
+    } catch (const std::exception& e) {
+        coral_fans::cfsp::CFSP::getInstance().getSelf().getLogger().error(e.what());
         return false;
     }
     return true;
@@ -99,7 +112,7 @@ void SimPlayerManager::refreshSoftEnum() {
     ll::command::CommandRegistrar::getInstance().setSoftEnumValues("gname", gvals);
 }
 
-void SimPlayerManager::save() {
+void SimPlayerManager::save(bool isForce = false) {
     auto& modself = CFSP::getInstance().getSelf();
     try {
         const auto& logger  = modself.getLogger();
@@ -120,7 +133,7 @@ void SimPlayerManager::save() {
             const auto& basePath = dataDir / sp->xuid;
             std::filesystem::create_directories(basePath);
             // save inventory
-            if (!sputils::saveSpNbt(sp, basePath))
+            if (!sputils::saveSpNbt(sp, basePath, isForce))
                 logger.error("Failed to save SimPlayer ({}) NBT: cannot save data to {}", name, basePath);
         }
         // save self
@@ -131,6 +144,7 @@ void SimPlayerManager::save() {
         }
         boost::archive::binary_oarchive oa(file);
         oa << *this;
+        if (isForce) file.flush();
         file.close();
     } catch (std::exception& e) {
         modself.getLogger().error("In SimPlayerManager::save: {}", e.what());
@@ -429,6 +443,8 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
             spIt->second,
             CFSP::getInstance().getSelf().getDataDir() / "simplayer" / "data" / spIt->second->xuid
         );
+        simPlayer->mPlayerRespawnPoint->mPlayerPosition = spIt->second->offlinePos;
+        simPlayer->mPlayerRespawnPoint->mDimension      = spIt->second->offlineDim;
         if (simPlayer->isDead()) {
             // simPlayer->simulateRespawn();
             auto& spawnPos = simPlayer->mPlayerRespawnPoint->mPlayerPosition;
@@ -460,8 +476,10 @@ SimPlayerManager::spawnSimPlayer(Player* player, std::string const& name, Vec3 c
         auto UUID = player ? player->getUuid().asString() : "";
         auto tem  = boost::make_shared<SimPlayerInfo>(spname, UUID, pos, dim, rot, simPlayer, this->mScheduler);
         tem->lookAt(simPlayer->getPosition() + Vec3::directionFromRotation(rot));
+        simPlayer->mPlayerRespawnPoint->mPlayerPosition = pos;
+        simPlayer->mPlayerRespawnPoint->mDimension      = dim;
         // add to map
-        this->mNameSimPlayerMap[spname] = std::move(tem);
+        this->mNameSimPlayerMap[spname] = tem;
         this->mOwnerNameMap[UUID].emplace(spname);
         ++this->mOnlineCountPerPlayer[UUID];
     }
@@ -504,7 +522,7 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
     if (noCheck || !player || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
         || mod().getConfig().simPlayer.superManagerList.contains(*player->mName) || uuid == it->second->ownerUuid) {
         // check: offline
-        if (!noCheck && it->second->status == SimPlayerStatus::Offline)
+        if (it->second->status == SimPlayerStatus::Offline)
             return {"translate.simplayer.error.statuserror"_tr(), false};
         // run
         if (it->second->simPlayer) {
@@ -532,11 +550,11 @@ SimPlayerManager::despawnSimPlayer(Player* player, std::string const& spname, bo
             pkt.sendToClients();
 
             it->second->autoDespawnCount.assign(it->second->autoDespawnCount.size(), 0);
+            --this->mOnlineCount;
+            --this->mOnlineCountPerPlayer[it->second->lastSpawner];
         };
         // change status
         it->second->status = SimPlayerStatus::Offline;
-        --this->mOnlineCount;
-        --this->mOnlineCountPerPlayer[it->second->lastSpawner];
         // return
         return {"translate.simplayer.success"_tr(), true};
     }
@@ -629,6 +647,23 @@ std::pair<std::string, bool> SimPlayerManager::respawnSimPlayer(Player* player, 
         it->second->simPlayer->mRespawningFromTheEnd     = false;
         if (!it->second->simPlayer->isAlive() && it->second->simPlayer->mRespawnReady) {
             it->second->simPlayer->respawn();
+
+            // 修复假人重生后客户端假人数据异常（碰撞箱异常）
+            auto pkt      = RemoveActorPacket();
+            pkt.mEntityId = it->second->simPlayer->getOrCreateUniqueID();
+            pkt.sendToClients();
+            AddPlayerPacket(*it->second->simPlayer).sendToClients();
+
+            // 更新盔甲及副手
+            MobArmorEquipmentPacket(*it->second->simPlayer).sendToClients(); // 更新盔甲
+            MobEquipmentPacket(
+                it->second->simPlayer->getRuntimeID(),
+                it->second->simPlayer->getOffhandSlot(),
+                1,
+                0,
+                ContainerID::Offhand
+            )
+                .sendToClients(); // 更新副手
         }
 
         // change status
@@ -925,7 +960,7 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     std::chrono::steady_clock::time_point unknown
 ) {
-    SimPlayerManager::getInstance().save();
+    SimPlayerManager::getInstance().save(true);
     origin(unknown);
 }
 
@@ -937,6 +972,7 @@ LL_TYPE_INSTANCE_HOOK(
     bool,
     ::BlockSource& region
 ) {
+    auto ori = origin(region);
     if (isSimulatedPlayer()) {
         if (mDestroyingBlock) {
             const auto& hit = traceRay(5.25f);
@@ -945,8 +981,68 @@ LL_TYPE_INSTANCE_HOOK(
                 simulateStopDestroyingBlock();
             }
         }
+        if (std::holds_alternative<::sim::ContinuousLookAtPositionIntent>(mLookAtIntent->mType.get())) {
+            auto spInfo = SimPlayerManager::getInstance().fetchSimPlayer(*mName);
+            if (spInfo.has_value()) {
+
+                auto& pos = std::get<::sim::ContinuousLookAtPositionIntent>(mLookAtIntent->mType.get()).mPosition.get();
+                auto  playerEyePos = getEyePos();
+                pos.x              = spInfo.value()->lookatOffPos.x + playerEyePos.x;
+                pos.y              = spInfo.value()->lookatOffPos.y + playerEyePos.y;
+                pos.z              = spInfo.value()->lookatOffPos.z + playerEyePos.z;
+            }
+        }
     }
-    return origin(region);
+    return ori;
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CoralFansSimPlayerSlotChangedHook,
+    ll::memory::HookPriority::Normal,
+    SimulatedPlayer,
+    &SimulatedPlayer::inventoryChanged,
+    void,
+    Container&       container,
+    int              slot,
+    ItemStack const& oldItem,
+    ItemStack const& newItem,
+    bool             forceBalanced
+) {
+    origin(container, slot, oldItem, newItem, forceBalanced);
+    if (isSimulatedPlayer() && slot == 0 && oldItem.getTypeName() != newItem.getTypeName()) {
+        MobEquipmentPacket(getRuntimeID(), newItem, 0, 0,
+                           mInventory->mSelectedContainerId).sendToClients(); // 更新主手
+    }
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CoralFansSimPlayerSetOffhandSlotHook,
+    ll::memory::HookPriority::Normal,
+    SimulatedPlayer,
+    &SimulatedPlayer::$setOffhandSlot,
+    void,
+    ItemStack const& item
+) {
+    if (isSimulatedPlayer() && getOffhandSlot().getTypeName() != item.getTypeName()) {
+        MobEquipmentPacket(getRuntimeID(), item, 1, 0,
+                           ContainerID::Offhand).sendToClients(); // 更新副手
+    }
+    origin(item);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CoralFansSimPlayerBuildHelperHook,
+    ll::memory::HookPriority::Normal,
+    Block,
+    &Block::use,
+    bool,
+    Player&                 player,
+    ::BlockPos const&       pos,
+    uchar                   face,
+    ::std::optional<::Vec3> hit
+) {
+    if (SimPlayerManager::getInstance().buildMutex) return false;
+    return origin(player, pos, face, hit);
 }
 
 void hookSimPlayer(bool hook) {
@@ -956,13 +1052,18 @@ void hookSimPlayer(bool hook) {
         CoralFansSimPlayerServerStopSaveHook::hook();
         CoralFansSimPlayerDataSaveHook::hook();
         CoralFansSimPlayerTickHook::hook();
+        CoralFansSimPlayerSlotChangedHook::hook();
+        CoralFansSimPlayerSetOffhandSlotHook::hook();
+        CoralFansSimPlayerBuildHelperHook::hook();
     } else {
         CoralFansSimPlayerLevelTickHook::unhook();
         CoralFansSimPlayerDieEventHook::unhook();
         CoralFansSimPlayerServerStopSaveHook::unhook();
         CoralFansSimPlayerDataSaveHook::unhook();
         CoralFansSimPlayerTickHook::unhook();
+        CoralFansSimPlayerSlotChangedHook::unhook();
+        CoralFansSimPlayerSetOffhandSlotHook::unhook();
+        CoralFansSimPlayerBuildHelperHook::unhook();
     }
 }
-
 } // namespace coral_fans::cfsp

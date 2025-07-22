@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TimeWheel.h"
+#include "cfsp/CFSP.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/base/Utils.h"
@@ -8,12 +9,15 @@
 #include "ll/api/service/Bedrock.h"
 #include "magic_enum.hpp"
 #include "mc/_HeaderOutputPredefine.h"
+#include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/deps/core/math/Vec2.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/deps/core/utility/MCRESULT.h"
 #include "mc/entity/components/ActorRotationComponent.h"
 #include "mc/entity/components_json_legacy/NavigationComponent.h"
 #include "mc/legacy/ActorUniqueID.h"
+#include "mc/network/ServerNetworkHandler.h"
+#include "mc/network/packet/MobEquipmentPacket.h"
 #include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
 #include "mc/scripting/modules/minecraft/ScriptFacing.h"
 #include "mc/server/SimulatedPlayer.h"
@@ -42,6 +46,8 @@
 #include "mc/world/actor/provider/MobMovement.h"
 #include "mc/world/attribute/AttributeInstance.h"
 #include "mc/world/gamemode/GameMode.h"
+#include "mc/world/gamemode/InteractionResult.h"
+#include "mc/world/item/Item.h"
 #include "mc/world/item/ItemStack.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/BlockSource.h"
@@ -50,6 +56,7 @@
 #include "mc/world/level/block/actor/BlockActor.h"
 #include "mc/world/level/block/actor/BlockActorType.h"
 #include "mc/world/level/block/actor/ChestBlockActor.h"
+#include "mc/world/level/chunk/LevelChunk.h"
 #include "mc/world/phys/HitResult.h"
 #include "mc/world/phys/HitResultType.h"
 #include <boost/serialization/access.hpp>
@@ -86,6 +93,16 @@ public:
         Alive   = 1,
         Dead    = 2,
     };
+    std::vector<std::vector<const Block*>> a = {
+        {&Block::tryGetFromRegistry("minecraft:smooth_stone_slab", 1).get(),
+         &Block::tryGetFromRegistry("minecraft:oak_leaves").get(),
+         &Block::tryGetFromRegistry("minecraft:chain").get(),
+         &Block::tryGetFromRegistry("minecraft:stone").get()},
+        {&Block::tryGetFromRegistry("minecraft:smooth_stone_slab").get(),
+         &Block::tryGetFromRegistry("minecraft:chain").get(),
+         &Block::tryGetFromRegistry("minecraft:chain").get(),
+         &Block::tryGetFromRegistry("minecraft:stone").get()}
+    };
     struct SimPlayerInfo {
         std::string                           name;
         int64                                 uid;
@@ -105,6 +122,7 @@ public:
         unsigned long long                    scriptid;         // no-save
         std::vector<unsigned long long>       autoDespawnCount; // no-save
         unsigned long long                    autoDespawnI;     // no-save
+        Vec3                                  lookatOffPos;     // no-save
         // construction
         SimPlayerInfo()
         : name(),
@@ -205,6 +223,7 @@ public:
         }
         CFSP_API bool sneaking(bool enable) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
+            simPlayer->setSneaking(enable);
             return enable ? simPlayer->simulateSneaking() : simPlayer->simulateStopSneaking();
         }
         CFSP_API void swimming(bool enable) {
@@ -227,7 +246,7 @@ public:
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             auto& spAbilities = simPlayer->getAbilities();
             if (spAbilities.getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
-                return simPlayer->getAbilities().setAbility(AbilitiesIndex::Flying, enable);
+                return spAbilities.setAbility(AbilitiesIndex::Flying, enable);
             }
             return false;
         }
@@ -281,43 +300,25 @@ public:
         CFSP_API void swap(Player* player) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             if (!player) throw std::invalid_argument("Player is null");
-            // get data
-            auto&      spInv    = *simPlayer->mInventory->mInventory;
-            auto&      spArmor  = ActorEquipment::getArmorContainer(simPlayer->getEntityContext());
-            auto&      pInv     = *player->mInventory->mInventory;
-            const auto pOffhand = player->getOffhandSlot();
-            auto&      pArmor   = ActorEquipment::getArmorContainer(player->getEntityContext());
-            auto       spEnder  = simPlayer->getEnderChestContainer();
-            auto       pEnder   = player->getEnderChestContainer();
-            // swap offhand
-            player->setOffhandSlot(simPlayer->getOffhandSlot());
-            simPlayer->setOffhandSlot(pOffhand);
-            // swap inv
-            int spInvSize = spInv.getContainerSize();
-            if (spInvSize == pInv.getContainerSize())
-                for (int i = 0; i < spInvSize; ++i) {
-                    const auto spItem = spInv.getItem(i);
-                    spInv.setItem(i, pInv.getItem(i));
-                    pInv.setItem(i, spItem);
-                }
-            // swap armor
-            int spArmorSize = spArmor.getContainerSize();
-            if (spArmorSize == pArmor.getContainerSize())
-                for (int i = 0; i < spArmorSize; ++i) {
-                    const auto spItem = spArmor.getItem(i);
-                    spArmor.setItem(i, pArmor.getItem(i));
-                    pArmor.setItem(i, spItem);
-                }
-            // swap enderchest
-            int spEnderSize = spEnder->getContainerSize();
-            if (spEnder.has_value() && pEnder.has_value() && spEnderSize == pEnder->getContainerSize())
-                for (int i = 0; i < spEnderSize; ++i) {
-                    const auto spItem = spEnder->getItem(i);
-                    spEnder->setItem(i, pEnder->getItem(i));
-                    pEnder->setItem(i, spItem);
-                }
-            // refresh
-            player->refreshInventory();
+            std::vector<std::string> invKeys = {"Armor", "EnderChestInventory", "Inventory", "Mainhand", "Offhand"};
+            auto                     spTag   = std::make_unique<CompoundTag>();
+            if (!simPlayer->save(*spTag)) return;
+            auto pTag = std::make_unique<CompoundTag>();
+            if (!player->save(*pTag)) return;
+            for (auto& key : invKeys) {
+                auto spInvNode = spTag->mTags.extract(key);
+                auto pInvNode  = pTag->mTags.extract(key);
+                spTag->mTags.insert(std::move(pInvNode));
+                pTag->mTags.insert(std::move(spInvNode));
+            }
+            try {
+                DefaultDataLoadHelper helper;
+                player->load(*pTag, helper);
+                player->sendInventory(true);
+                simPlayer->load(*spTag, helper);
+            } catch (...) {
+                return;
+            }
         }
         CFSP_API bool runCmd(std::string const& cmd) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -404,14 +405,24 @@ public:
 
             const auto& hit = simPlayer->traceRay(5.25f);
             if (hit.mType == HitResultType::Tile) {
-                simPlayer->mGameMode->buildBlock(hit.mBlock, hit.mFacing, false);
+                SimPlayerManager::getInstance().buildMutex = true;
+                simPlayer->mGameMode->useItemOn(
+                    simPlayer->mInventory->mInventory->mItems.get()[0],
+                    hit.mBlock,
+                    hit.mFacing,
+                    hit.mPos,
+                    &simPlayer->getDimensionBlockSource().getBlock(hit.mBlock),
+                    true
+                );
+                SimPlayerManager::getInstance().buildMutex = false;
             }
         }
         CFSP_API void lookAt(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
             simPlayer->mLookAtIntent->mType = std::get<::sim::ContinuousLookAtPositionIntent>(
-                sim::lookAt(*simPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration{2}).mType.get()
+                sim::lookAt(*simPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration::UntilMove).mType.get()
             );
+            lookatOffPos = pos - simPlayer->getEyePos();
         }
         CFSP_API void moveTo(Vec3 const& pos) {
             if (!simPlayer) throw std::invalid_argument("SimPlayer is null");
@@ -635,6 +646,10 @@ private:
 
 private:
     ll::event::ListenerPtr playerJoinEventListener;
+    ll::event::ListenerPtr playerDestroyBlockEventListener;
+
+public:
+    bool buildMutex = false;
 
 private:
     SimPlayerManager()
@@ -672,7 +687,7 @@ private:
     void refreshSoftEnum();
 
 public:
-    CFSP_API void save();
+    CFSP_API void save(bool);
     CFSP_API void load();
     inline void   tick() { this->mScheduler->tick(); }
 
@@ -770,6 +785,7 @@ public:
     CFSP_API std ::pair<std ::string, bool> simPlayerSprinting(Player*, std ::string const&, bool);
 };
 } // namespace coral_fans::cfsp
+// namespace coral_fans::cfsp
 
 BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager, MANAGER_VERSION)
 BOOST_CLASS_VERSION(coral_fans::cfsp::SimPlayerManager::SimPlayerInfo, INFO_VERSION)
