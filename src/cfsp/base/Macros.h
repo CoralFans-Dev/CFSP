@@ -42,7 +42,7 @@
     std::pair<std::string, bool>                                                                                       \
         SimPlayerManager::simPlayer##NAME(Player* player, std::string const& spname, bool noCheck, ARG_TYPE arg) {     \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto uuid = player->getUuid();                                                                                 \
+        auto uuid = player->getUuid().asString();                                                                      \
         auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (noCheck                                                                                                    \
@@ -83,7 +83,7 @@
         ARG_TYPE2          arg2                                                                                        \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto uuid = player->getUuid();                                                                                 \
+        auto uuid = player->getUuid().asString();                                                                      \
         auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (noCheck                                                                                                    \
@@ -119,7 +119,7 @@
         bool               noCheck                                                                                     \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto uuid = player->getUuid();                                                                                 \
+        auto uuid = player->getUuid().asString();                                                                      \
         auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (noCheck                                                                                                    \
@@ -157,7 +157,7 @@
         int                times                                                                                       \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto uuid = player->getUuid();                                                                                 \
+        auto uuid = player->getUuid().asString();                                                                      \
         auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (noCheck                                                                                                    \
@@ -212,7 +212,7 @@
         int                times                                                                                       \
     ) {                                                                                                                \
         using ll::i18n_literals::operator""_tr;                                                                        \
-        auto uuid = player->getUuid();                                                                                 \
+        auto uuid = player->getUuid().asString();                                                                      \
         auto it   = this->mNameSimPlayerMap.find(spname);                                                              \
         if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};            \
         if (noCheck                                                                                                    \

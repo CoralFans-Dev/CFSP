@@ -580,7 +580,7 @@ std::pair<std::string, bool> SimPlayerManager::despawnGroup(Player* player, std:
 
 std::pair<std::string, bool> SimPlayerManager::rmSimPlayer(Player* player, std::string const& spname, bool noCheck) {
     using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     // check: simplayer
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
@@ -722,7 +722,7 @@ SP_DEF_WA(NavTo, navigateTo, Vec3 const&)
 
 std::pair<std::string, bool> SimPlayerManager::simPlayerSwap(Player* player, std::string const& spname) {
     using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission
@@ -737,7 +737,7 @@ std::pair<std::string, bool> SimPlayerManager::simPlayerSwap(Player* player, std
 std ::pair<std ::string, bool>
 SimPlayerManager::simPlayerSneaking(Player* player, std ::string const& spname, bool noCheck) {
     using ll ::i18n_literals ::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (noCheck
@@ -753,7 +753,7 @@ SimPlayerManager::simPlayerSneaking(Player* player, std ::string const& spname, 
 std ::pair<std ::string, bool>
 SimPlayerManager::simPlayerSwimming(Player* player, std ::string const& spname, bool noCheck) {
     using ll ::i18n_literals ::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (noCheck
@@ -769,7 +769,7 @@ SimPlayerManager::simPlayerSwimming(Player* player, std ::string const& spname, 
 std ::pair<std ::string, bool>
 SimPlayerManager::simPlayerFlying(Player* player, std ::string const& spname, bool noCheck) {
     using ll ::i18n_literals ::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (noCheck
@@ -785,7 +785,7 @@ SimPlayerManager::simPlayerFlying(Player* player, std ::string const& spname, bo
 std ::pair<std ::string, bool>
 SimPlayerManager::simPlayerSprinting(Player* player, std ::string const& spname, bool noCheck) {
     using ll ::i18n_literals ::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (noCheck
@@ -807,7 +807,7 @@ std::pair<std::string, bool> SimPlayerManager::simPlayerScript(
     std::string const& luaArg
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid();
+    auto uuid = player->getUuid().asString();
     auto it   = this->mNameSimPlayerMap.find(spname);
     if (it == this->mNameSimPlayerMap.end()) return {"translate.simplayer.error.notfound"_tr(), false};
     if (noCheck || player->getCommandPermissionLevel() >= mod().getConfig().simPlayer.adminPermission

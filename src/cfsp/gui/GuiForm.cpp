@@ -1,7 +1,5 @@
 #include "GuiForm.h"
 #include "FormUI.h"
-// #include "cfsp/CFSP.h"
-#include "cfsp/CFSP.h"
 #include "cfsp/base/Mod.h"
 #include "cfsp/simplayer/CFSP.h"
 #include "ll/api/i18n/I18n.h"
@@ -738,7 +736,7 @@ void sendManageSpInGroup(Player* pl, boost::shared_ptr<coral_fans::cfsp::SimPlay
         splist = SimPlayerManager::getInstance().getAllSplist();
     else splist = SimPlayerManager::getInstance().fetchSplist(pl);
     for (auto i : splist) {
-        if (!groupInfo->splist.contains(i)) menu.addToggle(i, i, groupInfo->splist.contains(i));
+        menu.addToggle(i, i, groupInfo->splist.contains(i));
     }
     menu.sendTo(
         pl,

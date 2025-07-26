@@ -68,7 +68,7 @@ public:
       isStemBlock(bl.mLegacyBlock->isStemBlock()),
       isThinFenceBlock(bl.mLegacyBlock->isThinFenceBlock()),
       //   isUnbreakable(bl.isUnbreakable()),
-      isUnbreakable((*(float*)(&bl.mDirectData->mUnkc58c4d)) < 0.0),
+      isUnbreakable(bl.mDirectData->mDestroySpeed < 0.0),
       tag(std::make_unique<CompoundTag>(bl.mSerializationId)) {}
 
     bool operator==(const BlockInfo& bi) const {

@@ -7,9 +7,9 @@ add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.
 -- add_requires("levilamina develop") to use develop version
 -- please note that you should add bdslibrary yourself if using dev version
 add_requires(
-    "levilamina 1.2.0",
+    "levilamina 1.3.4",
     "lua 5.4.7",
-    "levibuildscript 0.4.0",
+    "levibuildscript",
     "timewheel"
 )
 add_requires("boost", {configs = {all = true}})
