@@ -1,0 +1,17 @@
+#include "SimPlayer.h"
+#include "mc/world/actor/player/Inventory.h"
+#include "mc/world/actor/player/PlayerInventory.h"
+#include "mc/world/actor/provider/ActorEquipment.h"
+
+namespace coral_fans::cfsp::simulated_player {
+bool SimPlayer::isEmptyInv() {
+    if (!this->simPlayer) return false;
+    if (this->simPlayer->mInventory->mInventory->isEmpty()
+        || this->simPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
+        || ActorEquipment::getArmorContainer(this->simPlayer->getEntityContext()).isEmpty())
+        return false;
+    auto ec = this->simPlayer->getEnderChestContainer();
+    if (ec.has_value() && ec->isEmpty()) return false;
+    return true;
+}
+} // namespace coral_fans::cfsp::simulated_player
