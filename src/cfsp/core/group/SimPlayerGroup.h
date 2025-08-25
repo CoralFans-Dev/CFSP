@@ -1,7 +1,6 @@
-#include "GroupData.h"
-#include <string>
-#include <unordered_set>
+#pragma once
 
+#include "GroupData.h"
 
 namespace coral_fans::cfsp::group {
 class SimPlayerGroup {

@@ -1,5 +1,5 @@
 #include "cfsp/CFSP.h"
-#include "cfsp/base/Mod.h"
+#include "cfsp/core/manager/SimPlayerManager.h"
 #include "ll/api/Config.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
@@ -14,15 +14,14 @@ CFSP& CFSP::getInstance() {
 
 bool CFSP::load() {
     const auto& logger = getSelf().getLogger();
-    auto&       mod    = coral_fans::cfsp::mod();
 
     // load config
     try {
         const auto& configFilePath = getSelf().getConfigDir() / "config.json";
-        if (!ll::config::loadConfig(mod.getConfig(), configFilePath)) {
+        if (!ll::config::loadConfig(manager::SimPlayerManager::getInstance().getConfig(), configFilePath)) {
             logger.warn("Cannot load configurations from {}", configFilePath);
             logger.info("Saving default configurations");
-            if (!ll::config::saveConfig(mod.getConfig(), configFilePath)) {
+            if (!ll::config::saveConfig(manager::SimPlayerManager::getInstance().getConfig(), configFilePath)) {
                 logger.error("Cannot save default configurations to {}", configFilePath);
                 return false;
             }
@@ -38,11 +37,7 @@ bool CFSP::load() {
     return true;
 }
 
-bool CFSP::enable() {
-    auto& mod = coral_fans::cfsp::mod();
-
-    return true;
-}
+bool CFSP::enable() { return true; }
 
 bool CFSP::disable() { return true; }
 

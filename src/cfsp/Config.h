@@ -20,12 +20,13 @@ enum class ListType : int { disabled, blacklist, whitelist };
 struct SimPlayerStruct {
     std::string                     namePrefix          = "SIM-";
     std::string                     namePostfix         = "";
-    bool                            allowTp             = false;
+    bool                            autorespawn         = true;
+    bool                            autojoin            = true;
+    bool                            autodespawn         = true;
     unsigned long long              maxOnline           = 16;
     unsigned long long              maxOwn              = 10;
     unsigned long long              maxOnlinePerPlayer  = 3;
     unsigned long long              maxGroup            = 5;
-    unsigned long long              maxSpawnCount       = 128;
     unsigned long long              autoDespawnCount    = 3;
     unsigned long long              autoDespawninterval = 600;
     CommandPermissionLevel          adminPermission     = CommandPermissionLevel::GameDirectors;
