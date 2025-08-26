@@ -7,6 +7,4 @@ inline std::string SimPlayer::getName() { return this->mSaveData.name; }
 inline std::string SimPlayer::getXuid() { return this->mSaveData.xuid; }
 
 inline bool SimPlayer::isOnline() { return this->mSimPlayer != nullptr; }
-
-void SimPlayer::simPlayerHook() { simPlayerInvHook(); }
 } // namespace coral_fans::cfsp::simulated_player

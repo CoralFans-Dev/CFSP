@@ -6,18 +6,13 @@
 
 namespace coral_fans::cfsp::config {
 
-struct CommandConfigStruct {
-    bool                   enabled;
-    CommandPermissionLevel permission;
-};
-
-struct CommandStruct {
-    CommandConfigStruct sp = {true, CommandPermissionLevel::Any};
-};
 
 enum class ListType : int { disabled, blacklist, whitelist };
 
-struct SimPlayerStruct {
+struct Config {
+    int         version    = 2;
+    std::string locateName = "zh_CN";
+
     std::string                     namePrefix          = "SIM-";
     std::string                     namePostfix         = "";
     bool                            autorespawn         = true;
@@ -34,15 +29,6 @@ struct SimPlayerStruct {
     std::unordered_set<std::string> list;
     std::unordered_set<std::string> superManagerList;
     std::string                     luaPreload = "";
-};
-
-struct Config {
-    int         version    = 2;
-    std::string locateName = "zh_CN";
-
-    SimPlayerStruct simPlayer;
-
-    CommandStruct command;
 };
 
 } // namespace coral_fans::cfsp::config
