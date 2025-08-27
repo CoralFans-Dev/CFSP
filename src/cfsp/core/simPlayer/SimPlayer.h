@@ -8,16 +8,18 @@
 namespace coral_fans::cfsp::simulated_player {
 class SimPlayer {
 public:
-    SimPlayerSaveData                     mSaveData;
-    SimulatedPlayer*                      mSimPlayer;
-    std::shared_ptr<timewheel::TimeWheel> mScheduler;
-    unsigned long long                    mTaskid;
-    unsigned long long                    mScriptid;
-    bool                                  mShouldSave;
-    bool                                  mIsEnderContainerEmpty;
-    bool                                  mIsInventoryEmpty;
-    bool                                  mIsOffhandEmpty;
-    bool                                  mIsEquipmentEmpty;
+    SimPlayerSaveData  mSaveData;
+    SimulatedPlayer*   mSimPlayer;
+    unsigned long long mTaskid     = 0;
+    unsigned long long mScriptid   = 0;
+    bool               mShouldSave = true;
+    bool               mIsEnderContainerEmpty;
+    bool               mIsInventoryEmpty;
+    bool               mIsOffhandEmpty;
+    bool               mIsEquipmentEmpty;
+
+public:
+    SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp);
 
 public:
     void                        save();

@@ -18,8 +18,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayerSaveData>>
         mOfflineSpDataMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-        mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::SimPlayerGroup>> mGroupMap; //<假人组名, 假人组对象>
+                                                                            mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::SimPlayerGroup>> mGroupMap;    //<假人组名, 假人组对象>
     std::vector<std::string>                                                onlineList;
     std::vector<std::string>                                                offlineList;
     std::unordered_map<std::string, unsigned long long> mOnlineCountPerPlayer; //<玩家UUID, 上线假人数>
@@ -29,9 +29,10 @@ private:
     struct config::CommandPermission                    mCommandPermission;
 
 public:
-    static SimPlayerManager& getInstance();
-    config::Config&          getConfig();
-    bool                     loadData();
+    static SimPlayerManager&              getInstance();
+    config::Config&                       getConfig();
+    std::shared_ptr<timewheel::TimeWheel> getSchedule();
+    bool                                  loadData();
 
 private:
     void loadSpSaveData();
@@ -40,6 +41,7 @@ private:
 
 public:
     std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
-    base::CommandResult createSp(Player* player, std::string const& name, Vec3 const& pos, int dim);
+    base::CommandResult
+    createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim, bool isLockUniqueId = true);
 };
 } // namespace coral_fans::cfsp::manager

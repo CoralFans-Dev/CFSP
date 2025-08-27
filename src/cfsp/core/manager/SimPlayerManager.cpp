@@ -14,7 +14,9 @@ SimPlayerManager& SimPlayerManager::getInstance() {
     return instance;
 }
 
-config::Config& SimPlayerManager::getConfig() { return mConfig; }
+config::Config& SimPlayerManager::getConfig() { return this->mConfig; }
+
+std::shared_ptr<timewheel::TimeWheel> SimPlayerManager::getSchedule() { return this->mScheduler; }
 
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> SimPlayerManager::tryGetCFSP(Player* sp) {
     if (!sp->isSimulatedPlayer()) return std::nullopt;

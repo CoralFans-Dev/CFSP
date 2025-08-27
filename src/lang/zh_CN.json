@@ -280,6 +280,7 @@
                 "toomanyown": "拥有假人过多",
                 "toomanygroup": "您创建的组数量超过上限",
                 "cannotcreate": "无法创建假人",
+                "failedtocreate": "创建假人失败",
                 "notfound": "找不到对象",
                 "permissiondenied": "权限拒绝",
                 "statuserror": "状态异常",
