@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SimPlayerSaveData.h"
-#include "TimeWheel.h"
 #include "cfsp/base/Macros.h"
 #include "mc/server/SimulatedPlayer.h"
 
@@ -19,7 +18,7 @@ public:
     bool               mIsEquipmentEmpty;
 
 public:
-    SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp);
+    SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp = nullptr);
 
 public:
     void                        save();
@@ -29,5 +28,6 @@ public:
 
 public:
     CFSP_API bool isEmptyInv();
+    bool          hasPermission(Player*);
 };
 } // namespace coral_fans::cfsp::simulated_player

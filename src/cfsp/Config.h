@@ -10,9 +10,9 @@ namespace coral_fans::cfsp::config {
 enum class ListType : int { disabled, blacklist, whitelist };
 
 struct Config {
-    int         version    = 2;
-    std::string locateName = "zh_CN";
-
+    int                             version             = 3;
+    bool                            enabled             = true;
+    CommandPermissionLevel          permission          = CommandPermissionLevel::Any;
     std::string                     namePrefix          = "SIM-";
     std::string                     namePostfix         = "";
     bool                            autorespawn         = true;

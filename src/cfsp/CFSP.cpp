@@ -1,9 +1,7 @@
 #include "cfsp/CFSP.h"
-#include "cfsp/core/manager/SimPlayerManager.h"
-#include "ll/api/Config.h"
+#include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
-
 
 namespace coral_fans::cfsp {
 
@@ -13,7 +11,7 @@ CFSP& CFSP::getInstance() {
 }
 
 bool CFSP::load() {
-    if (!manager::SimPlayerManager::getInstance().loadData()) return false;
+    if (!manager::CFSPManager::getInstance().init()) return false;
 
     // load i18n
     if (!ll::i18n::getInstance().load(getSelf().getLangDir())) getSelf().getLogger().error("Failed to load I18n");

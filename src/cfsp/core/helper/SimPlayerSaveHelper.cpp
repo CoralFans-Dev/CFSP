@@ -1,5 +1,5 @@
 #include "SimPlayerHelper.h"
-#include "cfsp/core/manager/SimPlayerManager.h"
+#include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/memory/Hook.h"
 #include "mc/network/packet/MobEquipmentPacket.h"
 #include "mc/world/actor/player/Inventory.h"
@@ -18,7 +18,7 @@ LL_TYPE_INSTANCE_HOOK(
     ::Player& player
 ) {
     origin(player);
-    auto cfsp = manager::SimPlayerManager::getInstance().tryGetCFSP(&player);
+    auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(&player);
     if (cfsp.has_value()) {
         cfsp.value()->save();
     }
@@ -37,7 +37,7 @@ LL_TYPE_INSTANCE_HOOK(
     bool             forceBalanced
 ) {
     origin(container, slot, oldItem, newItem, forceBalanced);
-    auto cfsp = manager::SimPlayerManager::getInstance().tryGetCFSP(this);
+    auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(this);
     if (cfsp.has_value()) {
         if (slot == 0 && oldItem.getTypeName() != newItem.getTypeName()) {
             MobEquipmentPacket(
@@ -77,7 +77,7 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     ItemStack const& item
 ) {
-    auto cfsp = manager::SimPlayerManager::getInstance().tryGetCFSP(this);
+    auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(this);
     if (cfsp.has_value()) {
         if (this->getOffhandSlot().getTypeName() != item.getTypeName())
             MobEquipmentPacket(this->getRuntimeID(), item, 1, 0,
@@ -112,7 +112,7 @@ LL_TYPE_INSTANCE_HOOK(
     ::SharedTypes::Legacy::EquipmentSlot slot,
     ::ItemStack const&                   item
 ) {
-    auto cfsp = manager::SimPlayerManager::getInstance().tryGetCFSP(this);
+    auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(this);
     if (cfsp.has_value()) {
         if (cfsp.value()->mIsEnderContainerEmpty) {
             if (item == ItemStack::EMPTY_ITEM()) {
