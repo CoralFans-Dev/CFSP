@@ -28,6 +28,6 @@ public:
 
 public:
     CFSP_API bool isEmptyInv();
-    bool          hasPermission(Player*);
+    bool          hasPermission(Player*, SimPlayerPermission permission);
 };
 } // namespace coral_fans::cfsp::simulated_player

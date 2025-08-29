@@ -6,12 +6,15 @@
 
 namespace coral_fans::cfsp::command {
 class ComandManager {
+private:
+    ll::command::CommandHandle* command;
+
 public:
     static ComandManager& getInstance();
 
 private:
     std::optional<Player*> tryGetPlayer(CommandOrigin const& origin);
-    void                   registerGuiCommand(ll::command::CommandHandle& command);
+    void                   registerGuiCommand();
 
 public:
     void registerCommand(CommandPermissionLevel permission);

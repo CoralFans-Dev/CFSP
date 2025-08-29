@@ -1,4 +1,5 @@
 #include "SimPlayer.h"
+#include "SimPlayerSaveData.h"
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
@@ -24,10 +25,13 @@ inline std::string SimPlayer::getXuid() { return this->mSaveData.xuid; }
 
 inline bool SimPlayer::isOnline() { return this->mSimPlayer != nullptr; }
 
-bool SimPlayer::hasPermission(Player* player) {
+bool SimPlayer::hasPermission(Player* player, SimPlayerPermission permission) {
     auto uuid = player->getUuid().asString();
     if (this->mSaveData.ownerUuid == uuid) return true;
-    if (this->mSaveData.permission.contains(uuid)) return true;
-    return false;
+    auto it = this->mSaveData.permission.find(uuid);
+    if (it != this->mSaveData.permission.end() && ((uint)it->second & (uint)permission) == (uint)permission)
+        return true;
+    it = this->mSaveData.permission.find("");
+    return it != this->mSaveData.permission.end() && ((uint)it->second & (uint)permission) == (uint)permission;
 }
 } // namespace coral_fans::cfsp::simulated_player

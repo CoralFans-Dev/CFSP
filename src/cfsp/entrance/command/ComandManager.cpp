@@ -21,11 +21,11 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
     using ll::i18n_literals::operator""_tr;
 
     // reg cmd
-    auto& spCommand = ll::command::CommandRegistrar::getInstance()
-                          .getOrCreateCommand("sp", "command.sp.description"_tr(), permission);
+    this->command = &ll::command::CommandRegistrar::getInstance()
+                         .getOrCreateCommand("sp", "command.sp.description"_tr(), permission);
 
     // sp version
-    spCommand.overload().text("version").execute([](CommandOrigin const&, CommandOutput& output) {
+    this->command->overload().text("version").execute([](CommandOrigin const&, CommandOutput& output) {
 #ifdef VERSION
         output.success(VERSION);
 #endif
@@ -34,6 +34,6 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
 #endif
     });
 
-    this->registerGuiCommand(spCommand);
+    this->registerGuiCommand();
 }
 } // namespace coral_fans::cfsp::command

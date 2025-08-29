@@ -17,7 +17,7 @@ struct SimPlayerSaveData {
     std::string                                          ownerUuid;
     bool                                                 isLockUniqueId;
     std::optional<std::string>                           lastSpawnerUuid; // 当由后台上线时，为std::nullopt_t
-    std::unordered_map<std::string, SimPlayerPermission> permission;      // <玩家uuid, permission>
+    std::unordered_map<std::string, SimPlayerPermission> permission; // <玩家uuid, permission>, 当uuid为""时，为公共假人
     bool                                                 isOnline     = true;
     Vec3                                                 lookAtOffSet = {0, 0, 0};
     bool                                                 isEmptyInv   = true;

@@ -1,11 +1,12 @@
 #include "CFSPManager.h"
 #include "cfsp/CFSP.h"
 #include "cfsp/ConFig.h"
-#include "cfsp/core/group/SimPlayerGroup.h"
+#include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/simPlayer/SimPlayerSaveData.h"
 #include "cfsp/entrance/command/ComandManager.h"
 #include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
+#include "ll/api/i18n/I18n.h"
 #include <memory>
 #include <optional>
 #include <vector>
@@ -44,7 +45,7 @@ void CFSPManager::loadGroupData() {
     std::vector<std::string> cfspGrouplist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
-            group::SimPlayerGroup group;
+            group::CFSPGroup group;
             if (ll::config::loadConfig(group.mData, dir / "data.json")) {
                 bool isChange = false;
                 std::erase_if(group.mData.splist, [this, &isChange](const auto& spName) {
@@ -55,7 +56,7 @@ void CFSPManager::loadGroupData() {
                     return false;
                 });
                 if (isChange) ll::config::saveConfig(group.mData, dir / "data.json");
-                this->mGroupMap[group.mData.name] = std::make_shared<group::SimPlayerGroup>(group);
+                this->mGroupMap[group.mData.name] = std::make_shared<group::CFSPGroup>(group);
                 cfspGrouplist.emplace_back(group.mData.name);
             }
         }
@@ -119,6 +120,38 @@ bool CFSPManager::isManager(Player* player) {
         || this->mConfig.superManagerList.contains(*player->mName);
 }
 
+base::OperateResult CFSPManager::canCreatePlayer(Player* player) {
+    using ll::i18n_literals::operator""_tr;
+    // check: isSimulatedPlayer
+    if (player && player->isSimulatedPlayer()) return base::OperateResult();
+    if (!this->mPermissionConfig.base.create.enabled)
+        return base::OperateResult::error("manager.fail.funcUnabled"_tr());
+    if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    bool isManager = this->isManager(player);
+    if (!isManager && player->getCommandPermissionLevel() < this->mPermissionConfig.base.create.permission)
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    auto ownerUuid = player->getUuid().asString();
+    if (isManager) return base::OperateResult::success();
+    // check: maxOnline
+    if (this->mOnlineCount >= this->mConfig.maxOnline)
+        return base::OperateResult::error("manager.fail.tooManyOnline"_tr(std::to_string(this->mConfig.maxOnline)));
+    // check: maxOnlinePerPlayer
+    if (this->mOnlineCountPerPlayer[ownerUuid] >= this->mConfig.maxOnlinePerPlayer)
+        return base::OperateResult::error(
+            "manager.fail.tooManyOnlinePerPlayer"_tr(std::to_string(this->mConfig.maxOnlinePerPlayer))
+        );
+    // check: maxOwn
+    unsigned long long count = 0;
+    for (auto sp : this->mOnlineSpMap) {
+        if (sp.second->mSaveData.ownerUuid == ownerUuid) count++;
+    }
+    for (auto spdata : this->mOfflineSpMap) {
+        if (spdata.second->mSaveData.ownerUuid == ownerUuid) count++;
+    }
+    if (count >= this->mConfig.maxOwn) return base::OperateResult::error("manager.fail.tooManyOwn"_tr());
+    return base::OperateResult::success();
+}
+
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(Player* sp) {
     if (!sp->isSimulatedPlayer()) return std::nullopt;
     auto it = mOnlineSpMap.find(*sp->mName);
@@ -133,16 +166,31 @@ std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetC
     return std::nullopt;
 }
 
-std::optional<std::shared_ptr<group::SimPlayerGroup>> CFSPManager::tryGetCFSPGroup(std::string const& name) {
+std::optional<std::shared_ptr<group::CFSPGroup>> CFSPManager::tryGetCFSPGroup(std::string const& name) {
     if (auto it = this->mGroupMap.find(name); it != this->mGroupMap.end()) return it->second;
     return std::nullopt;
+}
+
+std::vector<std::string> CFSPManager::getSpNamesSorted(const Player* player) {
+    std::vector<std::string> res;
+    std::string              uuid = player->getUuid().asString();
+    for (auto i : mOnlineSpMap) {
+        if (i.second->mSaveData.ownerUuid == uuid || i.second->mSaveData.permission.contains(uuid))
+            res.emplace_back(i.first);
+    }
+    for (auto i : mOfflineSpMap) {
+        if (i.second->mSaveData.ownerUuid == uuid || i.second->mSaveData.permission.contains(uuid))
+            res.emplace_back(i.first);
+    }
+    std::sort(res.begin(), res.end());
+    return res;
 }
 
 std::vector<std::string> CFSPManager::getGroupNamesSorted(const Player* player) {
     std::vector<std::string> res;
     std::string              uuid = player->getUuid().asString();
     for (auto i : mGroupMap) {
-        if (i.second->mData.ownerUuid == uuid || i.second->mData.adminUuid.contains(uuid)) res.emplace_back(i.first);
+        if (i.second->mData.ownerUuid == uuid || i.second->mData.permission.contains(uuid)) res.emplace_back(i.first);
     }
     std::sort(res.begin(), res.end());
     return res;

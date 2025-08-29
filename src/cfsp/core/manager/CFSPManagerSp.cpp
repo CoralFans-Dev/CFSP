@@ -16,52 +16,20 @@ base::OperateResult CFSPManager::createSp(
     bool               isLockUniqueId
 ) {
     using ll::i18n_literals::operator""_tr;
-    // check: isSimulatedPlayer
-    if (player && player->isSimulatedPlayer()) return base::OperateResult();
-    if (!this->mPermissionConfig.base.create.enabled)
-        return base::OperateResult(base::OperateResult::Type::error, "manager.fail.funcUnabled"_tr());
-    if (!isAllowed(player))
-        return base::OperateResult(base::OperateResult::Type::error, "manager.fail.permissionDenied"_tr());
-    bool isManager = this->isManager(player);
-    if (!isManager && player->getCommandPermissionLevel() < this->mPermissionConfig.base.create.permission)
-        return base::OperateResult(base::OperateResult::Type::error, "manager.fail.permissionDenied"_tr());
+    if (auto checkResult = this->canCreatePlayer(player); checkResult.mType != base::OperateResult::Type::success)
+        return checkResult;
     std::string spname    = this->mConfig.namePrefix + name + this->mConfig.namePostfix;
     auto        ownerUuid = player->getUuid().asString();
     // check: already exist
     if (this->mOnlineSpMap.find(spname) != this->mOnlineSpMap.end()
         || this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end()) {
-        return base::OperateResult(base::OperateResult::Type::error, "manager.fail.spHasExisted"_tr());
-    }
-    if (!isManager) {
-        // check: maxOnline
-        if (this->mOnlineCount >= this->mConfig.maxOnline)
-            return base::OperateResult(
-                base::OperateResult::Type::error,
-                "manager.fail.tooManyOnline"_tr(std::to_string(this->mConfig.maxOnline))
-            );
-        // check: maxOnlinePerPlayer
-        if (this->mOnlineCountPerPlayer[ownerUuid] >= this->mConfig.maxOnlinePerPlayer)
-            return base::OperateResult(
-                base::OperateResult::Type::error,
-                "manager.fail.tooManyOnlinePerPlayer"_tr(std::to_string(this->mConfig.maxOnlinePerPlayer))
-            );
-        // check: maxOwn
-        unsigned long long count = 0;
-        for (auto sp : this->mOnlineSpMap) {
-            if (sp.second->mSaveData.ownerUuid == ownerUuid) count++;
-        }
-        for (auto spdata : this->mOfflineSpMap) {
-            if (spdata.second->mSaveData.ownerUuid == ownerUuid) count++;
-        }
-        if (count >= this->mConfig.maxOwn)
-            return base::OperateResult(base::OperateResult::Type::error, "manager.fail.tooManyOwn"_tr());
+        return base::OperateResult::error("manager.fail.spHasExisted"_tr());
     }
     // create
     auto mc = ll::service::getMinecraft();
-    if (!mc) return base::OperateResult(base::OperateResult::Type::error, "manager.error.failedtocreate"_tr());
+    if (!mc) return base::OperateResult::error("manager.error.failedtocreate"_tr());
     auto serverNetworkHandler = mc->getServerNetworkHandler();
-    if (!serverNetworkHandler)
-        return base::OperateResult(base::OperateResult::Type::error, "manager.error.failedtocreate"_tr());
+    if (!serverNetworkHandler) return base::OperateResult::error("manager.error.failedtocreate"_tr());
     auto  xuid      = "-" + std::to_string(std::hash<std::string>()(spname));
     auto* simPlayer = SimulatedPlayer::create(
         spname,
@@ -74,7 +42,7 @@ base::OperateResult CFSPManager::createSp(
         xuid,
         std::nullopt
     );
-    if (!simPlayer) return base::OperateResult(base::OperateResult::Type::error, "manager.error.failedtocreate"_tr());
+    if (!simPlayer) return base::OperateResult::error("manager.error.failedtocreate"_tr());
 
     simPlayer->mPlayerRespawnPoint->mPlayerPosition = pos;
     simPlayer->mPlayerRespawnPoint->mDimension      = dim;
@@ -92,6 +60,6 @@ base::OperateResult CFSPManager::createSp(
 
     ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspname", {spname});
 
-    return base::OperateResult(base::OperateResult::Type::success, "manager.success.create"_tr());
+    return base::OperateResult::success("manager.success.create"_tr());
 }
 } // namespace coral_fans::cfsp::manager

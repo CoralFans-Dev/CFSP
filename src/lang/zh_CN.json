@@ -17,14 +17,10 @@
     },
     "command": {
         "fail": {
-            "onlyplayer": "仅玩家可以使用此命令"
-        },
-        "sp": {
-            "fail": {
-                "permissionDenied": "您的权限不足",
-                "spNoFind": "未找到假人",
-                "groupNoFind": "未找到假人组"
-            }
+            "onlyplayer": "仅玩家可以使用此命令",
+            "permissionDenied": "您的权限不足",
+            "spNoFind": "未找到假人",
+            "groupNoFind": "未找到假人组"
         }
     },
     "gui": {
@@ -33,6 +29,12 @@
             "splistButton": "假人列表",
             "publicSplistButton": "公共假人列表",
             "grouplistButton": "假人组列表"
+        },
+        "managermainmenu": {
+            "title": "CoralFans假人系统 管理员主菜单",
+            "splistbutton": "假人列表",
+            "grouplistbutton": "假人组列表",
+            "managerlistbutton": "设置"
         }
     }
 }
