@@ -8,14 +8,13 @@ struct FuncStruct {
     CommandPermissionLevel permission;
 };
 
-struct BaseFunc {
-    bool       enabled;
-    FuncStruct create = {true, CommandPermissionLevel::Any};
-};
-
 struct PermissionConfig {
-    int        version = 1;
-    FuncStruct gui     = {true, CommandPermissionLevel::Any};
-    BaseFunc   base;
+    int        version     = 1;
+    FuncStruct gui         = {true, CommandPermissionLevel::Any};
+    FuncStruct createSp    = {true, CommandPermissionLevel::Any};
+    FuncStruct spawnSp     = {true, CommandPermissionLevel::Any};
+    FuncStruct despawnSp   = {true, CommandPermissionLevel::Any};
+    FuncStruct respawnSp   = {true, CommandPermissionLevel::Any};
+    FuncStruct createGroup = {true, CommandPermissionLevel::Any};
 };
 } // namespace coral_fans::cfsp::config

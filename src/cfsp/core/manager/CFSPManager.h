@@ -18,36 +18,52 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
-    std::unordered_map<std::string, unsigned long long>                mOnlineCountPerPlayer; //<玩家UUID, 上线假人数>
-    unsigned long long                                                 mOnlineCount;          // 总上线假人数
+        mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
     std::shared_ptr<timewheel::TimeWheel>                              mScheduler;
     config::Config                                                     mConfig;
-    struct config::PermissionConfig                                    mPermissionConfig;
+    config::PermissionConfig                                           mPermissionConfig;
 
 public:
-    static CFSPManager&                   getInstance();
-    config::Config&                       getConfig();
-    config::PermissionConfig&             getPermissionConfig();
-    std::shared_ptr<timewheel::TimeWheel> getSchedule();
-    bool                                  init();
-    bool                                  isAllowed(Player*);
-    bool                                  isManager(Player*);
-    base::OperateResult                   canCreatePlayer(Player*);
+    static CFSPManager&                          getInstance();
+    config::Config&                              getConfig();
+    config::PermissionConfig&                    getPermissionConfig();
+    inline std::shared_ptr<timewheel::TimeWheel> getSchedule();
+    CFSP_API inline bool                         getAutoRespawn();
+    CFSP_API inline bool                         getAutoJoin();
+    CFSP_API inline bool                         getAutoDespawn();
+    CFSP_API inline void                         setAutoRespawn(bool);
+    CFSP_API inline void                         setAutoJoin(bool);
+    CFSP_API inline void                         setAutoDespawn(bool);
+    bool                                         init();
+    void                                         load();
+    bool                                         isAllowed(const Player*);
+    bool                                         isManager(const Player*);
+    base::OperateResult                          baseCheck(const Player*, config::FuncStruct);
+    base::OperateResult                          canCreatePlayer(const Player*);
+    base::OperateResult                          canCreateGroup(const Player*);
 
-public:
 private:
+    bool tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir);
     void loadSpSaveData();
     void loadGroupData();
 
 public:
-    std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
-    std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(std::string const& name);
-    std::optional<std::shared_ptr<group::CFSPGroup>>            tryGetCFSPGroup(std::string const& name);
-    std::vector<std::string>                                    getSpNamesSorted(const Player*);
-    std::vector<std::string>                                    getGroupNamesSorted(const Player*);
-    base::OperateResult
+    CFSP_API std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
+    CFSP_API std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(std::string const& name);
+    CFSP_API std::optional<std::shared_ptr<group::CFSPGroup>> tryGetCFSPGroup(std::string const& name);
+    CFSP_API std::vector<std::string> getSpNamesSorted(const Player*);
+    CFSP_API std::vector<std::string> getGroupNamesSorted(const Player*);
+    CFSP_API std::vector<std::string> getPublicSpNamesSorted();
+    CFSP_API std::vector<std::string> getAllSpNamesSorted();
+    CFSP_API std::vector<std::string> getAllGroupNamesSorted();
+    std::string                       listOnlineSp(const Player*);
+    std::string                       listOfflineSp(const Player*);
+    CFSP_API                          base::OperateResult
     createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim, bool isLockUniqueId = true);
+    CFSP_API base::OperateResult createGroup(Player* player, std::string const& gname);
+    CFSP_API base::OperateResult spawnSp(Player* player, std::string const& spname);
+    CFSP_API base::OperateResult despawnSp(Player* player, std::string const& spname);
+    CFSP_API base::OperateResult respawnSp(Player* player, std::string const& spname);
 };
 } // namespace coral_fans::cfsp::manager

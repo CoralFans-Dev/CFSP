@@ -15,9 +15,9 @@ struct Config {
     CommandPermissionLevel          permission          = CommandPermissionLevel::Any;
     std::string                     namePrefix          = "SIM-";
     std::string                     namePostfix         = "";
-    bool                            autorespawn         = true;
-    bool                            autojoin            = true;
-    bool                            autodespawn         = true;
+    bool                            autoRespawn         = true;
+    bool                            autoJoin            = true;
+    bool                            autoDespawn         = true;
     unsigned long long              maxOnline           = 16;
     unsigned long long              maxOwn              = 10;
     unsigned long long              maxOnlinePerPlayer  = 3;

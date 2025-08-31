@@ -1,7 +1,9 @@
 #include "CFSPManager.h"
 #include "cfsp/CFSP.h"
 #include "cfsp/ConFig.h"
+#include "cfsp/base/OperateResult.h"
 #include "cfsp/core/group/CFSPGroup.h"
+#include "cfsp/core/helper/SimPlayerHelper.h"
 #include "cfsp/core/simPlayer/SimPlayerSaveData.h"
 #include "cfsp/entrance/command/ComandManager.h"
 #include "ll/api/Config.h"
@@ -24,44 +26,75 @@ config::PermissionConfig& CFSPManager::getPermissionConfig() { return this->mPer
 
 std::shared_ptr<timewheel::TimeWheel> CFSPManager::getSchedule() { return this->mScheduler; }
 
+bool CFSPManager::getAutoRespawn() { return this->mConfig.autoRespawn; }
+
+bool CFSPManager::getAutoJoin() { return this->mConfig.autoJoin; }
+
+bool CFSPManager::getAutoDespawn() { return this->mConfig.autoDespawn; }
+
+void CFSPManager::setAutoRespawn(bool isOpen) { this->mConfig.autoRespawn = isOpen; }
+
+void CFSPManager::setAutoJoin(bool isOpen) { this->mConfig.autoJoin = isOpen; }
+
+void CFSPManager::setAutoDespawn(bool isOpen) { this->mConfig.autoDespawn = isOpen; }
+
+bool CFSPManager::tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir) {
+    if (dir.empty()) return false;
+    if (dir[0] == ' ' || dir.ends_with(' ')) return false;
+    auto path = basePath / dir;
+    try {
+        if (!std::filesystem::exists(basePath)) {
+            std::filesystem::create_directories(basePath);
+        }
+        return std::filesystem::create_directory(path);
+    } catch (...) {
+        return false;
+    }
+}
 
 void CFSPManager::loadSpSaveData() {
-    auto                     dir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+    auto dir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+    if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> splist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
             simulated_player::SimPlayerSaveData playData;
-            if (ll::config::saveConfig(playData, dir / "data.json")) {
+            if (ll::config::loadConfig(playData, path.path() / "data.json")
+                && playData.name == path.path().filename()) {
                 this->mOfflineSpMap[playData.name] = std::make_shared<simulated_player::SimPlayer>(playData);
                 splist.emplace_back(playData.name);
             }
         }
     }
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspname", splist);
+    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOfflineSp", splist);
+    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspSplist", splist);
+    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOnlineSp", {});
 }
 
 void CFSPManager::loadGroupData() {
-    auto                     dir = CFSP::getInstance().getSelf().getDataDir() / "group";
+    auto dir = CFSP::getInstance().getSelf().getDataDir() / "group";
+    if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> cfspGrouplist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
-            group::CFSPGroup group;
-            if (ll::config::loadConfig(group.mData, dir / "data.json")) {
+            group::GroupData groupData;
+            if (ll::config::loadConfig(groupData, path.path() / "data.json")
+                && groupData.name == path.path().filename()) {
                 bool isChange = false;
-                std::erase_if(group.mData.splist, [this, &isChange](const auto& spName) {
+                std::erase_if(groupData.splist, [this, &isChange](const auto& spName) {
                     if (this->mOfflineSpMap.find(spName) == this->mOfflineSpMap.end()) {
                         isChange = true;
                         return true;
                     }
                     return false;
                 });
-                if (isChange) ll::config::saveConfig(group.mData, dir / "data.json");
-                this->mGroupMap[group.mData.name] = std::make_shared<group::CFSPGroup>(group);
-                cfspGrouplist.emplace_back(group.mData.name);
+                if (isChange) ll::config::saveConfig(groupData, path.path() / "data.json");
+                this->mGroupMap[groupData.name] = std::make_shared<group::CFSPGroup>(groupData);
+                cfspGrouplist.emplace_back(groupData.name);
             }
         }
     }
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspgroupname", cfspGrouplist);
+    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspGroup", cfspGrouplist);
 }
 
 bool CFSPManager::init() {
@@ -76,7 +109,6 @@ bool CFSPManager::init() {
                 return false;
             }
         }
-        return true;
     } catch (...) {
         logger.error("Failed to load config.json. Please check the file!");
         return false;
@@ -91,16 +123,21 @@ bool CFSPManager::init() {
                 return false;
             }
         }
+        return true;
     } catch (...) {
         logger.error("Failed to load commandPermission.json. Please check the file!");
         return false;
     }
+}
+
+void CFSPManager::load() {
     loadSpSaveData();
     loadGroupData();
     if (this->mConfig.enabled) command::ComandManager::getInstance().registerCommand(this->mConfig.permission);
+    helper::SimPlayerHelperManager::getInstance().SimPlayerHelperHook();
 }
 
-bool CFSPManager::isAllowed(Player* player) {
+bool CFSPManager::isAllowed(const Player* player) {
     if (!player) return true;
     switch (this->mConfig.listType) {
     case coral_fans::cfsp::config::ListType::disabled:
@@ -112,50 +149,69 @@ bool CFSPManager::isAllowed(Player* player) {
         if (this->mConfig.list.find(player->mName) == this->mConfig.list.end()) return false;
         return true;
     }
+    return true;
 }
 
-bool CFSPManager::isManager(Player* player) {
+bool CFSPManager::isManager(const Player* player) {
     return !player // 当player==null时，为控制台在执行命令
         || player->getCommandPermissionLevel() >= this->mConfig.adminPermission
         || this->mConfig.superManagerList.contains(*player->mName);
 }
 
-base::OperateResult CFSPManager::canCreatePlayer(Player* player) {
+base::OperateResult CFSPManager::baseCheck(const Player* player, config::FuncStruct func) {
     using ll::i18n_literals::operator""_tr;
-    // check: isSimulatedPlayer
-    if (player && player->isSimulatedPlayer()) return base::OperateResult();
-    if (!this->mPermissionConfig.base.create.enabled)
-        return base::OperateResult::error("manager.fail.funcUnabled"_tr());
+    if (player && player->isSimulatedPlayer()) return base::OperateResult::error();
+    if (!func.enabled) return base::OperateResult::error("manager.fail.funcUnabled"_tr());
     if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-    bool isManager = this->isManager(player);
-    if (!isManager && player->getCommandPermissionLevel() < this->mPermissionConfig.base.create.permission)
+    if (this->isManager(player)) return base::OperateResult::success();
+    if (player->getCommandPermissionLevel() < func.permission)
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-    auto ownerUuid = player->getUuid().asString();
-    if (isManager) return base::OperateResult::success();
+    return base::OperateResult();
+}
+
+base::OperateResult CFSPManager::canCreatePlayer(const Player* player) {
+    using ll::i18n_literals::operator""_tr;
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createSp);
+        checkResult.mType != base::OperateResult::Type::none)
+        return checkResult;
+    auto uuid = player->getUuid().asString();
     // check: maxOnline
-    if (this->mOnlineCount >= this->mConfig.maxOnline)
+    if (this->mOnlineSpMap.size() >= this->mConfig.maxOnline)
         return base::OperateResult::error("manager.fail.tooManyOnline"_tr(std::to_string(this->mConfig.maxOnline)));
     // check: maxOnlinePerPlayer
-    if (this->mOnlineCountPerPlayer[ownerUuid] >= this->mConfig.maxOnlinePerPlayer)
+    unsigned long long spawnCount = 0, OwnCount = 0;
+    for (auto sp : this->mOnlineSpMap) {
+        if (sp.second->mSaveData.lastSpawnerUuid == uuid) spawnCount++;
+        if (sp.second->mSaveData.ownerUuid == uuid) OwnCount++;
+    }
+    if (spawnCount >= this->mConfig.maxOnlinePerPlayer)
         return base::OperateResult::error(
             "manager.fail.tooManyOnlinePerPlayer"_tr(std::to_string(this->mConfig.maxOnlinePerPlayer))
         );
     // check: maxOwn
+    for (auto sp : this->mOfflineSpMap) {
+        if (sp.second->mSaveData.ownerUuid == uuid) OwnCount++;
+    }
+    if (OwnCount >= this->mConfig.maxOwn) return base::OperateResult::error("manager.fail.tooManyOwnSp"_tr());
+    return base::OperateResult::success();
+}
+
+base::OperateResult CFSPManager::canCreateGroup(const Player* player) {
+    using ll::i18n_literals::operator""_tr;
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createGroup)) return checkResult;
+    auto               uuid  = player->getUuid().asString();
     unsigned long long count = 0;
-    for (auto sp : this->mOnlineSpMap) {
-        if (sp.second->mSaveData.ownerUuid == ownerUuid) count++;
+    for (auto group : this->mGroupMap) {
+        if (group.second->mData.ownerUuid == uuid) count++;
     }
-    for (auto spdata : this->mOfflineSpMap) {
-        if (spdata.second->mSaveData.ownerUuid == ownerUuid) count++;
-    }
-    if (count >= this->mConfig.maxOwn) return base::OperateResult::error("manager.fail.tooManyOwn"_tr());
+    if (count >= this->mConfig.maxGroup) return base::OperateResult::error("manager.fail.tooManyOwnGroup"_tr());
     return base::OperateResult::success();
 }
 
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(Player* sp) {
     if (!sp->isSimulatedPlayer()) return std::nullopt;
     auto it = mOnlineSpMap.find(*sp->mName);
-    if (it == mOnlineSpMap.end() && it->second->mSaveData.uniqueId == sp->getOrCreateUniqueID().rawID)
+    if (it != mOnlineSpMap.end() && it->second->mSaveData.uniqueId == sp->getOrCreateUniqueID().rawID)
         return it->second;
     else return std::nullopt;
 }
@@ -192,6 +248,33 @@ std::vector<std::string> CFSPManager::getGroupNamesSorted(const Player* player) 
     for (auto i : mGroupMap) {
         if (i.second->mData.ownerUuid == uuid || i.second->mData.permission.contains(uuid)) res.emplace_back(i.first);
     }
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
+std::vector<std::string> CFSPManager::getPublicSpNamesSorted() {
+    std::vector<std::string> res;
+    for (auto i : mOnlineSpMap) {
+        if (i.second->mSaveData.permission.contains("")) res.emplace_back(i.first);
+    }
+    for (auto i : mOfflineSpMap) {
+        if (i.second->mSaveData.permission.contains("")) res.emplace_back(i.first);
+    }
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
+std::vector<std::string> CFSPManager::getAllSpNamesSorted() {
+    std::vector<std::string> res;
+    for (auto i : mOnlineSpMap) res.emplace_back(i.first);
+    for (auto i : mOfflineSpMap) res.emplace_back(i.first);
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
+std::vector<std::string> CFSPManager::getAllGroupNamesSorted() {
+    std::vector<std::string> res;
+    for (auto i : mGroupMap) res.emplace_back(i.first);
     std::sort(res.begin(), res.end());
     return res;
 }

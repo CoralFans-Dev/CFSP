@@ -7,10 +7,7 @@
 #include "mc/nbt/CompoundTag.h"
 #include "mc/nbt/CompoundTagVariant.h"
 #include "mc/nbt/ListTag.h"
-#include "mc/world/Container.h"
-#include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/Player.h"
-#include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/level/Level.h"
 #include <string>
 
@@ -66,21 +63,6 @@ std::pair<std::string, bool> getNbtFromTag(CompoundTag const tag, std::string co
         return {tags.back().toSnbt(SnbtFormat::PrettyChatPrint), true};
     } catch (...) {
         return {"translate.data.error.geterror"_tr(), false};
-    }
-}
-
-std::string removeMinecraftPrefix(std::string const& s) { return s.find("minecraft:") == 0 ? s.substr(10) : s; }
-
-void swapItemInContainer(Player* player, int slot1, int slot2) {
-    if (player) {
-        auto&     container = *player->mInventory->mInventory;
-        ItemStack i1, i2;
-        i1 = (slot1 == -1) ? player->getOffhandSlot() : container.getItem(slot1);
-        i2 = (slot2 == -1) ? player->getOffhandSlot() : container.getItem(slot2);
-        if (slot1 == -1) player->setOffhandSlot(i2);
-        else container.setItem(slot1, i2);
-        if (slot2 == -1) player->setOffhandSlot(i1);
-        else container.setItem(slot2, i1);
     }
 }
 

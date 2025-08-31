@@ -1,8 +1,12 @@
 #include "CFSPGroup.h"
 #include "cfsp/core/group/CFSPGroup.h"
+#include "cfsp/core/manager/CFSPManager.h"
 
 namespace coral_fans::cfsp::group {
+CFSPGroup::CFSPGroup(GroupData groupData) { this->mData = groupData; }
+
 bool CFSPGroup::hasPermission(Player* player, GroupPermission permission) {
+    if (manager::CFSPManager::getInstance().isManager(player)) return true;
     auto uuid = player->getUuid().asString();
     if (this->mData.ownerUuid == uuid) return true;
     auto it = this->mData.permission.find(uuid);

@@ -13,8 +13,10 @@ public:
     static ComandManager& getInstance();
 
 private:
+    // 从指令源中获取玩家，如果指令来源是控制台则返回null
     std::optional<Player*> tryGetPlayer(CommandOrigin const& origin);
     void                   registerGuiCommand();
+    void                   registerSpComand();
 
 public:
     void registerCommand(CommandPermissionLevel permission);

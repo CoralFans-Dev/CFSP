@@ -1,7 +1,17 @@
 {
+    "base": {
+        "dimension": {
+            "overworld": "主世界",
+            "nether": "地狱",
+            "theend": "末地",
+            "undefined": "未定义维度"
+        }
+    },
     "manager": {
         "success": {
-            "create": "创建假人成功"
+            "create": "创建成功",
+            "operate": "操作成功",
+            "set": "设置成功"
         },
         "fail": {
             "funcUnabled": "该功能未启用",
@@ -9,18 +19,34 @@
             "spHasExisted": "已存在同名假人",
             "tooManyOnline": "总在线假人已达上限",
             "tooManyOnlinePerPlayer": "您可上线的假人已达上限",
-            "tooManyOwn": "您可拥有的假人已达上限"
+            "tooManyOwnSp": "您可拥有的假人已达上限",
+            "tooManyOwnGroup": "您可拥有的假人组已达上限",
+            "groupHasExisted": "已存在同名假人组",
+            "spHasOnline": "假人已处于在线状态",
+            "spNotExisted": "假人不存在",
+            "spHasOffline": "假人已处于离线状态",
+            "includeIllegalChar": "包含非法字符"
         },
         "error": {
             "failedtocreate": "Error:创建假人失败"
+        },
+        "info": {
+            "onlineCount": "在线假人数量：{}",
+            "offlineCount": "离线假人数量：{}",
+            "onlineCountPerplayer": "您在线的假人数量：{}",
+            "offlineCountPerplayer": "您离线的假人数量：{}",
+            "onlineSp": "\n名称: {}  所有者：{}  坐标: {}",
+            "offlineSp": "\n名称: {}  所有者：{}"
         }
     },
     "command": {
         "fail": {
             "onlyplayer": "仅玩家可以使用此命令",
+            "illegalOrigin": "非法的命令来源",
             "permissionDenied": "您的权限不足",
             "spNoFind": "未找到假人",
-            "groupNoFind": "未找到假人组"
+            "groupNoFind": "未找到假人组",
+            "lackPara": "缺少参数"
         }
     },
     "gui": {
@@ -32,9 +58,39 @@
         },
         "managermainmenu": {
             "title": "CoralFans假人系统 管理员主菜单",
-            "splistbutton": "假人列表",
-            "grouplistbutton": "假人组列表",
-            "managerlistbutton": "设置"
+            "splistButton": "假人列表",
+            "grouplistButton": "假人组列表",
+            "managerlistButton": "设置"
+        },
+        "splist": {
+            "title": "假人列表",
+            "newsp": "创建新假人"
+        },
+        "grouplist": {
+            "title": "假人组列表",
+            "newgroup": "新建组"
+        },
+        "publicSpList": {
+            "title": "公共假人列表"
+        },
+        "managerSpList": {
+            "title": "管理员：假人列表",
+            "newsp": "创建新假人"
+        },
+        "manage": {
+            "title": "管理员：设置管理",
+            "autojoin": "服务器启动时假人自动加入",
+            "autorespawn": "假人死亡时自动重生",
+            "autodespawn": "假人频繁死亡自动离线"
+        },
+        "createSp": {
+            "title": "创建假人",
+            "name": "假人名称 :",
+            "targetPos": "目标坐标 : x y z",
+            "targetDim": "目标维度 :",
+            "lockUniqueId": "锁定UniqueId (锁定之后不会丢失与三叉戟的联系)",
+            "paraError": "Error: 参数解析错误",
+            "nameError": "名称参数错误"
         }
     }
 }

@@ -9,6 +9,9 @@ public:
     GroupData mData;
 
 public:
+    CFSPGroup(GroupData groupData);
+
+public:
     bool hasPermission(Player*, GroupPermission permission);
 };
 } // namespace coral_fans::cfsp::group

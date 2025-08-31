@@ -7,10 +7,6 @@ namespace coral_fans::cfsp::utils {
 
 std::pair<std::string, bool> getNbtFromTag(CompoundTag const, std::string const&);
 
-std::string removeMinecraftPrefix(std::string const& s);
-
-void swapItemInContainer(Player* player, int slot1, int slot2);
-
 std::string tryGetPlayerName(std::string UUID);
 
 BlockPos neighbor(BlockPos pos, int face);

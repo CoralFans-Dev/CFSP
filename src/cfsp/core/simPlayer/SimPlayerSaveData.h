@@ -10,16 +10,15 @@
 
 namespace coral_fans::cfsp::simulated_player {
 struct SimPlayerSaveData {
-    int                                                  version = 1;
-    std::string                                          name;
-    int64                                                uniqueId;
-    std::string                                          xuid;
-    std::string                                          ownerUuid;
-    bool                                                 isLockUniqueId;
-    std::optional<std::string>                           lastSpawnerUuid; // 当由后台上线时，为std::nullopt_t
+    int                  version = 1;
+    std::string          name;
+    std::string          xuid;
+    std::optional<int64> uniqueId;                                   // 不锁定uniqueId时，为std::nullopt
+    std::string          ownerUuid;                                  // 当由后台上线时，为""
+    std::string          lastSpawnerUuid;                            // 当由后台上线时，为""
     std::unordered_map<std::string, SimPlayerPermission> permission; // <玩家uuid, permission>, 当uuid为""时，为公共假人
-    bool                                                 isOnline     = true;
-    Vec3                                                 lookAtOffSet = {0, 0, 0};
-    bool                                                 isEmptyInv   = true;
+    bool isOnline     = true;
+    Vec3 lookAtOffSet = {0, 0, 0};
+    bool isEmptyInv   = true;
 };
 } // namespace coral_fans::cfsp::simulated_player

@@ -2,7 +2,9 @@
 
 #include "SimPlayerSaveData.h"
 #include "cfsp/base/Macros.h"
+#include "cfsp/base/OperateResult.h"
 #include "mc/server/SimulatedPlayer.h"
+#include <memory>
 
 namespace coral_fans::cfsp::simulated_player {
 class SimPlayer {
@@ -25,9 +27,20 @@ public:
     CFSP_API inline std::string getName();
     CFSP_API inline std::string getXuid();
     CFSP_API inline bool        isOnline();
+    base::OperateResult         hasPermission(Player*, SimPlayerPermission permission);
+
+public:
+    CFSP_API static std::shared_ptr<SimPlayer> create(
+        const Player*      player,
+        std::string const& name,
+        Vec3 const&        pos,
+        DimensionType      dim,
+        bool               isLockUniqueId = true
+    );
+    CFSP_API bool spawn(const Player*);
+    CFSP_API void despawn();
 
 public:
     CFSP_API bool isEmptyInv();
-    bool          hasPermission(Player*, SimPlayerPermission permission);
 };
 } // namespace coral_fans::cfsp::simulated_player
