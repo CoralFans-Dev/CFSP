@@ -26,12 +26,12 @@ public:
     static CFSPManager&       getInstance();
     config::Config&           getConfig();
     config::PermissionConfig& getPermissionConfig();
-    inline bool               getAutoRespawn();
-    inline bool               getAutoJoin();
-    inline bool               getAutoDespawn();
-    inline void               setAutoRespawn(bool);
-    inline void               setAutoJoin(bool);
-    inline void               setAutoDespawn(bool);
+    bool                      getAutoRespawn();
+    bool                      getAutoJoin();
+    bool                      getAutoDespawn();
+    void                      setAutoRespawn(bool);
+    void                      setAutoJoin(bool);
+    void                      setAutoDespawn(bool);
     bool                      init();
     void                      load();
     bool                      isAllowed(const Player*);
