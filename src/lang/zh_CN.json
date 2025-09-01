@@ -11,7 +11,8 @@
         "success": {
             "create": "创建成功",
             "operate": "操作成功",
-            "set": "设置成功"
+            "set": "设置成功",
+            "spOffline": "{}已下线"
         },
         "fail": {
             "funcUnabled": "该功能未启用",
@@ -28,7 +29,8 @@
             "includeIllegalChar": "包含非法字符"
         },
         "error": {
-            "failedtocreate": "Error:创建假人失败"
+            "failedtocreate": "Error: 创建假人失败",
+            "loseSimplayer": "Error: 假人对象丢失"
         },
         "info": {
             "onlineCount": "在线假人数量：{}",

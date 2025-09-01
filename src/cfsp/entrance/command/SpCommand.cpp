@@ -25,6 +25,8 @@ void ComandManager::registerSpComand() {
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            if (!manager::CFSPManager::getInstance().isAllowed(player.value()))
+                return output.error("command.error.permissionDenied"_tr());
             if (!self["type"].has_value())
                 return output.success(
                     manager::CFSPManager::getInstance().listOnlineSp(player.value())

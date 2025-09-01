@@ -30,6 +30,10 @@ public:
     base::OperateResult         hasPermission(Player*, SimPlayerPermission permission);
 
 public:
+    CFSP_API void                              cancelTask();
+    CFSP_API void                              cancelScript();
+    CFSP_API void                              stopAction();
+    CFSP_API void                              stop();
     CFSP_API static std::shared_ptr<SimPlayer> create(
         const Player*      player,
         std::string const& name,

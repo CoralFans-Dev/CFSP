@@ -1,44 +1,62 @@
 #include "SimPlayer.h"
-#include "SimPlayerSaveData.h"
-#include "cfsp/base/OperateResult.h"
-#include "ll/api/i18n/I18n.h"
+#include "cfsp/base/Schedule.h"
 #include "ll/api/service/Bedrock.h"
+#include "mc/entity/components_json_legacy/NavigationComponent.h"
 #include "mc/world/Minecraft.h"
-#include "mc/world/actor/player/Inventory.h"
-#include "mc/world/actor/player/PlayerInventory.h"
-#include "mc/world/actor/provider/ActorEquipment.h"
-#include <boost/iostreams/device/mapped_file.hpp>
+#include "mc/world/actor/ai/navigation/PathNavigation.h"
+#include "mc/world/actor/provider/MobMovement.h"
+
 
 namespace coral_fans::cfsp::simulated_player {
-SimPlayer::SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp) {
-    this->mSaveData  = saveData;
-    this->mSimPlayer = sp;
-    if (!sp) return;
-    auto ec = this->mSimPlayer->getEnderChestContainer();
-    if (!ec.has_value() || ec->isEmpty()) this->mIsEnderContainerEmpty = true;
-    else this->mIsEnderContainerEmpty = false;
-    this->mIsInventoryEmpty = this->mSimPlayer->mInventory->mInventory->isEmpty();
-    this->mIsOffhandEmpty   = this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM();
-    this->mIsEquipmentEmpty = ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty();
+void SimPlayer::cancelTask() { base::Schedule::getInstance().getSchedule()->cancel(this->mTaskid); }
+
+void SimPlayer::cancelScript() { base::Schedule::getInstance().getSchedule()->cancel(this->mScriptid); }
+
+void SimPlayer::stopAction() {
+    if (!this->mSimPlayer) throw std::invalid_argument("SimPlayer is null");
+
+    // simPlayer->simulateStopBuild();
+    // int8& isbuilding = ((int8*)&simPlayer->mBuildIntention)[1];
+    // if (isbuilding) {
+    //     simPlayer->mGameMode->stopBuildBlock();
+    //     isbuilding = 0;
+    // }
+
+    this->mSimPlayer->simulateStopDestroyingBlock();
+
+    // simPlayer->simulateStopInteracting();
+    this->mSimPlayer->deleteContainerManager();
+
+    // simPlayer->simulateStopMoving();
+    // from lse
+    auto& type = this->mSimPlayer->mSimulatedMovement->mType.get();
+    if (std::holds_alternative<sim::MoveInDirectionIntent>(type)
+        || std::holds_alternative<sim::MoveToPositionIntent>(type)) {
+        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), Vec3::ZERO());
+    } else if (std::holds_alternative<sim::NavigateToPositionsIntent>(type)
+               || std::holds_alternative<sim::NavigateToEntityIntent>(type)) {
+        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), Vec3::ZERO());
+        auto component = this->mSimPlayer->getEntityContext().tryGetComponent<NavigationComponent>();
+        if (component) {
+            component->mNavigation->stop(component, *this->mSimPlayer);
+        }
+    }
+
+    // simPlayer->simulateStopUsingItem();
+    if (this->mSimPlayer) {
+        if (this->mSimPlayer->isAlive()) {
+            this->mSimPlayer->releaseUsingItem();
+        }
+    }
+
+    if (base::Schedule::getInstance().getSchedule()->isRunning(this->mTaskid)) this->cancelTask();
+    this->mTaskid = 0;
 }
 
-inline std::string SimPlayer::getName() { return this->mSaveData.name; }
-
-inline std::string SimPlayer::getXuid() { return this->mSaveData.xuid; }
-
-inline bool SimPlayer::isOnline() { return this->mSimPlayer != nullptr; }
-
-base::OperateResult SimPlayer::hasPermission(Player* player, SimPlayerPermission permission) {
-    using ll::i18n_literals::operator""_tr;
-    auto uuid = player->getUuid().asString();
-    if (this->mSaveData.ownerUuid == uuid) return base::OperateResult::success();
-    auto it = this->mSaveData.permission.find(uuid);
-    if (it != this->mSaveData.permission.end() && ((uint)it->second & (uint)permission) == (uint)permission)
-        return base::OperateResult::success();
-    it = this->mSaveData.permission.find("");
-    if (it != this->mSaveData.permission.end() && ((uint)it->second & (uint)permission) == (uint)permission)
-        return base::OperateResult::success();
-    return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+void SimPlayer::stop() {
+    stopAction();
+    if (base::Schedule::getInstance().getSchedule()->isRunning(this->mScriptid)) this->cancelScript();
+    this->mScriptid = 0;
 }
 
 std::shared_ptr<SimPlayer> SimPlayer::create(

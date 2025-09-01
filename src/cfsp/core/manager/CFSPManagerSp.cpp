@@ -5,8 +5,10 @@
 #include "cfsp/core/simPlayer/SimPlayer.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
+#include "mc/network/packet/TextPacket.h"
 #include "mc/world/Minecraft.h"
 #include <memory>
+
 
 namespace coral_fans::cfsp::manager {
 std::string CFSPManager::listOnlineSp(const Player* player) {
@@ -95,9 +97,10 @@ base::OperateResult CFSPManager::createSp(
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
-CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname) {
+CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
-    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spawnSp); !checkResult) return checkResult;
+    if (!nocheck)
+        if (auto checkResult = this->canSpawnPlayer(player); !checkResult) return checkResult;
     // check: exist
     auto it = this->mOfflineSpMap.find(spname);
     if (it == this->mOfflineSpMap.end()) {
@@ -106,19 +109,9 @@ CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string co
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     // check：permission
-    if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn); !res) return res;
-    // check: maxOnline
-    auto uuid = player ? player->getUuid().asString() : "";
-    if (this->mOnlineSpMap.size() >= this->mConfig.maxOnline)
-        return base::OperateResult::error("manager.fail.tooManyOnline"_tr(std::to_string(this->mConfig.maxOnline)));
-    // check: maxOnlinePerPlayer
-    unsigned long long spawnCount = 0;
-    for (auto sp : this->mOnlineSpMap)
-        if (sp.second->mSaveData.lastSpawnerUuid == uuid) spawnCount++;
-    if (spawnCount >= this->mConfig.maxOnlinePerPlayer)
-        return base::OperateResult::error(
-            "manager.fail.tooManyOnlinePerPlayer"_tr(std::to_string(this->mConfig.maxOnlinePerPlayer))
-        );
+    if (!nocheck)
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn); !res)
+            return res;
     // create
     if (!it->second->spawn(player)) return base::OperateResult::error("manager.error.failedtocreate"_tr());
 
@@ -132,9 +125,12 @@ CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string co
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-CFSP_API base::OperateResult CFSPManager::despawnSp(Player* player, std::string const& spname) {
+CFSP_API base::OperateResult
+         CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck, bool isAutoDespawn) {
     using ll::i18n_literals::operator""_tr;
-    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.despawnSp); !checkResult) return checkResult;
+    if (!nocheck)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.despawnSp); !checkResult)
+            return checkResult;
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
     if (it == this->mOnlineSpMap.end()) {
@@ -142,7 +138,17 @@ CFSP_API base::OperateResult CFSPManager::despawnSp(Player* player, std::string 
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    // check：permission
-    if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Despawn); !res) return res;
+    if (!nocheck)
+        // check：permission
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Despawn); !res)
+            return res;
+    if (!it->second->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    it->second->save();
+    it->second->stop();
+    it->second->despawn();
+    it->second->mSimPlayer = nullptr;
+    if (isAutoDespawn) TextPacket::createRawMessage("§c" + "manager.success.spOffline"_tr()).sendToClients();
+    else TextPacket::createRawMessage("§g" + "manager.success.spOffline"_tr()).sendToClients();
+    return base::OperateResult::success("manager.success.operate"_tr());
 }
 } // namespace coral_fans::cfsp::manager

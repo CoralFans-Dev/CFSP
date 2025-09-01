@@ -24,8 +24,6 @@ config::Config& CFSPManager::getConfig() { return this->mConfig; }
 
 config::PermissionConfig& CFSPManager::getPermissionConfig() { return this->mPermissionConfig; }
 
-std::shared_ptr<timewheel::TimeWheel> CFSPManager::getSchedule() { return this->mScheduler; }
-
 bool CFSPManager::getAutoRespawn() { return this->mConfig.autoRespawn; }
 
 bool CFSPManager::getAutoJoin() { return this->mConfig.autoJoin; }
@@ -193,6 +191,26 @@ base::OperateResult CFSPManager::canCreatePlayer(const Player* player) {
         if (sp.second->mSaveData.ownerUuid == uuid) OwnCount++;
     }
     if (OwnCount >= this->mConfig.maxOwn) return base::OperateResult::error("manager.fail.tooManyOwnSp"_tr());
+    return base::OperateResult::success();
+}
+
+base::OperateResult CFSPManager::canSpawnPlayer(const Player* player) {
+    using ll::i18n_literals::operator""_tr;
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createSp);
+        checkResult.mType != base::OperateResult::Type::none)
+        return checkResult;
+    // check: maxOnline
+    auto uuid = player ? player->getUuid().asString() : "";
+    if (this->mOnlineSpMap.size() >= this->mConfig.maxOnline)
+        return base::OperateResult::error("manager.fail.tooManyOnline"_tr(std::to_string(this->mConfig.maxOnline)));
+    // check: maxOnlinePerPlayer
+    unsigned long long spawnCount = 0;
+    for (auto sp : this->mOnlineSpMap)
+        if (sp.second->mSaveData.lastSpawnerUuid == uuid) spawnCount++;
+    if (spawnCount >= this->mConfig.maxOnlinePerPlayer)
+        return base::OperateResult::error(
+            "manager.fail.tooManyOnlinePerPlayer"_tr(std::to_string(this->mConfig.maxOnlinePerPlayer))
+        );
     return base::OperateResult::success();
 }
 
