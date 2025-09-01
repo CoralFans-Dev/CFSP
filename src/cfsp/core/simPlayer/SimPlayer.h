@@ -24,6 +24,7 @@ public:
 
 public:
     void                        save();
+    bool                        loadSpNbt();
     CFSP_API inline std::string getName();
     CFSP_API inline std::string getXuid();
     CFSP_API inline bool        isOnline();

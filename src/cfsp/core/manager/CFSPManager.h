@@ -26,12 +26,12 @@ public:
     static CFSPManager&       getInstance();
     config::Config&           getConfig();
     config::PermissionConfig& getPermissionConfig();
-    CFSP_API inline bool      getAutoRespawn();
-    CFSP_API inline bool      getAutoJoin();
-    CFSP_API inline bool      getAutoDespawn();
-    CFSP_API inline void      setAutoRespawn(bool);
-    CFSP_API inline void      setAutoJoin(bool);
-    CFSP_API inline void      setAutoDespawn(bool);
+    inline bool               getAutoRespawn();
+    inline bool               getAutoJoin();
+    inline bool               getAutoDespawn();
+    inline void               setAutoRespawn(bool);
+    inline void               setAutoJoin(bool);
+    inline void               setAutoDespawn(bool);
     bool                      init();
     void                      load();
     bool                      isAllowed(const Player*);
@@ -47,24 +47,24 @@ private:
     void loadGroupData();
 
 public:
-    CFSP_API std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
-    CFSP_API std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(std::string const& name);
-    CFSP_API std::optional<std::shared_ptr<group::CFSPGroup>> tryGetCFSPGroup(std::string const& name);
-    CFSP_API std::vector<std::string> getSpNamesSorted(const Player*);
-    CFSP_API std::vector<std::string> getGroupNamesSorted(const Player*);
-    CFSP_API std::vector<std::string> getPublicSpNamesSorted();
-    CFSP_API std::vector<std::string> getAllSpNamesSorted();
-    CFSP_API std::vector<std::string> getAllGroupNamesSorted();
-    std::string                       listOnlineSp(const Player*);
-    std::string                       listOfflineSp(const Player*);
+    std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
+    std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(std::string const& name);
+    std::optional<std::shared_ptr<group::CFSPGroup>>            tryGetCFSPGroup(std::string const& name);
+    std::vector<std::string>                                    getSpNamesSorted(const Player*);
+    std::vector<std::string>                                    getGroupNamesSorted(const Player*);
+    std::vector<std::string>                                    getPublicSpNamesSorted();
+    std::vector<std::string>                                    getAllSpNamesSorted();
+    std::vector<std::string>                                    getAllGroupNamesSorted();
+    std::string                                                 listOnlineSp(const Player*);
+    std::string                                                 listOfflineSp(const Player*);
 
 public:
-    CFSP_API base::OperateResult
+    base::OperateResult
     createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim, bool isLockUniqueId = true);
-    CFSP_API base::OperateResult createGroup(Player* player, std::string const& gname);
-    CFSP_API base::OperateResult spawnSp(Player* player, std::string const& spname, bool nocheck = false);
-    CFSP_API                     base::OperateResult
-             despawnSp(Player* player, std::string const& spname, bool nocheck = false, bool isAutoDespawn = false);
-    CFSP_API base::OperateResult respawnSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult createGroup(Player* player, std::string const& gname);
+    base::OperateResult spawnSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult
+    despawnSp(Player* player, std::string const& spname, bool nocheck = false, bool isAutoDespawn = false);
+    base::OperateResult respawnSp(Player* player, std::string const& spname, bool nocheck = false);
 };
 } // namespace coral_fans::cfsp::manager

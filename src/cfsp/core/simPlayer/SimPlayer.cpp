@@ -2,9 +2,11 @@
 #include "cfsp/base/Schedule.h"
 #include "ll/api/service/Bedrock.h"
 #include "mc/entity/components_json_legacy/NavigationComponent.h"
+#include "mc/server/SimulatedPlayer.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/actor/ai/navigation/PathNavigation.h"
 #include "mc/world/actor/provider/MobMovement.h"
+#include <optional>
 
 
 namespace coral_fans::cfsp::simulated_player {
@@ -104,25 +106,37 @@ bool SimPlayer::spawn(const Player* player) {
     if (!mc) return false;
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return false;
-    auto* simPlayer = SimulatedPlayer::create(
-        this->mSaveData.name,
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0},
-        this->mSaveData.uniqueId.has_value(),
-        0,
-        serverNetworkHandler,
-        this->mSaveData.xuid,
-        this->mSaveData.uniqueId.has_value()
-            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
-            : std::nullopt
-    );
-    if (!simPlayer) return false;
-
-    simPlayer->mPlayerRespawnPoint->mPlayerPosition = simPlayer->getFeetPos();
-    simPlayer->mPlayerRespawnPoint->mDimension      = simPlayer->getDimensionId();
-    this->mSimPlayer                                = simPlayer;
-    this->mSaveData.lastSpawnerUuid                 = player->getUuid().asString();
+    if (this->mSaveData.uniqueId.has_value()) {
+        this->mSimPlayer = SimulatedPlayer::create(
+            this->mSaveData.name,
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0},
+            true,
+            0,
+            serverNetworkHandler,
+            this->mSaveData.xuid,
+            ActorUniqueID(this->mSaveData.uniqueId.value())
+        );
+        if (!this->mSimPlayer) return false;
+    } else {
+        this->mSimPlayer = SimulatedPlayer::create(
+            this->mSaveData.name,
+            {0, 0, 0},
+            {0, 0, 0},
+            {0, 0},
+            false,
+            0,
+            serverNetworkHandler,
+            this->mSaveData.xuid,
+            std::nullopt
+        );
+        if (!this->mSimPlayer) return false;
+        this->loadSpNbt();
+    }
+    this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition = this->mSimPlayer->getFeetPos();
+    this->mSimPlayer->mPlayerRespawnPoint->mDimension      = this->mSimPlayer->getDimensionId();
+    this->mSaveData.lastSpawnerUuid                        = player->getUuid().asString();
 
     return true;
 }

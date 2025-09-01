@@ -97,7 +97,7 @@ base::OperateResult CFSPManager::createSp(
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
-CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck)
         if (auto checkResult = this->canSpawnPlayer(player); !checkResult) return checkResult;
@@ -125,8 +125,8 @@ CFSP_API base::OperateResult CFSPManager::spawnSp(Player* player, std::string co
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-CFSP_API base::OperateResult
-         CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck, bool isAutoDespawn) {
+base::OperateResult
+CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck, bool isAutoDespawn) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck)
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.despawnSp); !checkResult)
