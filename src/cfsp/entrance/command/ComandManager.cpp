@@ -52,7 +52,7 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
     }
     );
     this->command->runtimeOverload()
-        .text("setting")
+        .text("c")
         .required("type", ll::command::ParamKind::Enum, "cfspSettingType")
         .required("enable", ll::command::ParamKind::Bool)
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {

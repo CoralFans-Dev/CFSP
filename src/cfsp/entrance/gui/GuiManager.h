@@ -18,13 +18,7 @@ private:
     void sendAllSplist(Player&);
     void sendAllGroupList(Player&);
     void sendManagePage(Player&);
-    void sendNewSpPage(
-        Player&     player,
-        int         defDim          = 0,
-        std::string defPos          = "",
-        std::string defName         = "",
-        bool        defLockUniqueId = true
-    );
+    void sendNewSpPage(Player& player, int defDim = 0, std::string defPos = "", std::string defName = "");
     void sendCreateGroupPage(Player&);
 
 public:

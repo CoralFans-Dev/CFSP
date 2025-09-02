@@ -17,20 +17,23 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
+        mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
 public:
     static CFSPManager&       getInstance();
+    void                      save();
+    void                      autoJoin();
+    void                      autoDespawn(std::shared_ptr<simulated_player::SimPlayer> cfsp);
     config::Config&           getConfig();
     config::PermissionConfig& getPermissionConfig();
-    bool                      getAutoRespawn();
     bool                      getAutoJoin();
+    bool                      getAutoRespawn();
     bool                      getAutoDespawn();
-    void                      setAutoRespawn(bool);
     void                      setAutoJoin(bool);
+    void                      setAutoRespawn(bool);
     void                      setAutoDespawn(bool);
     bool                      init();
     void                      load();
@@ -59,12 +62,19 @@ public:
     std::string                                                 listOfflineSp(const Player*);
 
 public:
-    base::OperateResult
-    createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim, bool isLockUniqueId = true);
+    void                saveSps();
+    base::OperateResult createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim);
     base::OperateResult createGroup(Player* player, std::string const& gname);
-    base::OperateResult spawnSp(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult
-    despawnSp(Player* player, std::string const& spname, bool nocheck = false, bool isAutoDespawn = false);
+    spawnSp(Player* player, std::string const& spname, bool nocheck = false, bool isLockUniqueId = true);
+    base::OperateResult despawnSp(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult respawnSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult rmSp(Player* player, std::string const& spname, bool nocheck = false, bool force = false);
+    base::OperateResult stopSp(Player* player, std::string const& spname, bool nocheck = false);
+
+public:
+    base::OperateResult dropSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult dropInvSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult swapSp(Player* player, std::string const& spname, bool nocheck = false);
 };
 } // namespace coral_fans::cfsp::manager

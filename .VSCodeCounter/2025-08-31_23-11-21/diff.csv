@@ -1,0 +1,14 @@
+"filename", "language", "JSON", "C++", "comment", "blank", "total"
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\PermissionConfig.h", "C++", 0, 3, 0, 0, 3
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\group\CFSPGroup.cpp", "C++", 0, 2, 0, 0, 2
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.cpp", "C++", 0, 15, 0, 1, 16
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.h", "C++", 0, 4, 0, 0, 4
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSp.cpp", "C++", 0, 22, 8, 3, 33
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.cpp", "C++", 0, 104, 0, 13, 117
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.h", "C++", 0, 12, 0, 1, 13
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayerBase.cpp", "C++", 0, -31, 0, -6, -37
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayerPermission.h", "C++", 0, 1, 0, 0, 1
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\GuiCommand.cpp", "C++", 0, 10, 0, 0, 10
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\SpCommand.cpp", "C++", 0, 11, 2, 2, 15
+"f:\Project\levilamina\1.4.x\CFSP\src\lang\zh_CN.json", "JSON", 4, 0, 0, 0, 4
+"Total", "-", 4, 153, 10, 14, 181

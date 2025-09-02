@@ -1,12 +1,13 @@
-#include "SimPlayerHelper.h"
+#include "CFSPHelperManager.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/memory/Hook.h"
 #include "mc/network/packet/MobEquipmentPacket.h"
+#include "mc/server/commands/StopCommand.h"
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
+#include "mc/world/item/ItemStack.h"
 #include "mc/world/level/storage/LevelStorage.h"
-
 
 namespace coral_fans::cfsp::helper {
 LL_TYPE_INSTANCE_HOOK(
@@ -18,10 +19,7 @@ LL_TYPE_INSTANCE_HOOK(
     ::Player& player
 ) {
     origin(player);
-    auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(&player);
-    if (cfsp.has_value()) {
-        cfsp.value()->save();
-    }
+    if (auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(&player); cfsp.has_value()) cfsp.value()->save();
 }
 
 LL_TYPE_INSTANCE_HOOK(
@@ -50,14 +48,17 @@ LL_TYPE_INSTANCE_HOOK(
                 .sendToClients(); // fix::更新主手
         }
         if (cfsp.value()->mIsEnderContainerEmpty) {
-            if (newItem == ItemStack::EMPTY_ITEM()) {
-                if (!cfsp.value()->mIsInventoryEmpty && this->mInventory->mInventory->isEmpty()) {
+            if (newItem == ItemStack::EMPTY_ITEM() && !cfsp.value()->mIsInventoryEmpty) {
+                this->mInventory->mInventory->mItems.get()[slot] = ItemStack::EMPTY_ITEM();
+                if (this->mInventory->mInventory->isEmpty()) {
                     cfsp.value()->mIsInventoryEmpty = true;
                     if (cfsp.value()->mIsEquipmentEmpty && cfsp.value()->mIsOffhandEmpty) {
                         cfsp.value()->mSaveData.isEmptyInv = true;
                         cfsp.value()->mShouldSave          = true;
                     }
                 }
+                this->mInventory->mInventory->mItems.get()[slot] = oldItem;
+
             } else if (cfsp.value()->mIsInventoryEmpty) {
                 cfsp.value()->mIsInventoryEmpty = false;
                 if (cfsp.value()->mIsEquipmentEmpty && cfsp.value()->mIsOffhandEmpty) {
@@ -136,10 +137,24 @@ LL_TYPE_INSTANCE_HOOK(
     origin(slot, item);
 }
 
-void SimPlayerHelperManager::SimPlayerSaveHook() {
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSaveHelperHook4,
+    ll::memory::HookPriority::Normal,
+    StopCommand,
+    &StopCommand::$execute,
+    void,
+    CommandOrigin const& arg1,
+    CommandOutput&       arg2
+) {
+    manager::CFSPManager::getInstance().saveSps();
+    origin(arg1, arg2);
+}
+
+void CFSPHelperManager::saveHelperHook() {
     CFSPSaveHelperHook ::hook();
     CFSPSaveHelperHook1::hook();
     CFSPSaveHelperHook2::hook();
     CFSPSaveHelperHook3::hook();
+    CFSPSaveHelperHook4::hook();
 }
 } // namespace coral_fans::cfsp::helper

@@ -3,14 +3,20 @@
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/base/Utils.h"
 #include "cfsp/core/simPlayer/SimPlayer.h"
+#include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/network/packet/TextPacket.h"
 #include "mc/world/Minecraft.h"
 #include <memory>
-
+#include <optional>
+#include <vector>
 
 namespace coral_fans::cfsp::manager {
+void CFSPManager::saveSps() {
+    for (auto cfsp : this->mOnlineSpMap) cfsp.second->save();
+}
+
 std::string CFSPManager::listOnlineSp(const Player* player) {
     using ll::i18n_literals::operator""_tr;
     std::string res = "";
@@ -67,13 +73,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
     return res;
 }
 
-base::OperateResult CFSPManager::createSp(
-    Player*            player,
-    std::string const& name,
-    Vec3 const&        pos,
-    DimensionType      dim,
-    bool               isLockUniqueId
-) {
+base::OperateResult CFSPManager::createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim) {
     using ll::i18n_literals::operator""_tr;
     if (auto checkResult = this->canCreatePlayer(player); !checkResult) return checkResult;
     std::string spname    = this->mConfig.namePrefix + name + this->mConfig.namePostfix;
@@ -87,7 +87,7 @@ base::OperateResult CFSPManager::createSp(
     if (!this->tryCreateDiretory(cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer", spname))
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     // create
-    auto simplayer = simulated_player::SimPlayer::create(player, spname, pos, dim, isLockUniqueId);
+    auto simplayer = simulated_player::SimPlayer::create(player, spname, pos, dim);
     if (!simplayer) return base::OperateResult::error("manager.error.failedtocreate"_tr());
     this->mOnlineSpMap[spname] = simplayer;
 
@@ -97,10 +97,12 @@ base::OperateResult CFSPManager::createSp(
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
-base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck, bool isLockUniqueId) {
     using ll::i18n_literals::operator""_tr;
-    if (!nocheck)
+    if (!nocheck) {
         if (auto checkResult = this->canSpawnPlayer(player); !checkResult) return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
     // check: exist
     auto it = this->mOfflineSpMap.find(spname);
     if (it == this->mOfflineSpMap.end()) {
@@ -109,28 +111,51 @@ base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spna
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     // check：permission
-    if (!nocheck)
+    if (!nocheck && player)
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn); !res)
             return res;
     // create
-    if (!it->second->spawn(player)) return base::OperateResult::error("manager.error.failedtocreate"_tr());
+    auto res = it->second->spawn(player, isLockUniqueId);
+    if (!res) return res;
+
+    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOnlineSp", {spname});
+    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
+    if (it->second->mSimPlayer->isDead())
+        ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspDeadSp", {it->first});
 
     if (auto node = mOfflineSpMap.extract(it)) {
         mOnlineSpMap.insert(std::move(node));
     }
-
-    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOnlineSp", {spname});
-    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
-
-    return base::OperateResult::success("manager.success.operate"_tr());
+    return res;
 }
 
-base::OperateResult
-CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck, bool isAutoDespawn) {
+void CFSPManager::autoJoin() {
+    std::vector<std::string> spawnlist;
+    std::vector<std::string> spawnDeadlist;
+    auto                     it = this->mOfflineSpMap.begin();
+    while (it != this->mOfflineSpMap.end()) {
+        if (it->second->mSaveData.isOnline && it->second->spawn(std::nullopt)) {
+            spawnlist.emplace_back(it->first);
+            if (it->second->mSimPlayer->isDead()) spawnDeadlist.emplace_back(it->first);
+            auto current_it = it++;
+            auto node       = this->mOfflineSpMap.extract(current_it);
+            mOnlineSpMap.insert(std::move(node));
+            continue;
+        }
+        it++;
+    }
+    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOnlineSp", spawnlist);
+    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", spawnlist);
+    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspDeadSp", spawnDeadlist);
+}
+
+base::OperateResult CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
-    if (!nocheck)
+    if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.despawnSp); !checkResult)
             return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
     if (it == this->mOnlineSpMap.end()) {
@@ -142,13 +167,128 @@ CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck, 
         // check：permission
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Despawn); !res)
             return res;
-    if (!it->second->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    it->second->save();
-    it->second->stop();
-    it->second->despawn();
-    it->second->mSimPlayer = nullptr;
-    if (isAutoDespawn) TextPacket::createRawMessage("§c" + "manager.success.spOffline"_tr()).sendToClients();
-    else TextPacket::createRawMessage("§g" + "manager.success.spOffline"_tr()).sendToClients();
+    auto isDead = it->second->mSimPlayer && it->second->mSimPlayer->isDead();
+    auto res    = it->second->despawn();
+    if (!res) return res;
+
+    TextPacket::createRawMessage("manager.success.spOffline"_tr(spname)).sendToClients();
+
+    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOfflineSp", {spname});
+    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOnlineSp", {spname});
+    if (isDead)
+        ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspDeadSp", {it->second->mSaveData.name});
+
+    if (auto node = mOnlineSpMap.extract(it)) mOfflineSpMap.insert(std::move(node));
+    return res;
+}
+
+void CFSPManager::autoDespawn(std::shared_ptr<simulated_player::SimPlayer> cfsp) {
+    using ll::i18n_literals::operator""_tr;
+    if (!cfsp->mSimPlayer) return;
+    cfsp->despawn();
+    auto spname = cfsp->mSaveData.name;
+    TextPacket::createRawMessage("manager.success.autoDespawn"_tr(spname)).sendToClients();
+    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOfflineSp", {spname});
+    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOnlineSp", {spname});
+
+    if (auto node = mOnlineSpMap.extract(spname)) mOfflineSpMap.insert(std::move(node));
+}
+
+base::OperateResult CFSPManager::respawnSp(Player* player, std::string const& spname, bool nocheck) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.respawnSp); !checkResult)
+            return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
+    // check: exist
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
+            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
+        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (!nocheck)
+        // check：permission
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Respawn); !res)
+            return res;
+    auto res = it->second->respawn();
+    if (!res) return res;
+    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspDeadSp", {it->second->mSaveData.name});
+    return res;
+}
+
+base::OperateResult CFSPManager::rmSp(Player* player, std::string const& spname, bool nocheck, bool force) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.rmSp); !checkResult) return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
+    if (auto it = this->mOnlineSpMap.find(spname); it != this->mOnlineSpMap.end()) {
+        if (!nocheck)
+            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
+                return res;
+        if (!force && !it->second->mSaveData.isEmptyInv)
+            return base::OperateResult::none("manager.fail.notEmpty"_tr(spname));
+        ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
+        ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOnlineSp", {spname});
+        if (!it->second->mSimPlayer || it->second->mSimPlayer->isDead())
+            ll::command::CommandRegistrar::getInstance().removeSoftEnumValues(
+                "cfspDeadSp",
+                {it->second->mSaveData.name}
+            );
+        it->second->stop();
+        if (it->second->mSimPlayer) {
+            it->second->mSimPlayer->disconnect();
+            it->second->mSimPlayer->remove();
+            it->second->mSimPlayer->setGameTestHelper(nullptr);
+        }
+        std::filesystem::remove_all(
+            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.name
+        );
+        this->mOnlineSpMap.erase(it);
+    } else if (auto it = this->mOfflineSpMap.find(spname); it != this->mOfflineSpMap.end()) {
+        if (!nocheck)
+            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
+                return res;
+        if (!force && !it->second->mSaveData.isEmptyInv)
+            return base::OperateResult::none("manager.fail.notEmpty"_tr(spname));
+        ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
+        ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
+        std::filesystem::remove_all(
+            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.name
+        );
+        this->mOfflineSpMap.erase(it);
+    } else return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    for (auto group : this->mGroupMap) {
+        if (auto it = group.second->mData.splist.find(spname); it != group.second->mData.splist.end()) {
+            group.second->mData.splist.erase(it);
+            ll::config::saveConfig(
+                group.second->mData,
+                CFSP::getInstance().getSelf().getDataDir() / "group" / group.second->mData.name / "data.json"
+            );
+        }
+    }
     return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult CFSPManager::stopSp(Player* player, std::string const& spname, bool nocheck) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.stopSp); !checkResult)
+            return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
+    // check: exist
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
+            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
+        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (!nocheck)
+        // check：permission
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Stop); !res) return res;
+    return it->second->stop();
 }
 } // namespace coral_fans::cfsp::manager

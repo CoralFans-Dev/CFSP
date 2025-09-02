@@ -152,15 +152,32 @@ void GuiManager::sendManagePage(Player& player) {
         [](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
             if (!cancelReason.has_value() && elements.has_value()
                 && manager::CFSPManager::getInstance().isManager(&player)) {
-                auto it = elements.value().find("autojoin");
-                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second))
-                    manager::CFSPManager::getInstance().setAutoJoin(std::get<uint64>(it->second));
+                bool isChanged = false;
+                auto it        = elements.value().find("autojoin");
+                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                    auto value = std::get<uint64>(it->second);
+                    if (value != manager::CFSPManager::getInstance().getAutoJoin()) {
+                        manager::CFSPManager::getInstance().setAutoJoin(value);
+                        isChanged = true;
+                    }
+                }
                 it = elements.value().find("autorespawn");
-                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second))
-                    manager::CFSPManager::getInstance().setAutoRespawn(std::get<uint64>(it->second));
+                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                    auto value = std::get<uint64>(it->second);
+                    if (value != manager::CFSPManager::getInstance().getAutoRespawn()) {
+                        manager::CFSPManager::getInstance().setAutoRespawn(value);
+                        isChanged = true;
+                    }
+                }
                 it = elements.value().find("autodespawn");
-                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second))
-                    manager::CFSPManager::getInstance().setAutoDespawn(std::get<uint64>(it->second));
+                if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                    auto value = std::get<uint64>(it->second);
+                    if (value != manager::CFSPManager::getInstance().getAutoDespawn()) {
+                        manager::CFSPManager::getInstance().setAutoDespawn(value);
+                        isChanged = true;
+                    }
+                }
+                if (isChanged) manager::CFSPManager::getInstance().save();
                 base::OperateResult::success("manager.success.operate"_tr()).sendTo(player);
             }
         }

@@ -1,21 +1,11 @@
 #include "SimPlayer.h"
 #include "cfsp/base/OperateResult.h"
 #include "ll/api/i18n/I18n.h"
-#include "mc/world/actor/player/Inventory.h"
-#include "mc/world/actor/player/PlayerInventory.h"
-#include "mc/world/actor/provider/ActorEquipment.h"
 
 namespace coral_fans::cfsp::simulated_player {
 SimPlayer::SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp) {
     this->mSaveData  = saveData;
     this->mSimPlayer = sp;
-    if (!sp) return;
-    auto ec = this->mSimPlayer->getEnderChestContainer();
-    if (!ec.has_value() || ec->isEmpty()) this->mIsEnderContainerEmpty = true;
-    else this->mIsEnderContainerEmpty = false;
-    this->mIsInventoryEmpty = this->mSimPlayer->mInventory->mInventory->isEmpty();
-    this->mIsOffhandEmpty   = this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM();
-    this->mIsEquipmentEmpty = ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty();
 }
 
 inline std::string SimPlayer::getName() { return this->mSaveData.name; }

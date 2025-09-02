@@ -4,12 +4,11 @@
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/nbt/CompoundTag.h"
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <optional>
 
 
 namespace coral_fans::cfsp::simulated_player {
 
-void SimPlayer::save() {
+bool SimPlayer::save() {
     if (this->mShouldSave) {
         if (ll::config::saveConfig(
                 this->mSaveData,
@@ -17,19 +16,18 @@ void SimPlayer::save() {
             ))
             this->mShouldSave = false;
     }
-    if (!this->mSaveData.uniqueId.has_value()) {
-        if (!this->mSimPlayer) return;
-        auto tag = std::make_unique<CompoundTag>();
-        if (!this->mSimPlayer->save(*tag)) return;
-        if (!tag) return;
-        std::ofstream f(
-            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt",
-            std::ios_base::out | std::ios_base::trunc
-        );
-        if (!f.is_open()) return;
-        f << tag->toSnbt(SnbtFormat::Minimize);
-        f.close();
-    }
+    if (!this->mSimPlayer) return false;
+    auto tag = std::make_unique<CompoundTag>();
+    if (!this->mSimPlayer->save(*tag)) return false;
+    if (!tag) return false;
+    std::ofstream f(
+        CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt",
+        std::ios_base::out | std::ios_base::trunc
+    );
+    if (!f.is_open()) return false;
+    f << tag->toSnbt(SnbtFormat::Minimize);
+    f.close();
+    return true;
 }
 
 bool SimPlayer::loadSpNbt() {

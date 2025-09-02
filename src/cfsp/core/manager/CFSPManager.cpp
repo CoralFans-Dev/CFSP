@@ -3,12 +3,13 @@
 #include "cfsp/ConFig.h"
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/group/CFSPGroup.h"
-#include "cfsp/core/helper/SimPlayerHelper.h"
+#include "cfsp/core/helper/CFSPHelperManager.h"
 #include "cfsp/core/simPlayer/SimPlayerSaveData.h"
 #include "cfsp/entrance/command/ComandManager.h"
 #include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
+#include "mc/world/actor/player/Player.h"
 #include <memory>
 #include <optional>
 #include <vector>
@@ -24,15 +25,15 @@ config::Config& CFSPManager::getConfig() { return this->mConfig; }
 
 config::PermissionConfig& CFSPManager::getPermissionConfig() { return this->mPermissionConfig; }
 
-bool CFSPManager::getAutoRespawn() { return this->mConfig.autoRespawn; }
-
 bool CFSPManager::getAutoJoin() { return this->mConfig.autoJoin; }
+
+bool CFSPManager::getAutoRespawn() { return this->mConfig.autoRespawn; }
 
 bool CFSPManager::getAutoDespawn() { return this->mConfig.autoDespawn; }
 
-void CFSPManager::setAutoRespawn(bool isOpen) { this->mConfig.autoRespawn = isOpen; }
-
 void CFSPManager::setAutoJoin(bool isOpen) { this->mConfig.autoJoin = isOpen; }
+
+void CFSPManager::setAutoRespawn(bool isOpen) { this->mConfig.autoRespawn = isOpen; }
 
 void CFSPManager::setAutoDespawn(bool isOpen) { this->mConfig.autoDespawn = isOpen; }
 
@@ -44,10 +45,14 @@ bool CFSPManager::tryCreateDiretory(const std::filesystem::path& basePath, const
         if (!std::filesystem::exists(basePath)) {
             std::filesystem::create_directories(basePath);
         }
-        return std::filesystem::create_directory(path);
+        return std::filesystem::exists(path) || std::filesystem::create_directory(path);
     } catch (...) {
         return false;
     }
+}
+
+void CFSPManager::save() {
+    ll::config::saveConfig(this->mConfig, CFSP::getInstance().getSelf().getConfigDir() / "config.json");
 }
 
 void CFSPManager::loadSpSaveData() {
@@ -56,17 +61,22 @@ void CFSPManager::loadSpSaveData() {
     std::vector<std::string> splist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
-            simulated_player::SimPlayerSaveData playData;
-            if (ll::config::loadConfig(playData, path.path() / "data.json")
-                && playData.name == path.path().filename()) {
-                this->mOfflineSpMap[playData.name] = std::make_shared<simulated_player::SimPlayer>(playData);
-                splist.emplace_back(playData.name);
+            simulated_player::SimPlayerSaveData playerData;
+            if (ll::config::loadConfig(playerData, path.path() / "data.json")
+                && playerData.name == path.path().filename()) {
+                if (playerData.isOnline && !this->mConfig.autoJoin) {
+                    playerData.isOnline = false;
+                    ll::config::saveConfig(playerData, path.path() / "data.json");
+                }
+                this->mOfflineSpMap[playerData.name] = std::make_shared<simulated_player::SimPlayer>(playerData);
+                splist.emplace_back(playerData.name);
             }
         }
     }
     ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOfflineSp", splist);
     ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspSplist", splist);
     ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOnlineSp", {});
+    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspDeadSp", {});
 }
 
 void CFSPManager::loadGroupData() {
@@ -132,7 +142,7 @@ void CFSPManager::load() {
     loadSpSaveData();
     loadGroupData();
     if (this->mConfig.enabled) command::ComandManager::getInstance().registerCommand(this->mConfig.permission);
-    helper::SimPlayerHelperManager::getInstance().SimPlayerHelperHook();
+    helper::CFSPHelperManager::getInstance().SimPlayerHelperHook();
 }
 
 bool CFSPManager::isAllowed(const Player* player) {

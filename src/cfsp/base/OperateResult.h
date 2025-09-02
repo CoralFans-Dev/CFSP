@@ -26,17 +26,18 @@ public:
     OperateResult() {}
     static OperateResult success(std::string info = "") { return OperateResult(Type::success, info); }
     static OperateResult error(std::string info = "") { return OperateResult(Type::error, info); }
-    explicit             operator bool() const { return mType != Type::error; }
+    static OperateResult none(std::string info = "") { return OperateResult(Type::none, info); }
+    operator bool() const { return mType != Type::error; }
 
 public:
     void sendTo(Player& player) {
         if (mType == Type::success) return TextPacket::createRawMessage(mInfo).sendTo(player);
-        if (this->mType == Type::error) return TextPacket::createRawMessage("§c" + mInfo).sendTo(player);
+        return TextPacket::createRawMessage("§c" + mInfo).sendTo(player);
     }
 
     void output(CommandOutput& output) {
         if (mType == Type::success) return output.success(mInfo);
-        if (mType == Type::error) return output.error(mInfo);
+        output.error(mInfo);
     }
 };
 } // namespace coral_fans::cfsp::base

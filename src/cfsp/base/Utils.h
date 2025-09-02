@@ -1,11 +1,9 @@
 #pragma once
 
-#include "mc/world/actor/player/Player.h"
+#include "mc/world/level/BlockPos.h"
 #include <string>
 
 namespace coral_fans::cfsp::utils {
-
-std::pair<std::string, bool> getNbtFromTag(CompoundTag const, std::string const&);
 
 std::string tryGetPlayerName(std::string UUID);
 

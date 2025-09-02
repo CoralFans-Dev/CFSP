@@ -12,7 +12,8 @@
             "create": "创建成功",
             "operate": "操作成功",
             "set": "设置成功",
-            "spOffline": "{}已下线"
+            "spOffline": "§g{}已下线",
+            "autoDespawn": "§c{}频繁死亡, 已下线"
         },
         "fail": {
             "funcUnabled": "该功能未启用",
@@ -26,7 +27,10 @@
             "spHasOnline": "假人已处于在线状态",
             "spNotExisted": "假人不存在",
             "spHasOffline": "假人已处于离线状态",
-            "includeIllegalChar": "包含非法字符"
+            "includeIllegalChar": "包含非法字符",
+            "spIsAlive": "假人并非死亡状态",
+            "notEmpty": "删除假人失败，{}背包不为空\n如需强制删除请在指令后添加字段\"true\"",
+            "failToSave": "保存NBT失败"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",

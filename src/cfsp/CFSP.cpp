@@ -3,7 +3,6 @@
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
 
-
 namespace coral_fans::cfsp {
 
 CFSP& CFSP::getInstance() {
