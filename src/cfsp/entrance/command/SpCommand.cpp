@@ -190,5 +190,7 @@ void ComandManager::registerSpComand() {
                 )
                 .output(output);
         });
+
+    // sp p <sneaking|swimming|flying|sprinting> <name: cfspOnlineSp> [bool: enabled]
 }
 } // namespace coral_fans::cfsp::command
