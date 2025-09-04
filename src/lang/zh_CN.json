@@ -30,7 +30,12 @@
             "includeIllegalChar": "包含非法字符",
             "spIsAlive": "假人并非死亡状态",
             "notEmpty": "删除假人失败，{}背包不为空\n如需强制删除请在指令后添加字段\"true\"",
-            "failToSave": "保存NBT失败"
+            "failToSave": "保存NBT失败",
+            "faileToSetFlying": "设置飞行状态失败",
+            "FailedToOperate": "操作失败",
+            "spIsDead": "假人处于死亡状态",
+            "playerIsNull": "玩家对象为空",
+            "spIsBusy": "假人正忙"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",

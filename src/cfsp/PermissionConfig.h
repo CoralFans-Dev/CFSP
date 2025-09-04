@@ -11,15 +11,25 @@ struct FuncStruct {
 struct PermissionConfig {
     int        version     = 1;
     FuncStruct gui         = {true, CommandPermissionLevel::Any};
-    FuncStruct createSp    = {true, CommandPermissionLevel::Any};
-    FuncStruct spawnSp     = {true, CommandPermissionLevel::Any};
-    FuncStruct despawnSp   = {true, CommandPermissionLevel::Any};
-    FuncStruct respawnSp   = {true, CommandPermissionLevel::Any};
-    FuncStruct rmSp        = {true, CommandPermissionLevel::Any};
-    FuncStruct stopSp      = {true, CommandPermissionLevel::Any};
-    FuncStruct dropSp      = {true, CommandPermissionLevel::Any};
-    FuncStruct dropInvSp   = {true, CommandPermissionLevel::Any};
-    FuncStruct swapSp      = {true, CommandPermissionLevel::Any};
-    FuncStruct createGroup = {true, CommandPermissionLevel::Any};
+    FuncStruct spCreate    = {true, CommandPermissionLevel::Any};
+    FuncStruct spSpawn     = {true, CommandPermissionLevel::Any};
+    FuncStruct spDespawn   = {true, CommandPermissionLevel::Any};
+    FuncStruct spRespawn   = {true, CommandPermissionLevel::Any};
+    FuncStruct spRm        = {true, CommandPermissionLevel::Any};
+    FuncStruct spStop      = {true, CommandPermissionLevel::Any};
+    FuncStruct spDrop      = {true, CommandPermissionLevel::Any};
+    FuncStruct spDropInv   = {true, CommandPermissionLevel::Any};
+    FuncStruct spSwap      = {true, CommandPermissionLevel::Any};
+    FuncStruct spSneaking  = {true, CommandPermissionLevel::Any};
+    FuncStruct spSwimming  = {true, CommandPermissionLevel::Any};
+    FuncStruct spFlying    = {true, CommandPermissionLevel::Any};
+    FuncStruct spSprinting = {true, CommandPermissionLevel::Any};
+    FuncStruct spAttack    = {true, CommandPermissionLevel::Any};
+    FuncStruct spBuild     = {true, CommandPermissionLevel::Any};
+    FuncStruct spInteract  = {true, CommandPermissionLevel::Any};
+    FuncStruct spJump      = {true, CommandPermissionLevel::Any};
+    FuncStruct spUse       = {true, CommandPermissionLevel::Any};
+    FuncStruct spDestroy   = {true, CommandPermissionLevel::Any};
+    FuncStruct groupCreate = {true, CommandPermissionLevel::Any};
 };
 } // namespace coral_fans::cfsp::config

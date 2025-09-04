@@ -3,10 +3,10 @@
 #include "ll/api/i18n/I18n.h"
 
 namespace coral_fans::cfsp::manager {
-base::OperateResult CFSPManager::dropSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spDrop(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.dropSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDrop); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
@@ -23,10 +23,10 @@ base::OperateResult CFSPManager::dropSp(Player* player, std::string const& spnam
     return it->second->drop();
 }
 
-base::OperateResult CFSPManager::dropInvSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spDropInv(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.dropInvSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDropInv); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
@@ -44,10 +44,10 @@ base::OperateResult CFSPManager::dropInvSp(Player* player, std::string const& sp
     return it->second->dropInv();
 }
 
-base::OperateResult CFSPManager::swapSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spSwap(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.swapSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spSwap); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }

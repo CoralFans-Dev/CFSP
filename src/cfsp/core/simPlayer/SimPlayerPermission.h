@@ -2,14 +2,24 @@
 
 namespace coral_fans::cfsp::simulated_player {
 enum class SimPlayerPermission : unsigned int {
-    None    = 0,
-    Spawn   = 1 << 0,
-    Despawn = 1 << 1,
-    Respawn = 1 << 2,
-    Rm      = 1 << 3,
-    Stop    = 1 << 4,
-    Drop    = 1 << 5,
-    DropInv = 1 << 6,
-    Swap    = 1 << 7,
+    None      = 0,
+    Spawn     = 1 << 0,
+    Despawn   = 1 << 1,
+    Respawn   = 1 << 2,
+    Rm        = 1 << 3,
+    Stop      = 1 << 4,
+    Drop      = 1 << 5,
+    DropInv   = 1 << 6,
+    Swap      = 1 << 7,
+    Sneaking  = 1 << 8,
+    Swimming  = 1 << 9,
+    Flying    = 1 << 10,
+    Sprinting = 1 << 11,
+    Attack    = 1 << 12,
+    Build     = 1 << 13,
+    Interact  = 1 << 14,
+    Jump      = 1 << 15,
+    Use       = 1 << 16,
+    Destroy   = 1 << 17,
 };
 }

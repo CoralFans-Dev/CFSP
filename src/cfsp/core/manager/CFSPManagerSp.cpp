@@ -73,7 +73,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
     return res;
 }
 
-base::OperateResult CFSPManager::createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim) {
+base::OperateResult CFSPManager::spCreate(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim) {
     using ll::i18n_literals::operator""_tr;
     if (auto checkResult = this->canCreatePlayer(player); !checkResult) return checkResult;
     std::string spname    = this->mConfig.namePrefix + name + this->mConfig.namePostfix;
@@ -88,7 +88,8 @@ base::OperateResult CFSPManager::createSp(Player* player, std::string const& nam
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     // create
     auto simplayer = simulated_player::SimPlayer::create(player, spname, pos, dim);
-    if (!simplayer) return base::OperateResult::error("manager.error.failedtocreate"_tr());
+    if (!simplayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.failedtocreate"_tr());
     this->mOnlineSpMap[spname] = simplayer;
 
     ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOnlineSp", {spname});
@@ -97,7 +98,7 @@ base::OperateResult CFSPManager::createSp(Player* player, std::string const& nam
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
-base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spname, bool nocheck, bool isLockUniqueId) {
+base::OperateResult CFSPManager::spSpawn(Player* player, std::string const& spname, bool nocheck, bool isLockUniqueId) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
         if (auto checkResult = this->canSpawnPlayer(player); !checkResult) return checkResult;
@@ -111,12 +112,13 @@ base::OperateResult CFSPManager::spawnSp(Player* player, std::string const& spna
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     // check：permission
-    if (!nocheck && player)
+    if (!nocheck)
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn); !res)
             return res;
     // create
     auto res = it->second->spawn(player, isLockUniqueId);
-    if (!res) return res;
+    if (!res) [[unlikely]]
+        return res;
 
     ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspOnlineSp", {spname});
     ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
@@ -149,10 +151,10 @@ void CFSPManager::autoJoin() {
     ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspDeadSp", spawnDeadlist);
 }
 
-base::OperateResult CFSPManager::despawnSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spDespawn(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.despawnSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDespawn); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
@@ -169,7 +171,8 @@ base::OperateResult CFSPManager::despawnSp(Player* player, std::string const& sp
             return res;
     auto isDead = it->second->mSimPlayer && it->second->mSimPlayer->isDead();
     auto res    = it->second->despawn();
-    if (!res) return res;
+    if (!res) [[unlikely]]
+        return res;
 
     TextPacket::createRawMessage("manager.success.spOffline"_tr(spname)).sendToClients();
 
@@ -194,10 +197,10 @@ void CFSPManager::autoDespawn(std::shared_ptr<simulated_player::SimPlayer> cfsp)
     if (auto node = mOnlineSpMap.extract(spname)) mOfflineSpMap.insert(std::move(node));
 }
 
-base::OperateResult CFSPManager::respawnSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spRespawn(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.respawnSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spRespawn); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
@@ -213,15 +216,16 @@ base::OperateResult CFSPManager::respawnSp(Player* player, std::string const& sp
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Respawn); !res)
             return res;
     auto res = it->second->respawn();
-    if (!res) return res;
+    if (!res) [[unlikely]]
+        return res;
     ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspDeadSp", {it->second->mSaveData.name});
     return res;
 }
 
-base::OperateResult CFSPManager::rmSp(Player* player, std::string const& spname, bool nocheck, bool force) {
+base::OperateResult CFSPManager::spRm(Player* player, std::string const& spname, bool nocheck, bool force) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.rmSp); !checkResult) return checkResult;
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spRm); !checkResult) return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
     if (auto it = this->mOnlineSpMap.find(spname); it != this->mOnlineSpMap.end()) {
@@ -247,7 +251,7 @@ base::OperateResult CFSPManager::rmSp(Player* player, std::string const& spname,
             CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.name
         );
         this->mOnlineSpMap.erase(it);
-    } else if (auto it = this->mOfflineSpMap.find(spname); it != this->mOfflineSpMap.end()) {
+    } else if (it = this->mOfflineSpMap.find(spname); it != this->mOfflineSpMap.end()) {
         if (!nocheck)
             if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
                 return res;
@@ -272,10 +276,10 @@ base::OperateResult CFSPManager::rmSp(Player* player, std::string const& spname,
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult CFSPManager::stopSp(Player* player, std::string const& spname, bool nocheck) {
+base::OperateResult CFSPManager::spStop(Player* player, std::string const& spname, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.stopSp); !checkResult)
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spStop); !checkResult)
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }

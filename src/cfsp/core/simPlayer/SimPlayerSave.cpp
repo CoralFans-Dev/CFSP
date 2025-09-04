@@ -13,29 +13,36 @@ bool SimPlayer::save() {
         if (ll::config::saveConfig(
                 this->mSaveData,
                 CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "data.json"
-            ))
+            )) [[likely]]
             this->mShouldSave = false;
     }
-    if (!this->mSimPlayer) return false;
+    if (!this->mSimPlayer) [[unlikely]]
+        return false;
     auto tag = std::make_unique<CompoundTag>();
-    if (!this->mSimPlayer->save(*tag)) return false;
-    if (!tag) return false;
+    if (!this->mSimPlayer->save(*tag)) [[unlikely]]
+        return false;
+    if (!tag) [[unlikely]]
+        return false;
     std::ofstream f(
         CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt",
         std::ios_base::out | std::ios_base::trunc
     );
-    if (!f.is_open()) return false;
+    if (!f.is_open()) [[unlikely]]
+        return false;
     f << tag->toSnbt(SnbtFormat::Minimize);
     f.close();
     return true;
 }
 
 bool SimPlayer::loadSpNbt() {
-    if (!this->mSimPlayer) return false;
+    if (!this->mSimPlayer) [[unlikely]]
+        return false;
     auto path = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt";
-    if (!std::filesystem::exists(path)) return false;
+    if (!std::filesystem::exists(path)) [[unlikely]]
+        return false;
     std::ifstream f(path, std::ios::binary | std::ios::ate);
-    if (!f.is_open()) return false;
+    if (!f.is_open()) [[unlikely]]
+        return false;
     try {
         boost::iostreams::mapped_file_source mmap;
         mmap.open(path.string());

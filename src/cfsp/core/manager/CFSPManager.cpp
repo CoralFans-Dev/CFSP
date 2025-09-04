@@ -168,8 +168,10 @@ bool CFSPManager::isManager(const Player* player) {
 
 base::OperateResult CFSPManager::baseCheck(const Player* player, config::FuncStruct func) {
     using ll::i18n_literals::operator""_tr;
-    if (player && player->isSimulatedPlayer()) return base::OperateResult::error();
-    if (!func.enabled) return base::OperateResult::error("manager.fail.funcUnabled"_tr());
+    if (player && player->isSimulatedPlayer()) [[unlikely]]
+        return base::OperateResult::error();
+    if (!func.enabled) [[unlikely]]
+        return base::OperateResult::error("manager.fail.funcUnabled"_tr());
     if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     if (this->isManager(player)) return base::OperateResult::success();
     if (player->getCommandPermissionLevel() < func.permission)
@@ -179,7 +181,7 @@ base::OperateResult CFSPManager::baseCheck(const Player* player, config::FuncStr
 
 base::OperateResult CFSPManager::canCreatePlayer(const Player* player) {
     using ll::i18n_literals::operator""_tr;
-    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createSp);
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spCreate);
         checkResult.mType != base::OperateResult::Type::none)
         return checkResult;
     auto uuid = player->getUuid().asString();
@@ -206,7 +208,7 @@ base::OperateResult CFSPManager::canCreatePlayer(const Player* player) {
 
 base::OperateResult CFSPManager::canSpawnPlayer(const Player* player) {
     using ll::i18n_literals::operator""_tr;
-    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createSp);
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spSpawn);
         checkResult.mType != base::OperateResult::Type::none)
         return checkResult;
     // check: maxOnline
@@ -226,7 +228,7 @@ base::OperateResult CFSPManager::canSpawnPlayer(const Player* player) {
 
 base::OperateResult CFSPManager::canCreateGroup(const Player* player) {
     using ll::i18n_literals::operator""_tr;
-    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.createGroup)) return checkResult;
+    if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.groupCreate)) return checkResult;
     auto               uuid  = player->getUuid().asString();
     unsigned long long count = 0;
     for (auto group : this->mGroupMap) {

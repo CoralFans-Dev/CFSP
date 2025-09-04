@@ -6,12 +6,16 @@ private:
     ll::event::ListenerPtr playerJoinEventListener;
 
 public:
+    bool buildMutex = false;
+
+public:
     static CFSPHelperManager& getInstance();
 
 private:
     void saveHelperHook();
     void autoFuncHelperRegister();
     void scheduleHelperHook();
+    void operateHelperHook();
 
 public:
     void SimPlayerHelperHook();

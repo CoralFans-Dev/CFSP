@@ -53,7 +53,7 @@ void GuiManager::sendNewSpPage(Player& player, int defDim, std::string defPos, s
                 base::OperateResult::error("gui.createSp.nameError"_tr()).sendTo(player);
                 return this->sendNewSpPage(player, dim, elePos, name);
             }
-            auto res = manager::CFSPManager::getInstance().createSp(&player, name, targetPos.value(), dim);
+            auto res = manager::CFSPManager::getInstance().spCreate(&player, name, targetPos.value(), dim);
             res.sendTo(player);
             if (!res) this->sendNewSpPage(player, dim, elePos, name);
         }

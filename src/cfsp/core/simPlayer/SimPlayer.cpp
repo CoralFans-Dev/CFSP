@@ -19,12 +19,10 @@ void SimPlayer::cancelScript() { base::Schedule::getInstance().getSchedule()->ca
 base::OperateResult SimPlayer::stop() {
     using ll::i18n_literals::operator""_tr;
     if (base::Schedule::getInstance().getSchedule()->isRunning(this->mTaskid)) this->cancelTask();
-    this->mTaskid = 0;
     if (base::Schedule::getInstance().getSchedule()->isRunning(this->mScriptid)) this->cancelScript();
-    this->mScriptid = 0;
 
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    ;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
 
     this->mSimPlayer->simulateStopDestroyingBlock();
 
@@ -47,9 +45,9 @@ base::OperateResult SimPlayer::stop() {
     }
 
     // simPlayer->simulateStopUsingItem();
-    if (this->mSimPlayer->isAlive()) {
+    if (this->mSimPlayer->isAlive()) [[likely]]
         this->mSimPlayer->releaseUsingItem();
-    }
+
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -62,7 +60,8 @@ SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& p
     if (!serverNetworkHandler) return nullptr;
     auto  xuid      = "-" + std::to_string(std::hash<std::string>()(spname));
     auto* simPlayer = SimulatedPlayer::create(spname, pos, dim, serverNetworkHandler, xuid, std::nullopt);
-    if (!simPlayer) return nullptr;
+    if (!simPlayer) [[unlikely]]
+        return nullptr;
 
     simPlayer->mPlayerRespawnPoint->mPlayerPosition = pos;
     simPlayer->mPlayerRespawnPoint->mDimension      = dim;
@@ -92,7 +91,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool l
         this->mSaveData.xuid,
         lockUniqueId ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId)) : std::nullopt
     );
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.failedtocreate"_tr());
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.failedtocreate"_tr());
     this->loadSpNbt();
     this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition = this->mSimPlayer->getFeetPos();
     this->mSimPlayer->mPlayerRespawnPoint->mDimension      = this->mSimPlayer->getDimensionId();
@@ -104,7 +104,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool l
 
 base::OperateResult SimPlayer::despawn() {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     this->stop();
     this->mSaveData.isOnline = false;
     this->save();
@@ -117,7 +118,8 @@ base::OperateResult SimPlayer::despawn() {
 
 base::OperateResult SimPlayer::respawn() {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isAlive()) return base::OperateResult::error("manager.fail.SpIsAlive"_tr());
     auto& spawnPos                              = this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition;
     this->mSimPlayer->mRespawnPositionCandidate = {spawnPos->x + 0.5f, spawnPos->y + 1.62001f, spawnPos->z + 0.5f};
@@ -129,7 +131,8 @@ base::OperateResult SimPlayer::respawn() {
 
 base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     this->mSimPlayer->mLookAtIntent->mType = std::get<::sim::ContinuousLookAtPositionIntent>(
         sim::lookAt(*this->mSimPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration::UntilMove).mType.get()
     );

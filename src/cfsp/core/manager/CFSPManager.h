@@ -63,18 +63,70 @@ public:
 
 public:
     void                saveSps();
-    base::OperateResult createSp(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim);
+    base::OperateResult spCreate(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim);
     base::OperateResult createGroup(Player* player, std::string const& gname);
     base::OperateResult
-    spawnSp(Player* player, std::string const& spname, bool nocheck = false, bool isLockUniqueId = true);
-    base::OperateResult despawnSp(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult respawnSp(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult rmSp(Player* player, std::string const& spname, bool nocheck = false, bool force = false);
-    base::OperateResult stopSp(Player* player, std::string const& spname, bool nocheck = false);
+    spSpawn(Player* player, std::string const& spname, bool nocheck = false, bool isLockUniqueId = true);
+    base::OperateResult spDespawn(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spRespawn(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spRm(Player* player, std::string const& spname, bool nocheck = false, bool force = false);
+    base::OperateResult spStop(Player* player, std::string const& spname, bool nocheck = false);
 
 public:
-    base::OperateResult dropSp(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult dropInvSp(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult swapSp(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spDrop(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spDropInv(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
+
+public:
+    base::OperateResult spSneaking(
+        Player*             player,
+        std::string const&  spname,
+        std::optional<bool> enabled = std::nullopt,
+        bool                nocheck = false
+    );
+    base::OperateResult spSwimming(
+        Player*             player,
+        std::string const&  spname,
+        std::optional<bool> enabled = std::nullopt,
+        bool                nocheck = false
+    );
+    base::OperateResult spFlying(
+        Player*             player,
+        std::string const&  spname,
+        std::optional<bool> enabled = std::nullopt,
+        bool                nocheck = false
+    );
+    base::OperateResult spSprinting(
+        Player*             player,
+        std::string const&  spname,
+        std::optional<bool> enabled = std::nullopt,
+        bool                nocheck = false
+    );
+
+public:
+    base::OperateResult
+    spAttack(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
+    base::OperateResult
+    spBuild(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
+    base::OperateResult
+    spInteract(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
+    base::OperateResult
+    spJump(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
+    base::OperateResult spUse(
+        Player*            player,
+        std::string const& spname,
+        int                _long    = 10,
+        int                times    = 1,
+        int                interval = 1,
+        bool               nocheck  = false
+    );
+    base::OperateResult spDestroy(
+        Player*            player,
+        std::string const& spname,
+        int                _long    = 1,
+        int                times    = 1,
+        int                interval = 1,
+        bool               nocheck  = false
+    );
 };
 } // namespace coral_fans::cfsp::manager

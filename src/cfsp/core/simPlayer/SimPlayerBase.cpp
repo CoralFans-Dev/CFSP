@@ -1,6 +1,8 @@
 #include "SimPlayer.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/base/Schedule.h"
 #include "ll/api/i18n/I18n.h"
+
 
 namespace coral_fans::cfsp::simulated_player {
 SimPlayer::SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp) {
@@ -8,11 +10,16 @@ SimPlayer::SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp) {
     this->mSimPlayer = sp;
 }
 
-inline std::string SimPlayer::getName() { return this->mSaveData.name; }
+std::string SimPlayer::getName() { return this->mSaveData.name; }
 
-inline std::string SimPlayer::getXuid() { return this->mSaveData.xuid; }
+std::string SimPlayer::getXuid() { return this->mSaveData.xuid; }
 
-inline bool SimPlayer::isOnline() { return this->mSimPlayer != nullptr; }
+bool SimPlayer::isOnline() { return this->mSimPlayer != nullptr; }
+
+bool SimPlayer::isFree() {
+    auto schedule = base::Schedule::getInstance().getSchedule();
+    return !schedule->isRunning(this->mTaskid) && !schedule->isRunning(this->mScriptid);
+}
 
 base::OperateResult SimPlayer::hasPermission(Player* player, SimPlayerPermission permission) {
     using ll::i18n_literals::operator""_tr;

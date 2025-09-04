@@ -5,6 +5,7 @@
 #include "cfsp/base/OperateResult.h"
 #include "mc/server/SimulatedPlayer.h"
 #include <memory>
+#include <optional>
 
 namespace coral_fans::cfsp::simulated_player {
 class SimPlayer {
@@ -23,12 +24,13 @@ public:
     SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp = nullptr);
 
 public:
-    bool                        save();
-    bool                        loadSpNbt();
-    CFSP_API inline std::string getName();
-    CFSP_API inline std::string getXuid();
-    CFSP_API inline bool        isOnline();
-    base::OperateResult         hasPermission(Player*, SimPlayerPermission permission);
+    bool     save();
+    bool     loadSpNbt();
+    CFSP_API std::string getName();
+    CFSP_API std::string getXuid();
+    CFSP_API bool        isOnline();
+    CFSP_API bool        isFree();
+    base::OperateResult  hasPermission(Player*, SimPlayerPermission permission);
 
 public:
     CFSP_API void cancelTask();
@@ -47,5 +49,19 @@ public:
     CFSP_API base::OperateResult drop();
     CFSP_API base::OperateResult dropInv();
     CFSP_API base::OperateResult swap(Player*);
+
+public:
+    CFSP_API base::OperateResult sneaking(std::optional<bool> enable = std::nullopt);
+    CFSP_API base::OperateResult swimming(std::optional<bool> enable = std::nullopt);
+    CFSP_API base::OperateResult flying(std::optional<bool> enable = std::nullopt);
+    CFSP_API base::OperateResult sprinting(std::optional<bool> enable = std::nullopt);
+
+public:
+    CFSP_API base::OperateResult attack(int times = 1, int interval = 1);
+    CFSP_API base::OperateResult build(int times = 1, int interval = 1);
+    CFSP_API base::OperateResult interact(int times = 1, int interval = 1);
+    CFSP_API base::OperateResult jump(int times = 1, int interval = 1);
+    CFSP_API base::OperateResult use(int _long = 10, int times = 1, int interval = 1);
+    CFSP_API base::OperateResult destroy(int _long = 1, int times = 1, int interval = 1);
 };
 } // namespace coral_fans::cfsp::simulated_player

@@ -10,5 +10,6 @@ void CFSPHelperManager::SimPlayerHelperHook() {
     saveHelperHook();
     autoFuncHelperRegister();
     scheduleHelperHook();
+    operateHelperHook();
 }
 } // namespace coral_fans::cfsp::helper

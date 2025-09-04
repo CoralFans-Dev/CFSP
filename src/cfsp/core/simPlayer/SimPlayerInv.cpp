@@ -23,21 +23,27 @@ bool SimPlayer::isEmptyInv() {
 
 base::OperateResult SimPlayer::drop() {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0))
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
+    if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
         this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
 base::OperateResult SimPlayer::dropInv() {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     auto& inv  = *this->mSimPlayer->mInventory->mInventory;
     int   sel  = this->mSimPlayer->getSelectedItemSlot();
     int   size = inv.getContainerSize();
     for (int i = 0; i < size; ++i) {
         inv.swapSlots(i, sel);
-        if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0))
+        if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
             this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
     }
     return base::OperateResult::success("manager.success.operate"_tr());
@@ -45,13 +51,17 @@ base::OperateResult SimPlayer::dropInv() {
 
 base::OperateResult SimPlayer::swap(Player* player) {
     using ll::i18n_literals::operator""_tr;
-    if (!this->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    if (!player) throw std::invalid_argument("Player is null");
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!player) [[unlikely]]
+        return base::OperateResult::error("manager.fail.playerIsNull"_tr());
     std::vector<std::string> invKeys = {"Armor", "EnderChestInventory", "Inventory", "Mainhand", "Offhand"};
     auto                     spTag   = std::make_unique<CompoundTag>();
-    if (!this->mSimPlayer->save(*spTag)) return base::OperateResult::error("manager.fail.failToSave"_tr());
+    if (!this->mSimPlayer->save(*spTag)) [[unlikely]]
+        return base::OperateResult::error("manager.fail.failToSave"_tr());
     auto pTag = std::make_unique<CompoundTag>();
-    if (!player->save(*pTag)) return base::OperateResult::error("manager.fail.failToSave"_tr());
+    if (!player->save(*pTag)) [[unlikely]]
+        return base::OperateResult::error("manager.fail.failToSave"_tr());
     for (auto& key : invKeys) {
         auto spInvNode = spTag->mTags.extract(key);
         auto pInvNode  = pTag->mTags.extract(key);
