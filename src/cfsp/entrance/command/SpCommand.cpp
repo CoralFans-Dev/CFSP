@@ -112,6 +112,11 @@ void ComandManager::registerSpComand() {
         });
 
     // sp p <despawn|stop|drop|dropinv|swap> <name: cfspOnlineSp>
+#define SP_ONLINE_OPERATE1_CALL(FUNC)                                                                                  \
+    return manager::CFSPManager::getInstance()                                                                         \
+        .sp##FUNC(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())                              \
+        .output(output);
+
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate1",
         {
@@ -131,26 +136,16 @@ void ComandManager::registerSpComand() {
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                return manager::CFSPManager::getInstance()
-                    .spDespawn(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE1_CALL(Despawn)
             case 1:
-                return manager::CFSPManager::getInstance()
-                    .spStop(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE1_CALL(Stop)
             case 2:
-                return manager::CFSPManager::getInstance()
-                    .spDrop(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE1_CALL(Drop)
             case 3:
-                return manager::CFSPManager::getInstance()
-                    .spDropInv(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE1_CALL(DropInv)
             case 4:
                 if (!player.has_value()) return output.error("command.fail.onlyplayer"_tr());
-                return manager::CFSPManager::getInstance()
-                    .spSwap(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE1_CALL(Swap)
             }
         });
 
@@ -191,6 +186,19 @@ void ComandManager::registerSpComand() {
         });
 
     // sp p <sneaking|swimming|flying|sprinting> <name: cfspOnlineSp> [bool: enabled]
+#define SP_ONLINE_OPERATE2_CALL(FUNC)                                                                                  \
+    if (self["enable"].has_value())                                                                                    \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                self["enable"].get<ll::command::ParamKind::Bool>()                                                     \
+            )                                                                                                          \
+            .output(output);                                                                                           \
+    return manager::CFSPManager::getInstance()                                                                         \
+        .sp##FUNC(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())                              \
+        .output(output);
+
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate2",
         {
@@ -211,59 +219,39 @@ void ComandManager::registerSpComand() {
 
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                if (self["enable"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spSneaking(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["enable"].get<ll::command::ParamKind::Bool>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spSneaking(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE2_CALL(Sneaking)
             case 1:
-                if (self["enable"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spSwimming(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["enable"].get<ll::command::ParamKind::Bool>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spSwimming(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE2_CALL(Swimming)
             case 2:
-                if (self["enable"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spFlying(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["enable"].get<ll::command::ParamKind::Bool>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spFlying(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE2_CALL(Flying)
             case 3:
-                if (self["enable"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spSprinting(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["enable"].get<ll::command::ParamKind::Bool>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spSprinting(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                    .output(output);
+                SP_ONLINE_OPERATE2_CALL(Sprinting)
             }
-        }
-
-        );
+        });
 
     // sp p <attack|build|interact|jump> <name: cfspOnlineSp> [int: times] [int: interval]
+#define SP_ONLINE_OPERATE3_CALL(FUNC)                                                                                  \
+    if (!self["times"].has_value())                                                                                    \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())                          \
+            .output(output);                                                                                           \
+    else if (!self["interval"].has_value())                                                                            \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                self["times"].get<ll::command::ParamKind::Int>()                                                       \
+            )                                                                                                          \
+            .output(output);                                                                                           \
+    return manager::CFSPManager::getInstance()                                                                         \
+        .sp##FUNC(                                                                                                     \
+            player.value(),                                                                                            \
+            self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
+            self["times"].get<ll::command::ParamKind::Int>(),                                                          \
+            self["interval"].get<ll::command::ParamKind::Int>()                                                        \
+        )                                                                                                              \
+        .output(output);
+
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate3",
         {
@@ -284,93 +272,49 @@ void ComandManager::registerSpComand() {
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spAttack(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spAttack(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spAttack(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE3_CALL(Attack)
             case 1:
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spBuild(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spBuild(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spBuild(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE3_CALL(Build)
             case 2:
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spInteract(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spInteract(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spInteract(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE3_CALL(Interact)
             case 3:
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spJump(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spJump(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spJump(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE3_CALL(Jump)
             }
         });
 
     // sp p <use|destroy> <name: cfspOnlineSp> [int: long] [int: times] [int: interval]
+#define SP_ONLINE_OPERATE4_CALL(FUNC)                                                                                  \
+    if (!self["long"].has_value())                                                                                     \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())                          \
+            .output(output);                                                                                           \
+    if (!self["times"].has_value())                                                                                    \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                self["long"].get<ll::command::ParamKind::Int>()                                                        \
+            )                                                                                                          \
+            .output(output);                                                                                           \
+    else if (!self["interval"].has_value())                                                                            \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                self["long"].get<ll::command::ParamKind::Int>(),                                                       \
+                self["times"].get<ll::command::ParamKind::Int>()                                                       \
+            )                                                                                                          \
+            .output(output);                                                                                           \
+    return manager::CFSPManager::getInstance()                                                                         \
+        .sp##FUNC(                                                                                                     \
+            player.value(),                                                                                            \
+            self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
+            self["long"].get<ll::command::ParamKind::Int>(),                                                           \
+            self["times"].get<ll::command::ParamKind::Int>(),                                                          \
+            self["interval"].get<ll::command::ParamKind::Int>()                                                        \
+        )                                                                                                              \
+        .output(output);
+
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate4",
         {
@@ -390,67 +334,9 @@ void ComandManager::registerSpComand() {
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                if (!self["long"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spUse(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spUse(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["long"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spUse(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["long"].get<ll::command::ParamKind::Int>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spUse(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["long"].get<ll::command::ParamKind::Int>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE4_CALL(Use)
             case 1:
-                if (!self["long"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spDestroy(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>())
-                        .output(output);
-                if (!self["times"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spDestroy(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["long"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                else if (!self["interval"].has_value())
-                    return manager::CFSPManager::getInstance()
-                        .spDestroy(
-                            player.value(),
-                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                            self["long"].get<ll::command::ParamKind::Int>(),
-                            self["times"].get<ll::command::ParamKind::Int>()
-                        )
-                        .output(output);
-                return manager::CFSPManager::getInstance()
-                    .spDestroy(
-                        player.value(),
-                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                        self["long"].get<ll::command::ParamKind::Int>(),
-                        self["times"].get<ll::command::ParamKind::Int>(),
-                        self["interval"].get<ll::command::ParamKind::Int>()
-                    )
-                    .output(output);
+                SP_ONLINE_OPERATE4_CALL(Destroy)
             }
         });
 }

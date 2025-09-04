@@ -3,64 +3,27 @@
 #include "ll/api/i18n/I18n.h"
 
 namespace coral_fans::cfsp::manager {
-base::OperateResult CFSPManager::spDrop(Player* player, std::string const& spname, bool nocheck) {
-    using ll::i18n_literals::operator""_tr;
-    if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDrop); !checkResult)
-            return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+#define SP_INV_DEF(FUNC, ACTION)                                                                                       \
+    base::OperateResult CFSPManager::sp##FUNC(Player* player, std::string const& spname, bool nocheck) {               \
+        using ll::i18n_literals::operator""_tr;                                                                        \
+        if (!nocheck) {                                                                                                \
+            if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.sp##FUNC); !checkResult)            \
+                return checkResult;                                                                                    \
+            else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;                          \
+        }                                                                                                              \
+        auto it = this->mOnlineSpMap.find(spname);                                                                     \
+        if (it == this->mOnlineSpMap.end()) {                                                                          \
+            if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())                                         \
+                return base::OperateResult::error("manager.fail.spHasOffline"_tr());                                   \
+            return base::OperateResult::error("manager.fail.spNotExisted"_tr());                                       \
+        }                                                                                                              \
+        if (!nocheck)                                                                                                  \
+            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC); !res)       \
+                return res;                                                                                            \
+        return it->second->ACTION;                                                                                     \
     }
-    // check: exist
-    auto it = this->mOnlineSpMap.find(spname);
-    if (it == this->mOnlineSpMap.end()) {
-        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
-            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
-        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
-    }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Drop); !res) return res;
-    return it->second->drop();
-}
 
-base::OperateResult CFSPManager::spDropInv(Player* player, std::string const& spname, bool nocheck) {
-    using ll::i18n_literals::operator""_tr;
-    if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDropInv); !checkResult)
-            return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
-    }
-    // check: exist
-    auto it = this->mOnlineSpMap.find(spname);
-    if (it == this->mOnlineSpMap.end()) {
-        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
-            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
-        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
-    }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::DropInv); !res)
-            return res;
-    return it->second->dropInv();
-}
-
-base::OperateResult CFSPManager::spSwap(Player* player, std::string const& spname, bool nocheck) {
-    using ll::i18n_literals::operator""_tr;
-    if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spSwap); !checkResult)
-            return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
-    }
-    // check: exist
-    auto it = this->mOnlineSpMap.find(spname);
-    if (it == this->mOnlineSpMap.end()) {
-        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
-            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
-        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
-    }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Swap); !res) return res;
-    return it->second->swap(player);
-}
+SP_INV_DEF(Drop, drop())
+SP_INV_DEF(DropInv, dropInv())
+SP_INV_DEF(Swap, swap(player))
 } // namespace coral_fans::cfsp::manager
