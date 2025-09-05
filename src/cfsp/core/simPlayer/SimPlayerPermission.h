@@ -21,5 +21,7 @@ enum class SimPlayerPermission : unsigned int {
     Jump      = 1 << 15,
     Use       = 1 << 16,
     Destroy   = 1 << 17,
+    Chat      = 1 << 18,
+    RunCmd    = 1 << 19,
 };
 }

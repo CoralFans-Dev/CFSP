@@ -53,7 +53,7 @@ base::OperateResult SimPlayer::stop() {
 
 std::shared_ptr<SimPlayer>
 SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& pos, DimensionType dim) {
-    auto uuid = player->getUuid().asString();
+    auto uuid = player ? player->getUuid().asString() : "";
     auto mc   = ll::service::getMinecraft();
     if (!mc) return nullptr;
     auto serverNetworkHandler = mc->getServerNetworkHandler();
@@ -73,7 +73,13 @@ SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& p
     saveData.ownerUuid       = uuid;
     saveData.lastSpawnerUuid = uuid;
 
-    return std::make_shared<simulated_player::SimPlayer>(saveData, simPlayer);
+    auto cfsp = std::make_shared<simulated_player::SimPlayer>(saveData, simPlayer);
+
+    cfsp->lookAt(
+        player ? simPlayer->getEyePos() + Vec3::directionFromRotation(player->getRotation()) : simPlayer->getEyePos()
+    );
+
+    return cfsp;
 }
 
 base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool lockUniqueId) {

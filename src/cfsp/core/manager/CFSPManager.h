@@ -17,8 +17,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-        mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
+                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
@@ -128,5 +128,9 @@ public:
         int                interval = 1,
         bool               nocheck  = false
     );
+
+public:
+    base::OperateResult spChat(Player* player, std::string const& spname, std::string message, bool nocheck = false);
+    base::OperateResult spRunCmd(Player* player, std::string const& spname, std::string cmd, bool nocheck = false);
 };
 } // namespace coral_fans::cfsp::manager

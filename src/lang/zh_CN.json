@@ -35,11 +35,13 @@
             "FailedToOperate": "操作失败",
             "spIsDead": "假人处于死亡状态",
             "playerIsNull": "玩家对象为空",
-            "spIsBusy": "假人正忙"
+            "spIsBusy": "假人正忙",
+            "runcmd": "假人执行命令出错"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
-            "loseSimplayer": "Error: 假人对象丢失"
+            "loseSimplayer": "Error: 假人对象丢失",
+            "runcmd": "Error: 获取minecraft对象失败"
         },
         "info": {
             "onlineCount": "在线假人数量：{}",

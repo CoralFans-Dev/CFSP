@@ -63,5 +63,9 @@ public:
     CFSP_API base::OperateResult jump(int times = 1, int interval = 1);
     CFSP_API base::OperateResult use(int _long = 10, int times = 1, int interval = 1);
     CFSP_API base::OperateResult destroy(int _long = 1, int times = 1, int interval = 1);
+
+public:
+    CFSP_API base::OperateResult chat(std::string&);
+    CFSP_API base::OperateResult runcmd(std::string&);
 };
 } // namespace coral_fans::cfsp::simulated_player
