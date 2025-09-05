@@ -49,6 +49,7 @@ public:
     CFSP_API base::OperateResult drop();
     CFSP_API base::OperateResult dropInv();
     CFSP_API base::OperateResult swap(Player*);
+    CFSP_API base::OperateResult select(int id);
 
 public:
     CFSP_API base::OperateResult sneaking(std::optional<bool> enable = std::nullopt);

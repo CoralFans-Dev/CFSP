@@ -78,4 +78,18 @@ base::OperateResult SimPlayer::swap(Player* player) {
     }
     return base::OperateResult::success("manager.success.operate"_tr());
 }
+
+base::OperateResult SimPlayer::select(int id) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    auto& inv  = *this->mSimPlayer->mInventory->mInventory;
+    int   size = inv.getContainerSize();
+    for (int i = 0; i < size; ++i)
+        if (inv.getItem(i).getId() == id) {
+            inv.swapSlots(i, this->mSimPlayer->getSelectedItemSlot());
+            return base::OperateResult::success("manager.success.operate"_tr());
+        }
+    return base::OperateResult::error("manager.fail.selectNoFound"_tr());
+}
 } // namespace coral_fans::cfsp::simulated_player

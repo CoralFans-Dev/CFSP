@@ -36,7 +36,8 @@
             "spIsDead": "假人处于死亡状态",
             "playerIsNull": "玩家对象为空",
             "spIsBusy": "假人正忙",
-            "runcmd": "假人执行命令出错"
+            "runcmd": "假人执行命令出错",
+            "selectNoFound": "假人背包中没有该物品"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
