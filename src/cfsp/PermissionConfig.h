@@ -33,6 +33,10 @@ struct PermissionConfig {
     FuncStruct spChat      = {true, CommandPermissionLevel::Any};
     FuncStruct spRunCmd    = {true, CommandPermissionLevel::Any};
     FuncStruct spSelect    = {true, CommandPermissionLevel::Any};
+    FuncStruct spLookAt    = {true, CommandPermissionLevel::Any};
+    FuncStruct spMoveTo    = {true, CommandPermissionLevel::Any};
+    FuncStruct spNavTo     = {true, CommandPermissionLevel::Any};
+    FuncStruct spTp        = {true, CommandPermissionLevel::Any};
     FuncStruct groupCreate = {true, CommandPermissionLevel::Any};
 };
 } // namespace coral_fans::cfsp::config

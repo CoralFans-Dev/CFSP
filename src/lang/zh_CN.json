@@ -105,6 +105,12 @@
             "lockUniqueId": "锁定UniqueId (锁定之后不会丢失与三叉戟的联系)",
             "paraError": "Error: 参数解析错误",
             "nameError": "名称参数错误"
+        },
+        "oprateSp": {
+            "spinfo": "假人信息",
+            "online": "上线假人",
+            "offline": "下线假人",
+            "respawn": "假人重生"
         }
     }
 }

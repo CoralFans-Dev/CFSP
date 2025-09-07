@@ -295,4 +295,25 @@ base::OperateResult CFSPManager::spStop(Player* player, std::string const& spnam
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Stop); !res) return res;
     return it->second->stop();
 }
+
+base::OperateResult CFSPManager::spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spLookAt); !checkResult)
+            return checkResult;
+        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+    }
+    // check: exist
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
+            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
+        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (!nocheck)
+        // check：permission
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::LookAt); !res)
+            return res;
+    return it->second->lookAt(pos);
+}
 } // namespace coral_fans::cfsp::manager

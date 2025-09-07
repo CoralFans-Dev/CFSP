@@ -103,7 +103,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool l
     this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition = this->mSimPlayer->getFeetPos();
     this->mSimPlayer->mPlayerRespawnPoint->mDimension      = this->mSimPlayer->getDimensionId();
     this->lookAt(this->mSimPlayer->getEyePos() + this->mSaveData.lookAtOffSet);
-    if (player.has_value()) this->mSaveData.lastSpawnerUuid = player.value()->getUuid().asString();
+    if (player.has_value())
+        this->mSaveData.lastSpawnerUuid = player.value() ? player.value()->getUuid().asString() : "";
     this->mSaveData.isOnline = true;
     return base::OperateResult::success("manager.success.operate"_tr());
 }
@@ -139,6 +140,8 @@ base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     this->mSimPlayer->mLookAtIntent->mType = std::get<::sim::ContinuousLookAtPositionIntent>(
         sim::lookAt(*this->mSimPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration::UntilMove).mType.get()
     );

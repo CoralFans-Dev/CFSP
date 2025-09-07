@@ -7,6 +7,8 @@ base::OperateResult SimPlayer::sneaking(std::optional<bool> enable) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     if (enable.has_value()) this->mSimPlayer->setSneaking(enable.value());
     else this->mSimPlayer->setSneaking(!this->mSimPlayer->getStatusFlag(ActorFlags::Sneaking));
     return base::OperateResult::success("manager.success.operate"_tr());
@@ -16,6 +18,8 @@ base::OperateResult SimPlayer::swimming(std::optional<bool> enable) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     if (enable.has_value()) enable.value() ? this->mSimPlayer->startSwimming() : this->mSimPlayer->stopSwimming();
     else
         this->mSimPlayer->getStatusFlag(ActorFlags::Swimming) ? this->mSimPlayer->stopSwimming()
@@ -27,6 +31,8 @@ base::OperateResult SimPlayer::flying(std::optional<bool> enable) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     auto& spAbilities = this->mSimPlayer->getAbilities();
     if (spAbilities.getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) [[likely]] {
         if (enable.has_value()) {
@@ -45,6 +51,8 @@ base::OperateResult SimPlayer::sprinting(std::optional<bool> enable) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
     if (enable.has_value()) this->mSimPlayer->setSprinting(enable.value());
     else this->mSimPlayer->setSprinting(!this->mSimPlayer->getStatusFlag(ActorFlags::Sprinting));
     return base::OperateResult::success("manager.success.operate"_tr());

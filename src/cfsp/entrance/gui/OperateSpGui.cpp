@@ -1,7 +1,9 @@
 #include "GuiManager.h"
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/manager/CFSPManager.h"
+#include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/form/CustomForm.h"
+#include "ll/api/form/SimpleForm.h"
 #include "ll/api/i18n/I18n.h"
 
 
@@ -60,5 +62,48 @@ void GuiManager::sendNewSpPage(Player& player, int defDim, std::string defPos, s
     );
 }
 
-void GuiManager::sendOperatorSpPage(Player&, std::shared_ptr<simulated_player::SimPlayer>) {}
+void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_player::SimPlayer> cfsp) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::SimpleForm(cfsp->mSaveData.name);
+    form.appendButton("gui.oprateSp.spinfo"_tr(), [this, cfsp](Player& player) { this->sendSpInfo(player, cfsp); });
+    simulated_player::SimPlayerPermission perm;
+    if (manager::CFSPManager::getInstance().isManager(&player)) perm = (simulated_player::SimPlayerPermission)-1;
+    else perm = cfsp->getPermission(&player);
+    if (!cfsp->mSimPlayer) {
+        if ((uint)perm & (uint)simulated_player::SimPlayerPermission::Spawn)
+            form.appendButton("gui.oprateSp.online"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+                manager::CFSPManager::getInstance().spSpawn(&player, spname).sendTo(player);
+            });
+    } else {
+        if ((uint)perm & (uint)simulated_player::SimPlayerPermission::Despawn)
+            form.appendButton("gui.oprateSp.offline"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+                manager::CFSPManager::getInstance().spDespawn(&player, spname).sendTo(player);
+            });
+        if (cfsp->mSimPlayer->isDead()) {
+            if ((uint)perm & (uint)simulated_player::SimPlayerPermission::Respawn)
+                form.appendButton("gui.oprateSp.respawn"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+                    manager::CFSPManager::getInstance().spRespawn(&player, spname).sendTo(player);
+                });
+            if ((uint)perm & (uint)simulated_player::SimPlayerPermission::Tp)
+                form.appendButton("gui.oprateSp.tp"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+
+                });
+        } else {
+            if ((uint)perm & (uint)simulated_player::SimPlayerPermission::Swap
+                || (uint)perm & (uint)simulated_player::SimPlayerPermission::Drop
+                || (uint)perm & (uint)simulated_player::SimPlayerPermission::DropInv
+                || (uint)perm & (uint)simulated_player::SimPlayerPermission::Select)
+                form.appendButton("gui.oprateSp.inv"_tr(), [this, cfsp](Player& player) {
+                    this->sendSpInvOperatorPage(player, cfsp);
+                });
+            if ((uint)perm
+                & ((uint)simulated_player::SimPlayerPermission::MoveTo
+                   | (uint)simulated_player::SimPlayerPermission::NavTo
+                   | (uint)simulated_player::SimPlayerPermission::Tp))
+                form.appendButton("gui.oprateSp.inv"_tr(), [this, cfsp](Player& player) {
+                    this->sendSpInvOperatorPage(player, cfsp);
+                });
+        }
+    }
+}
 } // namespace coral_fans::cfsp::gui

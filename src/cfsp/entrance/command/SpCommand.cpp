@@ -4,6 +4,8 @@
 #include "ll/api/command/runtime/RuntimeCommand.h"
 #include "ll/api/command/runtime/RuntimeOverload.h"
 #include "ll/api/i18n/I18n.h"
+#include "mc/world/actor/player/Player.h"
+#include "mc/world/phys/HitResult.h"
 
 namespace coral_fans::cfsp::command {
 #define SP_ONLINE_OPERATE1_CALL(FUNC)                                                                                  \
@@ -82,8 +84,35 @@ namespace coral_fans::cfsp::command {
     return manager::CFSPManager::getInstance()                                                                         \
         .sp##FUNC(                                                                                                     \
             player.value(),                                                                                            \
-            self["spname"].get<ll::command::ParamKind::String>(),                                                      \
+            self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
             self["message"].get<ll::command::ParamKind::String>()                                                      \
+        )                                                                                                              \
+        .output(output);
+
+#define SP_ONLINE_OPERATE6_CALL(FUNC)                                                                                  \
+    if (!self["pos"].has_value()) {                                                                                    \
+        if (!player.value()) [[unlikely]]                                                                              \
+            return output.error("command.fail.lackPara"_tr());                                                         \
+        const auto& hit = player.value()->traceRay(5.25f, false, true);                                                \
+        if (hit)                                                                                                       \
+            return manager::CFSPManager::getInstance()                                                                 \
+                .sp##FUNC(player.value(), self["spname"].get<ll::command::ParamKind::SoftEnum>(), hit.mPos)            \
+                .output(output);                                                                                       \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                player.value()->getFeetPos()                                                                           \
+            )                                                                                                          \
+            .output(output);                                                                                           \
+    }                                                                                                                  \
+    return manager::CFSPManager::getInstance()                                                                         \
+        .sp##FUNC(                                                                                                     \
+            player.value(),                                                                                            \
+            self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
+            self["pos"]                                                                                                \
+                .get<ll::command::ParamKind::Vec3>()                                                                   \
+                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})                                      \
         )                                                                                                              \
         .output(output);
 
@@ -124,7 +153,7 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p create <name: string> [pos: x y z] [dim: Dimension]
+    // sp p create <name: string> [pos: Vec3] [dim: Dimension]
     this->command->runtimeOverload()
         .text("p")
         .text("create")
@@ -165,12 +194,12 @@ void ComandManager::registerSpComand() {
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
                         .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
-                    self["dim"].get<ll::command::ParamKind::Dimension>()
+                    self["dim"].get<ll::command::ParamKind::Dimension>().id
                 )
                 .output(output);
         });
 
-    // sp p spawn <name: cfspOfflineSp> [bool: lockuniqueid]
+    // sp p spawn <name: cfspOfflineSp> [lockuniqueid: bool]
     this->command->runtimeOverload()
         .text("p")
         .text("spawn")
@@ -238,7 +267,7 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p rm <name: cfspSplist> [bool: force]
+    // sp p rm <name: cfspSplist> [force: bool]
     this->command->runtimeOverload()
         .text("p")
         .text("rm")
@@ -261,7 +290,7 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p <sneaking|swimming|flying|sprinting> <name: cfspOnlineSp> [bool: enabled]
+    // sp p <sneaking|swimming|flying|sprinting> <name: cfspOnlineSp> [enabled: bool]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate2",
         {
@@ -292,7 +321,7 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p <attack|build|interact|jump> <name: cfspOnlineSp> [int: times] [int: interval]
+    // sp p <attack|build|interact|jump> <name: cfspOnlineSp> [times: int] [interval: int]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate3",
         {
@@ -323,7 +352,7 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p <use|destroy> <name: cfspOnlineSp> [int: long] [int: times] [int: interval]
+    // sp p <use|destroy> <name: cfspOnlineSp> [long: int] [times: int] [interval: int]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate4",
         {
@@ -349,7 +378,7 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p <chat|runcmd> <name: cfspOnlineSp> <string: message>
+    // sp p <chat|runcmd> <name: cfspOnlineSp> <message: string>
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate5",
         {
@@ -372,5 +401,118 @@ void ComandManager::registerSpComand() {
                 SP_ONLINE_OPERATE5_CALL(RunCmd)
             }
         });
+
+    // sp p <lookat|moveto|navto> <name: cfspOnlineSp> [pos: Vec3]
+    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+        "cfspOnlineSpOperate6",
+        {
+            {"lookat", 0},
+            {"moveto", 1},
+            {"navto",  2}
+    }
+    );
+    this->command->runtimeOverload()
+        .text("p")
+        .required("operate", ll::command::ParamKind::Enum, "cfspOnlineSpOperate6")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
+        .optional("pos", ll::command::ParamKind::Vec3)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
+            case 0:
+                SP_ONLINE_OPERATE6_CALL(LookAt)
+            case 1:
+                SP_ONLINE_OPERATE6_CALL(MoveTo)
+            case 2:
+                SP_ONLINE_OPERATE6_CALL(NavTo)
+            }
+        });
+
+    // sp p tp <name: cfspOnlineSp> <pos: Vec3> <dim: Dimension>
+    this->command->runtimeOverload()
+        .text("p")
+        .text("tp")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
+        .optional("pos", ll::command::ParamKind::Vec3)
+        .optional("dim", ll::command::ParamKind::Dimension)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            if (!self["pos"].has_value()) {
+                if (!player.value()) [[unlikely]]
+                    return output.error("command.fail.lackPara"_tr());
+                const auto& hit = player.value()->traceRay(5.25f, false, true);
+                if (hit)
+                    return manager::CFSPManager::getInstance()
+                        .spTp(
+                            player.value(),
+                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                            hit.mPos,
+                            player.value()->getDimensionId()
+                        )
+                        .output(output);
+                return manager::CFSPManager::getInstance()
+                    .spTp(
+                        player.value(),
+                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                        player.value()->getFeetPos(),
+                        player.value()->getDimensionId()
+                    )
+                    .output(output);
+            }
+            if (!self["dim"].has_value()) {
+                if (!player.value())
+                    return manager::CFSPManager::getInstance()
+                        .spTp(
+                            player.value(),
+                            self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                            self["pos"]
+                                .get<ll::command::ParamKind::Vec3>()
+                                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})
+                        )
+                        .output(output);
+                return manager::CFSPManager::getInstance()
+                    .spTp(
+                        player.value(),
+                        self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                        self["pos"]
+                            .get<ll::command::ParamKind::Vec3>()
+                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                        player.value()->getDimensionId()
+                    )
+                    .output(output);
+            }
+            manager::CFSPManager::getInstance()
+                .spTp(
+                    player.value(),
+                    self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                    self["pos"]
+                        .get<ll::command::ParamKind::Vec3>()
+                        .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                    self["dim"].get<ll::command::ParamKind::Dimension>().id
+                )
+                .output(output);
+        });
+
+    // sp p select <name: cfspOnlineSp> <item: Item>
+    this->command->runtimeOverload()
+        .text("p")
+        .text("select")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
+        .required("item", ll::command::ParamKind::Item)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            return manager::CFSPManager::getInstance()
+                .spSelect(
+                    player.value(),
+                    self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                    self["item"].get<ll::command::ParamKind::Item>().mId
+                )
+                .output(output);
+        });
+
+    // sp p perm <name: cfspSplist> <permissionType> <player: player> <enable: bool>
 }
 } // namespace coral_fans::cfsp::command

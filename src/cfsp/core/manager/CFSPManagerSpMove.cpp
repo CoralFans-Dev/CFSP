@@ -1,10 +1,12 @@
 #include "CFSPManager.h"
 #include "cfsp/base/OperateResult.h"
 #include "ll/api/i18n/I18n.h"
+#include <optional>
 
 namespace coral_fans::cfsp::manager {
-#define SP_INV_DEF(FUNC, ACTION)                                                                                       \
-    base::OperateResult CFSPManager::sp##FUNC(Player* player, std::string const& spname, bool nocheck) {               \
+#define SP_MOVE_DEF(FUNC, ACTION)                                                                                      \
+    base::OperateResult                                                                                                \
+        CFSPManager::sp##FUNC(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck) {              \
         using ll::i18n_literals::operator""_tr;                                                                        \
         if (!nocheck) {                                                                                                \
             if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.sp##FUNC); !checkResult)            \
@@ -20,18 +22,17 @@ namespace coral_fans::cfsp::manager {
         if (!nocheck)                                                                                                  \
             if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC); !res)       \
                 return res;                                                                                            \
-        return it->second->ACTION;                                                                                     \
+        return it->second->ACTION(pos);                                                                                \
     }
 
-SP_INV_DEF(Drop, drop())
-SP_INV_DEF(DropInv, dropInv())
-SP_INV_DEF(Swap, swap(player))
+SP_MOVE_DEF(MoveTo, moveTo)
+SP_MOVE_DEF(NavTo, navTo)
 
-base::OperateResult CFSPManager::spSelect(Player* player, std::string const& spname, int id, bool nocheck) {
+base::OperateResult
+CFSPManager::spTp(Player* player, std::string const& spname, Vec3 const& pos, std::optional<int> dimId, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
-        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spSelect); !checkResult)
-            return checkResult;
+        if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spTp); !checkResult) return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
     }
     auto it = this->mOnlineSpMap.find(spname);
@@ -41,8 +42,7 @@ base::OperateResult CFSPManager::spSelect(Player* player, std::string const& spn
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     if (!nocheck)
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Select); !res)
-            return res;
-    return it->second->select(id);
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Tp); !res) return res;
+    return it->second->tp(pos, dimId);
 }
 } // namespace coral_fans::cfsp::manager

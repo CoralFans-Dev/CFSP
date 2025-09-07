@@ -39,7 +39,7 @@ LL_TYPE_INSTANCE_HOOK(
     if (cfsp.has_value()) {
         if (slot == 0 && oldItem.getTypeName() != newItem.getTypeName()) {
             MobEquipmentPacket(
-                getRuntimeID(),
+                this->getRuntimeID(),
                 newItem,
                 0,
                 0,

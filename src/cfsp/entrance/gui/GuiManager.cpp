@@ -54,7 +54,7 @@ void GuiManager::sendSplist(Player& player) {
         form.appendButton(spn, [spn, this](Player& player) {
             auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(spn);
             if (!cfsp.has_value()) return base::OperateResult::error("command.fail.spNoFind"_tr()).sendTo(player);
-            sendOperatorSpPage(player, cfsp.value());
+            sendOperateSpPage(player, cfsp.value());
         });
     }
     if (manager::CFSPManager::getInstance().canCreatePlayer(&player)) {
@@ -77,7 +77,7 @@ void GuiManager::sendGroupList(Player& player) {
         form.appendButton(groupName, [groupName, this](Player& player) {
             auto group = manager::CFSPManager::getInstance().tryGetCFSPGroup(groupName);
             if (!group.has_value()) return base::OperateResult::error("command.fail.groupNoFind"_tr()).sendTo(player);
-            sendOperatorGroupPage(player, group.value());
+            sendOperateGroupPage(player, group.value());
         });
     }
     if (manager::CFSPManager::getInstance().canCreateGroup(&player)) {
@@ -92,7 +92,7 @@ void GuiManager::sendPublicSplist(Player& player) {
         form.appendButton(spn, [spn, this](Player& player) {
             auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(spn);
             if (!cfsp.has_value()) return base::OperateResult::error("command.fail.spNoFind"_tr()).sendTo(player);
-            sendOperatorSpPage(player, cfsp.value());
+            sendOperateSpPage(player, cfsp.value());
         });
     }
     form.sendTo(player);
@@ -105,7 +105,7 @@ void GuiManager::sendAllSplist(Player& player) {
         form.appendButton(spn, [spn, this](Player& player) {
             auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(spn);
             if (!cfsp.has_value()) return base::OperateResult::error("command.fail.spNoFind"_tr()).sendTo(player);
-            sendOperatorSpPage(player, cfsp.value());
+            sendOperateSpPage(player, cfsp.value());
         });
     }
     form.appendButton("gui.managerSpList.newsp"_tr(), [this](Player& player) {
@@ -126,7 +126,7 @@ void GuiManager::sendAllGroupList(Player& player) {
         form.appendButton(groupName, [groupName, this](Player& player) {
             auto group = manager::CFSPManager::getInstance().tryGetCFSPGroup(groupName);
             if (!group.has_value()) return base::OperateResult::error("command.fail.groupNoFind"_tr()).sendTo(player);
-            sendOperatorGroupPage(player, group.value());
+            sendOperateGroupPage(player, group.value());
         });
     }
     form.appendButton("gui.grouplist.newgroup"_tr(), [this](Player& player) { this->sendCreateGroupPage(player); });
@@ -156,7 +156,7 @@ void GuiManager::sendManagePage(Player& player) {
                 auto it        = elements.value().find("autojoin");
                 if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
                     auto value = std::get<uint64>(it->second);
-                    if (value != manager::CFSPManager::getInstance().getAutoJoin()) {
+                    if ((bool)value != manager::CFSPManager::getInstance().getAutoJoin()) {
                         manager::CFSPManager::getInstance().setAutoJoin(value);
                         isChanged = true;
                     }
@@ -164,7 +164,7 @@ void GuiManager::sendManagePage(Player& player) {
                 it = elements.value().find("autorespawn");
                 if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
                     auto value = std::get<uint64>(it->second);
-                    if (value != manager::CFSPManager::getInstance().getAutoRespawn()) {
+                    if ((bool)value != manager::CFSPManager::getInstance().getAutoRespawn()) {
                         manager::CFSPManager::getInstance().setAutoRespawn(value);
                         isChanged = true;
                     }
@@ -172,7 +172,7 @@ void GuiManager::sendManagePage(Player& player) {
                 it = elements.value().find("autodespawn");
                 if (it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
                     auto value = std::get<uint64>(it->second);
-                    if (value != manager::CFSPManager::getInstance().getAutoDespawn()) {
+                    if ((bool)value != manager::CFSPManager::getInstance().getAutoDespawn()) {
                         manager::CFSPManager::getInstance().setAutoDespawn(value);
                         isChanged = true;
                     }

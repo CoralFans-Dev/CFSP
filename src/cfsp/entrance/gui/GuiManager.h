@@ -20,13 +20,15 @@ private:
     void sendManagePage(Player&);
     void sendNewSpPage(Player& player, int defDim = 0, std::string defPos = "", std::string defName = "");
     void sendCreateGroupPage(Player&);
+    void sendSpInfo(Player&, std::shared_ptr<simulated_player::SimPlayer>);
+    void sendSpInvOperatorPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
 
 public:
     void sendMainMenu(Player&);
     void sendManagerMainMenu(Player&);
     void sendSplist(Player&);
     void sendGroupList(Player&);
-    void sendOperatorSpPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
-    void sendOperatorGroupPage(Player&, std::shared_ptr<group::CFSPGroup>);
+    void sendOperateSpPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
+    void sendOperateGroupPage(Player&, std::shared_ptr<group::CFSPGroup>);
 };
 } // namespace coral_fans::cfsp::gui

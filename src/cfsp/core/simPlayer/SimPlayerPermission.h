@@ -23,5 +23,10 @@ enum class SimPlayerPermission : unsigned int {
     Destroy   = 1 << 17,
     Chat      = 1 << 18,
     RunCmd    = 1 << 19,
+    Select    = 1 << 20,
+    LookAt    = 1 << 21,
+    MoveTo    = 1 << 22,
+    NavTo     = 1 << 23,
+    Tp        = 1 << 24,
 };
 }

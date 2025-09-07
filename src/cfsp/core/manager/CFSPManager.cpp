@@ -2,6 +2,7 @@
 #include "cfsp/CFSP.h"
 #include "cfsp/ConFig.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/core/fix/CFSPFixManager.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/helper/CFSPHelperManager.h"
 #include "cfsp/core/simPlayer/SimPlayerSaveData.h"
@@ -13,7 +14,6 @@
 #include <memory>
 #include <optional>
 #include <vector>
-
 
 namespace coral_fans::cfsp::manager {
 CFSPManager& CFSPManager::getInstance() {
@@ -143,6 +143,7 @@ void CFSPManager::load() {
     loadGroupData();
     if (this->mConfig.enabled) command::ComandManager::getInstance().registerCommand(this->mConfig.permission);
     helper::CFSPHelperManager::getInstance().SimPlayerHelperHook();
+    fix::CFSPFixManager::getInstance().featureFix();
 }
 
 bool CFSPManager::isAllowed(const Player* player) {

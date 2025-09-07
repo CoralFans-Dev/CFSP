@@ -3,6 +3,7 @@
 #include "SimPlayerSaveData.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/OperateResult.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/server/SimulatedPlayer.h"
 #include <memory>
 #include <optional>
@@ -30,7 +31,9 @@ public:
     CFSP_API std::string getXuid();
     CFSP_API bool        isOnline();
     CFSP_API bool        isFree();
-    base::OperateResult  hasPermission(Player*, SimPlayerPermission permission);
+    base::OperateResult  hasPermission(Player*, SimPlayerPermission);
+    SimPlayerPermission  getPermission(Player*);
+    base::OperateResult  setPermission(Player*, SimPlayerPermission);
 
 public:
     CFSP_API void cancelTask();
@@ -68,5 +71,10 @@ public:
 public:
     CFSP_API base::OperateResult chat(std::string&);
     CFSP_API base::OperateResult runcmd(std::string&);
+
+public:
+    CFSP_API base::OperateResult moveTo(Vec3 const& pos);
+    CFSP_API base::OperateResult navTo(Vec3 const& pos);
+    CFSP_API base::OperateResult tp(Vec3 const& pos, std::optional<int> dimId = std::nullopt);
 };
 } // namespace coral_fans::cfsp::simulated_player

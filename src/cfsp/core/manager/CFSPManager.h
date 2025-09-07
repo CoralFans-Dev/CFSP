@@ -5,6 +5,7 @@
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/simPlayer/SimPlayer.h"
+#include "mc/deps/core/math/Vec3.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -17,8 +18,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
+        mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
@@ -71,11 +72,13 @@ public:
     base::OperateResult spRespawn(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spRm(Player* player, std::string const& spname, bool nocheck = false, bool force = false);
     base::OperateResult spStop(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
 
 public:
     base::OperateResult spDrop(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spDropInv(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spSelect(Player* player, std::string const& spname, int id, bool nocheck = false);
 
 public:
     base::OperateResult spSneaking(
@@ -132,5 +135,16 @@ public:
 public:
     base::OperateResult spChat(Player* player, std::string const& spname, std::string message, bool nocheck = false);
     base::OperateResult spRunCmd(Player* player, std::string const& spname, std::string cmd, bool nocheck = false);
+
+public:
+    base::OperateResult spMoveTo(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
+    base::OperateResult spNavTo(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
+    base::OperateResult spTp(
+        Player*            player,
+        std::string const& spname,
+        Vec3 const&        pos,
+        std::optional<int> dimId   = std::nullopt,
+        bool               nocheck = false
+    );
 };
 } // namespace coral_fans::cfsp::manager

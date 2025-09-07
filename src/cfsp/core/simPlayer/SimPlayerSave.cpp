@@ -48,7 +48,12 @@ bool SimPlayer::loadSpNbt() {
         mmap.open(path.string());
         std::string_view      snbt{mmap.data(), mmap.size()};
         DefaultDataLoadHelper helper;
-        this->mSimPlayer->load(CompoundTag::fromSnbt(snbt).value(), helper);
+        auto                  tag = CompoundTag::fromSnbt(snbt).value();
+        this->mSimPlayer->load(tag, helper);
+        if (auto it = tag.mTags.find("DimensionId"); it != tag.mTags.end()) {
+            int dimId = it->second;
+            this->tp(this->mSimPlayer->getFeetPos(), dimId);
+        }
     } catch (const std::exception& e) {
         coral_fans::cfsp::CFSP::getInstance().getSelf().getLogger().error(e.what());
         return false;

@@ -45,7 +45,7 @@ base::OperateResult SimPlayer::build(int times, int interval) {
         const auto& hit = this->mSimPlayer->traceRay(5.25f);
         if (hit.mType == HitResultType::Tile) {
             helper::CFSPHelperManager::getInstance().buildMutex = true;
-            this->mSimPlayer->mGameMode->useItemOn(
+            [[maybe_unused]] InteractionResult tem              = this->mSimPlayer->mGameMode->useItemOn(
                 this->mSimPlayer->mInventory->mInventory->mItems.get()[0],
                 hit.mBlock,
                 hit.mFacing,
