@@ -5,6 +5,7 @@
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/simPlayer/SimPlayer.h"
+#include "ll/api/base/StdInt.h"
 #include "mc/deps/core/math/Vec3.h"
 #include <memory>
 #include <string>
@@ -18,8 +19,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-        mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
+                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
@@ -49,6 +50,8 @@ private:
     bool tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir);
     void loadSpSaveData();
     void loadGroupData();
+    uint getSpBasePermissionMask();
+    uint getSpPermissionMask(CommandPermissionLevel);
 
 public:
     std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
@@ -61,6 +64,7 @@ public:
     std::vector<std::string>                                    getAllGroupNamesSorted();
     std::string                                                 listOnlineSp(const Player*);
     std::string                                                 listOfflineSp(const Player*);
+    uint getSpPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
 
 public:
     void                saveSps();

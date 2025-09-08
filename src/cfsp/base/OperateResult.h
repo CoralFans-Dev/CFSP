@@ -10,13 +10,13 @@ namespace coral_fans::cfsp::base {
 class OperateResult {
 public:
     enum class Type : int {
-        none    = 0,
-        success = 1,
-        error   = 2,
+        Swing   = 0,
+        Success = 1,
+        Error   = 2,
     };
 
 public:
-    Type        mType = Type::none;
+    Type        mType = Type::Swing;
     std::string mInfo = "";
 
 private:
@@ -24,19 +24,19 @@ private:
 
 public:
     OperateResult() {}
-    static OperateResult success(std::string info = "") { return OperateResult(Type::success, info); }
-    static OperateResult error(std::string info = "") { return OperateResult(Type::error, info); }
-    static OperateResult none(std::string info = "") { return OperateResult(Type::none, info); }
-    operator bool() const { return mType != Type::error; }
+    static OperateResult success(std::string info = "") { return OperateResult(Type::Success, info); }
+    static OperateResult error(std::string info = "") { return OperateResult(Type::Error, info); }
+    static OperateResult swing(std::string info = "") { return OperateResult(Type::Swing, info); }
+    operator bool() const { return mType != Type::Error; }
 
 public:
     void sendTo(Player& player) {
-        if (mType == Type::success) return TextPacket::createRawMessage(mInfo).sendTo(player);
+        if (mType == Type::Success) return TextPacket::createRawMessage(mInfo).sendTo(player);
         return TextPacket::createRawMessage("§c" + mInfo).sendTo(player);
     }
 
     void output(CommandOutput& output) {
-        if (mType == Type::success) return output.success(mInfo);
+        if (mType == Type::Success) return output.success(mInfo);
         output.error(mInfo);
     }
 };

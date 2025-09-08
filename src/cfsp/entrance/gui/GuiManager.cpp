@@ -15,7 +15,7 @@ GuiManager& GuiManager::getInstance() {
     return instance;
 }
 
-std::optional<Vec3> GuiManager::tryGetVec3(std::string str) {
+std::optional<Vec3> GuiManager::tryGetVec3(std::string& str) {
     std::istringstream iss(str);
     float              x, y, z;
     char               test;

@@ -1,10 +1,23 @@
 {
     "base": {
+        "gamemode": {
+            "survival": "生存",
+            "creative": "创造",
+            "adventure": "冒险",
+            "spectator": "旁观",
+            "undefined": "未定义游戏模式"
+        },
         "dimension": {
             "overworld": "主世界",
             "nether": "地狱",
             "theend": "末地",
             "undefined": "未定义维度"
+        },
+        "spstatus": {
+            "offline": "离线",
+            "alive": "在线",
+            "dead": "死亡",
+            "undefined": "未定义状态"
         }
     },
     "manager": {
@@ -106,11 +119,40 @@
             "paraError": "Error: 参数解析错误",
             "nameError": "名称参数错误"
         },
-        "oprateSp": {
+        "operateSp": {
             "spinfo": "假人信息",
             "online": "上线假人",
             "offline": "下线假人",
-            "respawn": "假人重生"
+            "respawn": "假人重生",
+            "tp": "假人传送操作",
+            "swap": "假人交换背包",
+            "message": "假人文本操作",
+            "move": "假人移动操作",
+            "lookat": "假人看下操作",
+            "perform": "假人执行操作",
+            "perform2": "假人执行长操作",
+            "stop": "假人停止操作",
+            "rm": "删除假人"
+        },
+        "spinfo": {
+            "title": "假人信息",
+            "name": "假人名称     : ",
+            "status": "假人状态     : ",
+            "owner": "所有者       : ",
+            "pos": "假人坐标     : ",
+            "respawnpos": "假人重生坐标 : ",
+            "gamemode": "假人游戏模式 : ",
+            "health": "假人生命值   : ",
+            "isFree": "是否空闲      : "
+        },
+        "spinv": {
+            "title": "假人背包操作",
+            "swap": "与假人交换背包",
+            "drop": "假人丢弃手持物品",
+            "dropinv": "假人丢弃背包内全部物品"
+        },
+        "spTp": {
+            "title": "假人传送操作"
         }
     }
 }

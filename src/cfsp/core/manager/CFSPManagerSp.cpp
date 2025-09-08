@@ -25,7 +25,7 @@ std::string CFSPManager::listOnlineSp(const Player* player) {
         for (auto cfsp : this->mOnlineSpMap)
             res += "manager.info.onlineSp"_tr(
                 cfsp.first,
-                utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
+                base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
                 cfsp.second->mSimPlayer->getFeetPos().toJsonString()
             );
         return res;
@@ -36,7 +36,7 @@ std::string CFSPManager::listOnlineSp(const Player* player) {
         if (cfsp.second->mSaveData.ownerUuid == uuid) {
             res += "manager.info.onlineSp"_tr(
                 cfsp.first,
-                utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
+                base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
                 cfsp.second->mSimPlayer->getFeetPos().toJsonString()
             );
             count++;
@@ -53,7 +53,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
         for (auto cfsp : this->mOfflineSpMap)
             res += "manager.info.offlineSp"_tr(
                 cfsp.first,
-                utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
+                base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
                 cfsp.second->mSimPlayer->getFeetPos().toJsonString()
             );
         return res;
@@ -64,7 +64,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
         if (cfsp.second->mSaveData.ownerUuid == uuid) {
             res += "manager.info.oflineSp"_tr(
                 cfsp.first,
-                utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
+                base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
                 cfsp.second->mSimPlayer->getFeetPos().toJsonString()
             );
             count++;
@@ -102,7 +102,7 @@ base::OperateResult CFSPManager::spSpawn(Player* player, std::string const& spna
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
         if (auto checkResult = this->canSpawnPlayer(player); !checkResult) return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     // check: exist
     auto it = this->mOfflineSpMap.find(spname);
@@ -156,7 +156,7 @@ base::OperateResult CFSPManager::spDespawn(Player* player, std::string const& sp
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spDespawn); !checkResult)
             return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
@@ -202,7 +202,7 @@ base::OperateResult CFSPManager::spRespawn(Player* player, std::string const& sp
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spRespawn); !checkResult)
             return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
@@ -226,14 +226,14 @@ base::OperateResult CFSPManager::spRm(Player* player, std::string const& spname,
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spRm); !checkResult) return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     if (auto it = this->mOnlineSpMap.find(spname); it != this->mOnlineSpMap.end()) {
         if (!nocheck)
             if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
                 return res;
         if (!force && !it->second->mSaveData.isEmptyInv)
-            return base::OperateResult::none("manager.fail.notEmpty"_tr(spname));
+            return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOnlineSp", {spname});
         if (!it->second->mSimPlayer || it->second->mSimPlayer->isDead())
@@ -256,7 +256,7 @@ base::OperateResult CFSPManager::spRm(Player* player, std::string const& spname,
             if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
                 return res;
         if (!force && !it->second->mSaveData.isEmptyInv)
-            return base::OperateResult::none("manager.fail.notEmpty"_tr(spname));
+            return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
         std::filesystem::remove_all(
@@ -281,7 +281,7 @@ base::OperateResult CFSPManager::spStop(Player* player, std::string const& spnam
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spStop); !checkResult)
             return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
@@ -301,7 +301,7 @@ base::OperateResult CFSPManager::spLookAt(Player* player, std::string const& spn
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spLookAt); !checkResult)
             return checkResult;
-        else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;
+        else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     // check: exist
     auto it = this->mOnlineSpMap.find(spname);
