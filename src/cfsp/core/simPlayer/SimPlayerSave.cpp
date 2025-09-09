@@ -12,7 +12,7 @@ bool SimPlayer::save() {
     if (this->mShouldSave) {
         if (ll::config::saveConfig(
                 this->mSaveData,
-                CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "data.json"
+                CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "data.json"
             )) [[likely]]
             this->mShouldSave = false;
     }
@@ -24,7 +24,7 @@ bool SimPlayer::save() {
     if (!tag) [[unlikely]]
         return false;
     std::ofstream f(
-        CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt",
+        CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "nbt",
         std::ios_base::out | std::ios_base::trunc
     );
     if (!f.is_open()) [[unlikely]]
@@ -37,7 +37,7 @@ bool SimPlayer::save() {
 bool SimPlayer::loadSpNbt() {
     if (!this->mSimPlayer) [[unlikely]]
         return false;
-    auto path = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.name / "nbt";
+    auto path = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "nbt";
     if (!std::filesystem::exists(path)) [[unlikely]]
         return false;
     std::ifstream f(path, std::ios::binary | std::ios::ate);

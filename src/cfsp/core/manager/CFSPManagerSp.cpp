@@ -183,9 +183,6 @@ base::OperateResult CFSPManager::spCreate(Player* player, std::string const& nam
         || this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end()) {
         return base::OperateResult::error("manager.fail.spHasExisted"_tr());
     }
-    // check: name
-    if (!this->tryCreateDiretory(cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer", spname))
-        return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     // create
     auto simplayer = simulated_player::SimPlayer::create(player, spname, pos, dim);
     if (!simplayer) [[unlikely]]

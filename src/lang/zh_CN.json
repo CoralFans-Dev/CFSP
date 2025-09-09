@@ -44,7 +44,6 @@
             "spHasOnline": "假人已处于在线状态",
             "spNotExisted": "假人不存在",
             "spHasOffline": "假人已处于离线状态",
-            "includeIllegalChar": "包含非法字符",
             "spIsAlive": "假人并非死亡状态",
             "notEmpty": "删除假人失败，{}背包不为空\n如需强制删除请在指令后添加字段\"true\"",
             "failToSave": "保存NBT失败",

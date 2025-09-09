@@ -165,6 +165,16 @@ void ComandManager::registerSpComand() {
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
             if (!self["pos"].has_value()) {
                 if (!player.value()) return output.error("command.fail.lackPara"_tr());
+                const auto& hit = player.value()->traceRay(5.25f, false, true);
+                if (hit)
+                    return manager::CFSPManager::getInstance()
+                        .spCreate(
+                            player.value(),
+                            self["name"].get<ll::command::ParamKind::String>(),
+                            hit.mPos,
+                            player.value()->getDimensionId()
+                        )
+                        .output(output);
                 return manager::CFSPManager::getInstance()
                     .spCreate(
                         player.value(),

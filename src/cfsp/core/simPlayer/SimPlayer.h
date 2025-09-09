@@ -75,6 +75,6 @@ public:
 public:
     CFSP_API base::OperateResult moveTo(Vec3 const& pos);
     CFSP_API base::OperateResult navTo(Vec3 const& pos);
-    CFSP_API base::OperateResult tp(Vec3 const& pos, std::optional<int> dimId = std::nullopt);
+    CFSP_API base::OperateResult tp(Vec3 pos, std::optional<int> dimId = std::nullopt);
 };
 } // namespace coral_fans::cfsp::simulated_player

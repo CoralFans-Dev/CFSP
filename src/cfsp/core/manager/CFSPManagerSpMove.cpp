@@ -29,7 +29,7 @@ SP_MOVE_DEF(MoveTo, moveTo)
 SP_MOVE_DEF(NavTo, navTo)
 
 base::OperateResult
-CFSPManager::spTp(Player* player, std::string const& spname, Vec3 const& pos, std::optional<int> dimId, bool nocheck) {
+CFSPManager::spTp(Player* player, std::string const& spname, Vec3 pos, std::optional<int> dimId, bool nocheck) {
     using ll::i18n_literals::operator""_tr;
     if (!nocheck) {
         if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.spTp); !checkResult) return checkResult;

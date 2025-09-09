@@ -11,9 +11,11 @@
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/world/actor/player/Player.h"
+#include <boost/filesystem.hpp>
 #include <memory>
 #include <optional>
 #include <vector>
+
 
 namespace coral_fans::cfsp::manager {
 CFSPManager& CFSPManager::getInstance() {
@@ -37,20 +39,6 @@ void CFSPManager::setAutoRespawn(bool isOpen) { this->mConfig.autoRespawn = isOp
 
 void CFSPManager::setAutoDespawn(bool isOpen) { this->mConfig.autoDespawn = isOpen; }
 
-bool CFSPManager::tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir) {
-    if (dir.empty()) return false;
-    if (dir[0] == ' ' || dir.ends_with(' ')) return false;
-    auto path = basePath / dir;
-    try {
-        if (!std::filesystem::exists(basePath)) {
-            std::filesystem::create_directories(basePath);
-        }
-        return std::filesystem::exists(path) || std::filesystem::create_directory(path);
-    } catch (...) {
-        return false;
-    }
-}
-
 void CFSPManager::save() {
     ll::config::saveConfig(this->mConfig, CFSP::getInstance().getSelf().getConfigDir() / "config.json");
 }
@@ -63,7 +51,7 @@ void CFSPManager::loadSpSaveData() {
         if (path.is_directory()) {
             simulated_player::SimPlayerSaveData playerData;
             if (ll::config::loadConfig(playerData, path.path() / "data.json")
-                && playerData.name == path.path().filename()) {
+                && playerData.xuid == path.path().filename()) {
                 if (playerData.isOnline && !this->mConfig.autoJoin) {
                     playerData.isOnline = false;
                     ll::config::saveConfig(playerData, path.path() / "data.json");
@@ -86,8 +74,7 @@ void CFSPManager::loadGroupData() {
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
             group::GroupData groupData;
-            if (ll::config::loadConfig(groupData, path.path() / "data.json")
-                && groupData.name == path.path().filename()) {
+            if (ll::config::loadConfig(groupData, path.path() / "data.json")) {
                 bool isChange = false;
                 std::erase_if(groupData.splist, [this, &isChange](const auto& spName) {
                     if (this->mOfflineSpMap.find(spName) == this->mOfflineSpMap.end()) {

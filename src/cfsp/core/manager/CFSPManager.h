@@ -19,8 +19,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
+        mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
@@ -47,7 +47,6 @@ public:
     base::OperateResult       canCreateGroup(const Player*);
 
 private:
-    bool tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir);
     void loadSpSaveData();
     void loadGroupData();
     uint getSpBasePermissionMask();
@@ -146,7 +145,7 @@ public:
     base::OperateResult spTp(
         Player*            player,
         std::string const& spname,
-        Vec3 const&        pos,
+        Vec3               pos,
         std::optional<int> dimId   = std::nullopt,
         bool               nocheck = false
     );

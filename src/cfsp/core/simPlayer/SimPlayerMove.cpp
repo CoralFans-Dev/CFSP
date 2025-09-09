@@ -24,12 +24,13 @@ base::OperateResult SimPlayer::navTo(Vec3 const& pos) {
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::tp(Vec3 const& pos, std::optional<int> dimId) {
+base::OperateResult SimPlayer::tp(Vec3 pos, std::optional<int> dimId) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    if (!dimId.has_value()) this->mSimPlayer->teleport(pos, this->mSimPlayer->getDimensionId());
-    else this->mSimPlayer->teleport(pos, dimId.value());
+    if (!dimId.has_value()) dimId = this->mSimPlayer->getDimensionId();
+    if (dimId.value() != this->mSimPlayer->getDimensionId()) pos.y -= 1.62f;
+    this->mSimPlayer->teleport(pos, dimId.value());
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 } // namespace coral_fans::cfsp::simulated_player
