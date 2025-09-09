@@ -10,7 +10,7 @@ namespace coral_fans::cfsp::manager {
         if (!nocheck) {                                                                                                \
             if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.sp##FUNC); !checkResult)            \
                 return checkResult;                                                                                    \
-            else if (checkResult.mType == base::OperateResult::Type::success) nocheck = true;                          \
+            else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;                          \
         }                                                                                                              \
         auto it = this->mOnlineSpMap.find(spname);                                                                     \
         if (it == this->mOnlineSpMap.end()) {                                                                          \

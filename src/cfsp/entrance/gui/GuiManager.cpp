@@ -23,6 +23,14 @@ std::optional<Vec3> GuiManager::tryGetVec3(std::string& str) {
     return Vec3(x, y, z);
 }
 
+std::optional<int> GuiManager::tryGetInt(std::string& str) {
+    std::istringstream iss(str);
+    int                i;
+    char               test;
+    if (!(iss >> i) || iss >> test) return std::nullopt;
+    return i;
+}
+
 void GuiManager::sendMainMenu(Player& player) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::SimpleForm("gui.mainmenu.title"_tr());
@@ -60,7 +68,7 @@ void GuiManager::sendSplist(Player& player) {
     if (manager::CFSPManager::getInstance().canCreatePlayer(&player)) {
         form.appendButton("gui.splist.newsp"_tr(), [this](Player& player) {
             auto pos = player.getFeetPos();
-            this->sendNewSpPage(
+            this->sendCreateSpPage(
                 player,
                 player.getDimensionId(),
                 std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z)
@@ -110,7 +118,7 @@ void GuiManager::sendAllSplist(Player& player) {
     }
     form.appendButton("gui.managerSpList.newsp"_tr(), [this](Player& player) {
         auto pos = player.getFeetPos();
-        this->sendNewSpPage(
+        this->sendCreateSpPage(
             player,
             player.getDimensionId(),
             std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z)
