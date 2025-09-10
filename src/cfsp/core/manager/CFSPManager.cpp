@@ -135,6 +135,8 @@ void CFSPManager::load() {
 
 bool CFSPManager::isAllowed(const Player* player) {
     if (!player) return true;
+    if (player->isSimulatedPlayer()) [[unlikely]]
+        return false;
     switch (this->mConfig.listType) {
     case coral_fans::cfsp::config::ListType::disabled:
         return true;
@@ -156,8 +158,6 @@ bool CFSPManager::isManager(const Player* player) {
 
 base::OperateResult CFSPManager::baseCheck(const Player* player, config::FuncStruct func) {
     using ll::i18n_literals::operator""_tr;
-    if (player && player->isSimulatedPlayer()) [[unlikely]]
-        return base::OperateResult::error();
     if (!func.enabled) [[unlikely]]
         return base::OperateResult::error("manager.fail.funcUnabled"_tr());
     if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());

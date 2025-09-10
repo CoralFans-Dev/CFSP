@@ -1,6 +1,5 @@
 #include "GuiManager.h"
 #include "cfsp/base/OperateResult.h"
-#include "cfsp/base/Utils.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/form/CustomForm.h"
@@ -9,12 +8,10 @@
 #include "ll/api/i18n/I18n.h"
 #include "mc/server/commands/CommandPermissionLevel.h"
 #include "mc/world/actor/player/LayeredAbilities.h"
-#include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/phys/HitResult.h"
 #include <optional>
 #include <string>
 #include <vector>
-
 
 namespace coral_fans::cfsp::gui {
 
@@ -271,26 +268,10 @@ void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos
 
 void GuiManager::sendSpInfoPage(Player& player, std::shared_ptr<simulated_player::SimPlayer> cfsp) {
     using ll::i18n_literals::operator""_tr;
-    std::string content  = "\n  " + "gui.spinfo.name"_tr() + cfsp->mSaveData.name + "\n  ";
-    content             += "gui.spinfo.owner"_tr() + base::utils::tryGetPlayerName(cfsp->mSaveData.ownerUuid) + "\n  ";
-    content             += "gui.spinfo.status"_tr()
-             + (cfsp->mSimPlayer              ? "base.spstatus.offline"_tr()
-                : cfsp->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr()
-                                              : "base.spstatus.dead"_tr());
-    if (cfsp->mSimPlayer) {
-        content += "gui.spinfo.pos"_tr() + base::utils::getDimName(cfsp->mSimPlayer->getDimensionId()) + " "
-                 + cfsp->mSimPlayer->getPosition().toJsonString() + "\n  ";
-        content += "gui.spinfo.respawnpos"_tr()
-                 + base::utils::getDimName(cfsp->mSimPlayer->mPlayerRespawnPoint->mDimension->id) + " "
-                 + cfsp->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
-        content += "gui.spinfo.gamemode"_tr() + base::utils::getGameModeStr((int)cfsp->mSimPlayer->getPlayerGameType())
-                 + "\n  ";
-        content += "gui.spinfo.health"_tr()
-                 + std::to_string(ActorAttribute::getHealth(cfsp->mSimPlayer->getEntityContext())) + " / "
-                 + std::to_string(cfsp->mSimPlayer->getMaxHealth()) + "\n  ";
-        content += "gui.spinfo.isFree"_tr() + (cfsp->isFree() ? "base.yesOrNo.yes"_tr() : "base.yesOrNo.no"_tr());
-    }
-    ll::form::SimpleForm("gui.spinfo.title"_tr(), content)
+    ll::form::SimpleForm(
+        "gui.spinfo.title"_tr(),
+        manager::CFSPManager::getInstance().spInfo(&player, cfsp->mSaveData.name).mInfo
+    )
         .sendTo(player, [this, cfsp](Player& player, int, ll::form::FormCancelReason cancelReason) {
             if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
                 this->sendOperateSpPage(player, cfsp);

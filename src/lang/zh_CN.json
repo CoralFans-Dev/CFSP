@@ -66,7 +66,16 @@
             "onlineCountPerplayer": "您在线的假人数量：{}",
             "offlineCountPerplayer": "您离线的假人数量：{}",
             "onlineSp": "\n名称: {}  所有者：{}  坐标: {}",
-            "offlineSp": "\n名称: {}  所有者：{}"
+            "offlineSp": "\n名称: {}  所有者：{}",
+            "group": "名称: {}\n所有者: {}\n组内假人:\n",
+            "spname": "假人名称     : ",
+            "spStatus": "假人状态     : ",
+            "spOwner": "所有者       : ",
+            "spPos": "假人坐标     : ",
+            "spRespawnpos": "假人重生坐标 : ",
+            "spGamemode": "假人游戏模式 : ",
+            "spHealth": "假人生命值   : ",
+            "spIsFree": "是否空闲      : "
         }
     },
     "command": {
@@ -150,15 +159,7 @@
             "confirmRm2": "假人背包不为空，您确定要删除{}吗"
         },
         "spinfo": {
-            "title": "假人信息",
-            "name": "假人名称     : ",
-            "status": "假人状态     : ",
-            "owner": "所有者       : ",
-            "pos": "假人坐标     : ",
-            "respawnpos": "假人重生坐标 : ",
-            "gamemode": "假人游戏模式 : ",
-            "health": "假人生命值   : ",
-            "isFree": "是否空闲      : "
+            "title": "假人信息"
         },
         "spinv": {
             "title": "假人背包操作",

@@ -96,22 +96,22 @@ uint CFSPManager::getSpPermissionMask(std::optional<CommandPermissionLevel> leve
     if (!level.has_value()) return baseMask;
     switch (level.value()) {
     case CommandPermissionLevel::Any:
-        static uint maskAny = baseMask & getSpPermissionMask(level);
+        static uint maskAny = baseMask & getSpPermissionMask(level.value());
         return maskAny;
     case CommandPermissionLevel::GameDirectors:
-        static uint maskGameDirectors = baseMask & getSpPermissionMask(level);
+        static uint maskGameDirectors = baseMask & getSpPermissionMask(level.value());
         return maskGameDirectors;
     case CommandPermissionLevel::Admin:
-        static uint maskAdmin = baseMask & getSpPermissionMask(level);
+        static uint maskAdmin = baseMask & getSpPermissionMask(level.value());
         return maskAdmin;
     case CommandPermissionLevel::Host:
-        static uint maskHost = baseMask & getSpPermissionMask(level);
+        static uint maskHost = baseMask & getSpPermissionMask(level.value());
         return maskHost;
     case CommandPermissionLevel::Owner:
-        static uint maskOwner = baseMask & getSpPermissionMask(level);
+        static uint maskOwner = baseMask & getSpPermissionMask(level.value());
         return maskOwner;
     case CommandPermissionLevel::Internal:
-        static uint maskInternal = baseMask & getSpPermissionMask(level);
+        static uint maskInternal = baseMask & getSpPermissionMask(level.value());
         return maskInternal;
     }
     return 0;
@@ -391,6 +391,24 @@ base::OperateResult CFSPManager::spStop(Player* player, std::string const& spnam
         // check：permission
         if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Stop); !res) return res;
     return it->second->stop();
+}
+
+
+base::OperateResult CFSPManager::spInfo(Player* player, std::string const& spname, bool nocheck) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+        if (isManager(player)) nocheck = true;
+    }
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
+            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
+        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (!nocheck)
+        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::None); !res) return res;
+    return it->second->info();
 }
 
 base::OperateResult CFSPManager::spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck) {

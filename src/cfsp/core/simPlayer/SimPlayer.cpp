@@ -1,6 +1,7 @@
 #include "SimPlayer.h"
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/base/Schedule.h"
+#include "cfsp/base/Utils.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/service/Bedrock.h"
 #include "mc/entity/components_json_legacy/NavigationComponent.h"
@@ -8,6 +9,7 @@
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/actor/ai/navigation/PathNavigation.h"
+#include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/actor/provider/MobMovement.h"
 #include <optional>
 
@@ -134,6 +136,30 @@ base::OperateResult SimPlayer::respawn() {
     this->mSimPlayer->mRespawningFromTheEnd     = false;
     this->mSimPlayer->respawn();
     return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult SimPlayer::info() {
+    using ll::i18n_literals::operator""_tr;
+    std::string res  = "\n  " + "manager.info.spname"_tr() + this->mSaveData.name + "\n  ";
+    res             += "manager.info.spOwner"_tr() + base::utils::tryGetPlayerName(this->mSaveData.ownerUuid) + "\n  ";
+    res             += "manager.info.spStatus"_tr()
+         + (this->mSimPlayer              ? "base.spstatus.offline"_tr()
+            : this->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr()
+                                          : "base.spstatus.dead"_tr());
+    if (this->mSimPlayer) {
+        res += "manager.info.spPos"_tr() + base::utils::getDimName(this->mSimPlayer->getDimensionId()) + " "
+             + this->mSimPlayer->getPosition().toJsonString() + "\n  ";
+        res += "manager.info.spRespawnpos"_tr()
+             + base::utils::getDimName(this->mSimPlayer->mPlayerRespawnPoint->mDimension->id) + " "
+             + this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
+        res += "manager.info.spGamemode"_tr() + base::utils::getGameModeStr((int)this->mSimPlayer->getPlayerGameType())
+             + "\n  ";
+        res += "manager.info.spHealth"_tr()
+             + std::to_string(ActorAttribute::getHealth(this->mSimPlayer->getEntityContext())) + " / "
+             + std::to_string(this->mSimPlayer->getMaxHealth()) + "\n  ";
+        res += "manager.info.spIsFree"_tr() + (this->isFree() ? "base.yesOrNo.yes"_tr() : "base.yesOrNo.no"_tr());
+    }
+    return base::OperateResult::success(res);
 }
 
 base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {

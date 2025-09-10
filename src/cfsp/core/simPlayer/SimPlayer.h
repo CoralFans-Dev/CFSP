@@ -46,6 +46,7 @@ public:
     CFSP_API base::OperateResult despawn();
     CFSP_API base::OperateResult respawn();
     CFSP_API base::OperateResult lookAt(Vec3 const& pos);
+    CFSP_API base::OperateResult info();
 
 public:
     CFSP_API bool isEmptyInv();

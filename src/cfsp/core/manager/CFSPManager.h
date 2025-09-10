@@ -63,19 +63,23 @@ public:
     std::vector<std::string>                                    getAllGroupNamesSorted();
     std::string                                                 listOnlineSp(const Player*);
     std::string                                                 listOfflineSp(const Player*);
+    std::string                                                 listGroup(const Player*);
     uint getSpPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
 
 public:
     void                saveSps();
     base::OperateResult spCreate(Player* player, std::string const& name, Vec3 const& pos, DimensionType dim);
-    base::OperateResult createGroup(Player* player, std::string const& gname);
     base::OperateResult
     spSpawn(Player* player, std::string const& spname, bool nocheck = false, bool isLockUniqueId = true);
     base::OperateResult spDespawn(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spRespawn(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spRm(Player* player, std::string const& spname, bool nocheck = false, bool force = false);
     base::OperateResult spStop(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult spInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
+
+public:
+    base::OperateResult createGroup(Player* player, std::string const& gname);
 
 public:
     base::OperateResult spDrop(Player* player, std::string const& spname, bool nocheck = false);

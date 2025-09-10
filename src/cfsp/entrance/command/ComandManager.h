@@ -17,6 +17,7 @@ private:
     std::optional<Player*> tryGetPlayer(CommandOrigin const& origin);
     void                   registerGuiCommand();
     void                   registerSpComand();
+    void                   registerGroupComand();
 
 public:
     void registerCommand(CommandPermissionLevel permission);

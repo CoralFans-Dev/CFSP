@@ -153,6 +153,8 @@ void ComandManager::registerSpComand() {
             }
         });
 
+    // sp p info <name: cfspSplist>
+
     // sp p create <name: string> [pos: Vec3] [dim: Dimension]
     this->command->runtimeOverload()
         .text("p")
