@@ -145,7 +145,8 @@ base::OperateResult SimPlayer::info() {
     res             += "manager.info.spStatus"_tr()
          + (this->mSimPlayer              ? "base.spstatus.offline"_tr()
             : this->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr()
-                                          : "base.spstatus.dead"_tr());
+                                          : "base.spstatus.dead"_tr())
+         + '\n';
     if (this->mSimPlayer) {
         res += "manager.info.spPos"_tr() + base::utils::getDimName(this->mSimPlayer->getDimensionId()) + " "
              + this->mSimPlayer->getPosition().toJsonString() + "\n  ";

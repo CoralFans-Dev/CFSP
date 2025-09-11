@@ -1,4 +1,5 @@
 #include "SimPlayer.h"
+#include "cfsp/base/OperateResult.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h "
 #include "mc/nbt/CompoundTag.h"
@@ -7,7 +8,6 @@
 #include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
 #include <exception>
-
 
 namespace coral_fans::cfsp::simulated_player {
 bool SimPlayer::isEmptyInv() {
@@ -19,6 +19,22 @@ bool SimPlayer::isEmptyInv() {
     auto ec = this->mSimPlayer->getEnderChestContainer();
     if (ec.has_value() && ec->isEmpty()) return false;
     return true;
+}
+
+base::OperateResult SimPlayer ::invInfo() {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    std::string res         = "manager.info.spOffhand"_tr();
+    auto&       _itemstack  = this->mSimPlayer->getOffhandSlot();
+    res                    += "§6" + _itemstack.getName() + "§2(" + std::to_string(_itemstack.mCount) + ")§r";
+    res                    += "manager.info.spEquip"_tr();
+    for (auto& itemstack : ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()))
+        res += "§6" + itemstack.getName() + "§2(" + std::to_string(itemstack.mCount) + ")§r, ";
+    res += "manager.info.spInv"_tr();
+    for (auto& itemstack : *this->mSimPlayer->mInventory->mInventory->mItems)
+        res += "§6" + itemstack.getName() + "§2(" + std::to_string(itemstack.mCount) + ")§r, ";
+    return base::OperateResult::success(res);
 }
 
 base::OperateResult SimPlayer::drop() {

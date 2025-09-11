@@ -74,7 +74,8 @@ void CFSPManager::loadGroupData() {
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
         if (path.is_directory()) {
             group::GroupData groupData;
-            if (ll::config::loadConfig(groupData, path.path() / "data.json")) {
+            if (ll::config::loadConfig(groupData, path.path() / "data.json")
+                && ("-" + std::to_string(std::hash<std::string>()(groupData.name))) == path.path().filename()) {
                 bool isChange = false;
                 std::erase_if(groupData.splist, [this, &isChange](const auto& spName) {
                     if (this->mOfflineSpMap.find(spName) == this->mOfflineSpMap.end()) {

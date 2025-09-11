@@ -79,9 +79,11 @@ public:
     base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
 
 public:
-    base::OperateResult createGroup(Player* player, std::string const& gname);
+    base::OperateResult groupCreate(Player* player, std::string const& gname);
+    base::OperateResult groupRm(Player* player, std::string const& gname);
 
 public:
+    base::OperateResult spInvInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spDrop(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spDropInv(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
@@ -144,8 +146,10 @@ public:
     base::OperateResult spRunCmd(Player* player, std::string const& spname, std::string cmd, bool nocheck = false);
 
 public:
-    base::OperateResult spMoveTo(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
-    base::OperateResult spNavTo(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
+    base::OperateResult
+    spMoveTo(Player* player, std::string const& spname, Vec3 const& pos, float speed = 4.3f, bool nocheck = false);
+    base::OperateResult
+    spNavTo(Player* player, std::string const& spname, Vec3 const& pos, float speed = 4.3f, bool nocheck = false);
     base::OperateResult spTp(
         Player*            player,
         std::string const& spname,

@@ -53,7 +53,9 @@
             "playerIsNull": "玩家对象为空",
             "spIsBusy": "假人正忙",
             "runcmd": "假人执行命令出错",
-            "selectNoFound": "假人背包中没有该物品"
+            "selectNoFound": "假人背包中没有该物品",
+            "speedSmallerThan0": "速度应不小于0",
+            "groupNotExisted": "假人组不存在"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
@@ -75,7 +77,10 @@
             "spRespawnpos": "假人重生坐标 : ",
             "spGamemode": "假人游戏模式 : ",
             "spHealth": "假人生命值   : ",
-            "spIsFree": "是否空闲      : "
+            "spIsFree": "是否空闲      : ",
+            "spOffhand": "假人副手   : ",
+            "spEquip": "\n假人装备   : ",
+            "spInv": "\n假人物品栏 : "
         }
     },
     "command": {
@@ -99,7 +104,9 @@
             "interval": "操作间隔/gt (最小值为1, 小于1时默认为1)",
             "times": "操作次数/gt (当值为0时, 循环操作; 小于0时默认为0)",
             "long": "操作时长/gt (当值为0时, 持续操作; 小于0时默认为0",
-            "intError": "整数解析错误"
+            "intError": "整数解析错误",
+            "speed": "移动速度/b",
+            "floatError": "浮点数解析错误"
         },
         "mainmenu": {
             "title": "CoralFans假人系统 主菜单",
@@ -163,6 +170,7 @@
         },
         "spinv": {
             "title": "假人背包操作",
+            "invinfo": "假人背包信息",
             "swap": "与假人交换背包",
             "drop": "假人丢弃手持物品",
             "dropinv": "假人丢弃背包内全部物品"

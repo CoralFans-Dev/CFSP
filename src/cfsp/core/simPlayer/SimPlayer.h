@@ -31,7 +31,7 @@ public:
     CFSP_API std::string getXuid();
     CFSP_API bool        isOnline();
     CFSP_API bool        isFree();
-    base::OperateResult  hasPermission(Player*, SimPlayerPermission);
+    bool                 hasPermission(Player*, SimPlayerPermission);
     SimPlayerPermission  getPermission(Player*);
     base::OperateResult  setPermission(Player*, SimPlayerPermission);
 
@@ -50,6 +50,7 @@ public:
 
 public:
     CFSP_API bool isEmptyInv();
+    CFSP_API base::OperateResult invInfo();
     CFSP_API base::OperateResult drop();
     CFSP_API base::OperateResult dropInv();
     CFSP_API base::OperateResult swap(Player*);
@@ -74,8 +75,8 @@ public:
     CFSP_API base::OperateResult runcmd(std::string&);
 
 public:
-    CFSP_API base::OperateResult moveTo(Vec3 const& pos);
-    CFSP_API base::OperateResult navTo(Vec3 const& pos);
+    CFSP_API base::OperateResult moveTo(Vec3 const& pos, float speed = 4.3f);
+    CFSP_API base::OperateResult navTo(Vec3 const& pos, float speed = 4.3f);
     CFSP_API base::OperateResult tp(Vec3 pos, std::optional<int> dimId = std::nullopt);
 };
 } // namespace coral_fans::cfsp::simulated_player

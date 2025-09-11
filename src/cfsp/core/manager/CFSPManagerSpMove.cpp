@@ -6,7 +6,7 @@
 namespace coral_fans::cfsp::manager {
 #define SP_MOVE_DEF(FUNC, ACTION)                                                                                      \
     base::OperateResult                                                                                                \
-        CFSPManager::sp##FUNC(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck) {              \
+        CFSPManager::sp##FUNC(Player* player, std::string const& spname, Vec3 const& pos, float speed, bool nocheck) { \
         using ll::i18n_literals::operator""_tr;                                                                        \
         if (!nocheck) {                                                                                                \
             if (auto checkResult = this->baseCheck(player, this->mPermissionConfig.sp##FUNC); !checkResult)            \
@@ -19,10 +19,9 @@ namespace coral_fans::cfsp::manager {
                 return base::OperateResult::error("manager.fail.spHasOffline"_tr());                                   \
             return base::OperateResult::error("manager.fail.spNotExisted"_tr());                                       \
         }                                                                                                              \
-        if (!nocheck)                                                                                                  \
-            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC); !res)       \
-                return res;                                                                                            \
-        return it->second->ACTION(pos);                                                                                \
+        if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC))               \
+            return base::OperateResult::error("manager.fail.permissionDenied"_tr());                                   \
+        return it->second->ACTION(pos, speed);                                                                         \
     }
 
 SP_MOVE_DEF(MoveTo, moveTo)
@@ -41,8 +40,8 @@ CFSPManager::spTp(Player* player, std::string const& spname, Vec3 pos, std::opti
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Tp); !res) return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Tp))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     return it->second->tp(pos, dimId);
 }
 } // namespace coral_fans::cfsp::manager

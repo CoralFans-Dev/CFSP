@@ -4,23 +4,27 @@
 #include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
 
 namespace coral_fans::cfsp::simulated_player {
-base::OperateResult SimPlayer::moveTo(Vec3 const& pos) {
+base::OperateResult SimPlayer::moveTo(Vec3 const& pos, float speed) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    this->mSimPlayer->simulateMoveToLocation(pos, 4.3f, false);
+    if (speed <= 0) return base::OperateResult::error("manager.fail.speedSmallerThan0"_tr());
+    if (speed > 4.3f) speed = 4.3f;
+    this->mSimPlayer->simulateMoveToLocation(pos, speed, false);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::navTo(Vec3 const& pos) {
+base::OperateResult SimPlayer::navTo(Vec3 const& pos, float speed) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    this->mSimPlayer->simulateNavigateToLocation(pos, 4.3f);
+    if (speed <= 0) return base::OperateResult::error("manager.fail.speedSmallerThan0"_tr());
+    if (speed > 4.3f) speed = 4.3f;
+    this->mSimPlayer->simulateNavigateToLocation(pos, speed);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 

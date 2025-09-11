@@ -19,9 +19,8 @@ namespace coral_fans::cfsp::manager {
                 return base::OperateResult::error("manager.fail.spHasOffline"_tr());                                   \
             return base::OperateResult::error("manager.fail.spNotExisted"_tr());                                       \
         }                                                                                                              \
-        if (!nocheck)                                                                                                  \
-            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC); !res)       \
-                return res;                                                                                            \
+        if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC))               \
+            return base::OperateResult::error("manager.fail.permissionDenied"_tr());                                   \
         return it->second->ACTION(enabled);                                                                            \
     }
 

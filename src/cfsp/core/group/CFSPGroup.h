@@ -12,6 +12,7 @@ public:
     CFSPGroup(GroupData groupData);
 
 public:
+    void save();
     bool hasPermission(Player*, GroupPermission permission);
 };
 } // namespace coral_fans::cfsp::group

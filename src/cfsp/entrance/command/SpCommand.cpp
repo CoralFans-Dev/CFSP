@@ -106,13 +106,24 @@ namespace coral_fans::cfsp::command {
             )                                                                                                          \
             .output(output);                                                                                           \
     }                                                                                                                  \
+    if (!self["speed"].has_value())                                                                                    \
+        return manager::CFSPManager::getInstance()                                                                     \
+            .sp##FUNC(                                                                                                 \
+                player.value(),                                                                                        \
+                self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
+                self["pos"]                                                                                            \
+                    .get<ll::command::ParamKind::Vec3>()                                                               \
+                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})                                  \
+            )                                                                                                          \
+            .output(output);                                                                                           \
     return manager::CFSPManager::getInstance()                                                                         \
         .sp##FUNC(                                                                                                     \
             player.value(),                                                                                            \
             self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
             self["pos"]                                                                                                \
                 .get<ll::command::ParamKind::Vec3>()                                                                   \
-                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})                                      \
+                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),                                     \
+            self["speed"].get<ll::command::ParamKind::Float>()                                                         \
         )                                                                                                              \
         .output(output);
 
@@ -234,7 +245,7 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p <despawn|stop|drop|dropinv|swap> <name: cfspOnlineSp>
+    // sp p <despawn|stop|drop|dropinv|swap|info|invinfo> <name: cfspOnlineSp>
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate1",
         {
@@ -242,7 +253,9 @@ void ComandManager::registerSpComand() {
             {"stop",    1},
             {"drop",    2},
             {"dropinv", 3},
-            {"swap",    4}
+            {"swap",    4},
+            {"info",    5},
+            {"invinfo", 6}
     }
     );
     this->command->runtimeOverload()
@@ -264,6 +277,10 @@ void ComandManager::registerSpComand() {
             case 4:
                 if (!player.has_value()) return output.error("command.fail.onlyplayer"_tr());
                 SP_ONLINE_OPERATE1_CALL(Swap)
+            case 5:
+                SP_ONLINE_OPERATE1_CALL(Info)
+            case 6:
+                SP_ONLINE_OPERATE1_CALL(InvInfo)
             }
         });
 
@@ -415,13 +432,48 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p <lookat|moveto|navto> <name: cfspOnlineSp> [pos: Vec3]
+    // sp p lookat <name: cfspOnlineSp> [pos: Vec3]
+    this->command->runtimeOverload()
+        .text("p")
+        .text("lookat")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
+        .optional("pos", ll::command::ParamKind::Vec3)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            if (!self["pos"].has_value()) {
+                if (!player.value()) [[unlikely]]
+                    return output.error("command.fail.lackPara"_tr());
+                const auto& hit = player.value()->traceRay(5.25f, false, true);
+                if (hit)
+                    return manager ::CFSPManager ::getInstance()
+                        .spLookAt(player.value(), self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(), hit.mPos)
+                        .output(output);
+                return manager ::CFSPManager ::getInstance()
+                    .spLookAt(
+                        player.value(),
+                        self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
+                        player.value()->getFeetPos()
+                    )
+                    .output(output);
+            }
+            return manager ::CFSPManager ::getInstance()
+                .spLookAt(
+                    player.value(),
+                    self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
+                    self["pos"]
+                        .get<ll ::command ::ParamKind ::Vec3>()
+                        .getPosition(CommandVersion ::CurrentVersion(), origin, {0, 0, 0})
+                )
+                .output(output);
+        });
+
+    // sp p <moveto|navto> <name: cfspOnlineSp> [pos: Vec3] [speed: float]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate6",
         {
-            {"lookat", 0},
-            {"moveto", 1},
-            {"navto",  2}
+            {"moveto", 0},
+            {"navto",  1}
     }
     );
     this->command->runtimeOverload()
@@ -429,15 +481,14 @@ void ComandManager::registerSpComand() {
         .required("operate", ll::command::ParamKind::Enum, "cfspOnlineSpOperate6")
         .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
         .optional("pos", ll::command::ParamKind::Vec3)
+        .optional("speed", ll::command::ParamKind::Float)
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                SP_ONLINE_OPERATE6_CALL(LookAt)
-            case 1:
                 SP_ONLINE_OPERATE6_CALL(MoveTo)
-            case 2:
+            case 1:
                 SP_ONLINE_OPERATE6_CALL(NavTo)
             }
         });

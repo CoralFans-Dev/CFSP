@@ -3,7 +3,6 @@
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/base/Utils.h"
 #include "cfsp/core/simPlayer/SimPlayer.h"
-#include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/network/packet/TextPacket.h"
@@ -209,9 +208,8 @@ base::OperateResult CFSPManager::spSpawn(Player* player, std::string const& spna
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     // check：permission
-    if (!nocheck)
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn); !res)
-            return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Spawn))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     // create
     auto res = it->second->spawn(player, isLockUniqueId);
     if (!res) [[unlikely]]
@@ -262,10 +260,9 @@ base::OperateResult CFSPManager::spDespawn(Player* player, std::string const& sp
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Despawn); !res)
-            return res;
+    // check：permission
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Despawn))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     auto isDead = it->second->mSimPlayer && it->second->mSimPlayer->isDead();
     auto res    = it->second->despawn();
     if (!res) [[unlikely]]
@@ -308,10 +305,9 @@ base::OperateResult CFSPManager::spRespawn(Player* player, std::string const& sp
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Respawn); !res)
-            return res;
+    // check：permission
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Respawn))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     auto res = it->second->respawn();
     if (!res) [[unlikely]]
         return res;
@@ -326,9 +322,9 @@ base::OperateResult CFSPManager::spRm(Player* player, std::string const& spname,
         else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
     if (auto it = this->mOnlineSpMap.find(spname); it != this->mOnlineSpMap.end()) {
-        if (!nocheck)
-            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
-                return res;
+        // check：permission
+        if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm))
+            return base::OperateResult::error("manager.fail.permissionDenied"_tr());
         if (!force && !it->second->mSaveData.isEmptyInv)
             return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
@@ -345,29 +341,26 @@ base::OperateResult CFSPManager::spRm(Player* player, std::string const& spname,
             it->second->mSimPlayer->setGameTestHelper(nullptr);
         }
         std::filesystem::remove_all(
-            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.name
+            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.xuid
         );
         this->mOnlineSpMap.erase(it);
     } else if (it = this->mOfflineSpMap.find(spname); it != this->mOfflineSpMap.end()) {
-        if (!nocheck)
-            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm); !res)
-                return res;
+        // check：permission
+        if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Rm))
+            return base::OperateResult::error("manager.fail.permissionDenied"_tr());
         if (!force && !it->second->mSaveData.isEmptyInv)
             return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
         std::filesystem::remove_all(
-            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.name
+            CFSP::getInstance().getSelf().getDataDir() / "simplayer" / it->second->mSaveData.xuid
         );
         this->mOfflineSpMap.erase(it);
     } else return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     for (auto group : this->mGroupMap) {
         if (auto it = group.second->mData.splist.find(spname); it != group.second->mData.splist.end()) {
             group.second->mData.splist.erase(it);
-            ll::config::saveConfig(
-                group.second->mData,
-                CFSP::getInstance().getSelf().getDataDir() / "group" / group.second->mData.name / "data.json"
-            );
+            group.second->save();
         }
     }
     return base::OperateResult::success("manager.success.operate"_tr());
@@ -387,9 +380,8 @@ base::OperateResult CFSPManager::spStop(Player* player, std::string const& spnam
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Stop); !res) return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Stop))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     return it->second->stop();
 }
 
@@ -406,8 +398,8 @@ base::OperateResult CFSPManager::spInfo(Player* player, std::string const& spnam
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::None); !res) return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::None))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     return it->second->info();
 }
 
@@ -425,10 +417,8 @@ base::OperateResult CFSPManager::spLookAt(Player* player, std::string const& spn
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        // check：permission
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::LookAt); !res)
-            return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::LookAt))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     return it->second->lookAt(pos);
 }
 } // namespace coral_fans::cfsp::manager

@@ -17,11 +17,27 @@ namespace coral_fans::cfsp::manager {
                 return base::OperateResult::error("manager.fail.spHasOffline"_tr());                                   \
             return base::OperateResult::error("manager.fail.spNotExisted"_tr());                                       \
         }                                                                                                              \
-        if (!nocheck)                                                                                                  \
-            if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC); !res)       \
-                return res;                                                                                            \
+        if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::FUNC))               \
+            return base::OperateResult::error("manager.fail.permissionDenied"_tr());                                   \
         return it->second->ACTION;                                                                                     \
     }
+
+base::OperateResult CFSPManager::spInvInfo(Player* player, std::string const& spname, bool nocheck) {
+    using ll::i18n_literals::operator""_tr;
+    if (!nocheck) {
+        if (!isAllowed(player)) return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+        if (isManager(player)) nocheck = true;
+    }
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
+            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
+        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::None))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    return it->second->invInfo();
+}
 
 SP_INV_DEF(Drop, drop())
 SP_INV_DEF(DropInv, dropInv())
@@ -40,9 +56,8 @@ base::OperateResult CFSPManager::spSelect(Player* player, std::string const& spn
             return base::OperateResult::error("manager.fail.spHasOffline"_tr());
         return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
-    if (!nocheck)
-        if (auto res = it->second->hasPermission(player, simulated_player::SimPlayerPermission::Select); !res)
-            return res;
+    if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Select))
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     return it->second->select(id);
 }
 } // namespace coral_fans::cfsp::manager

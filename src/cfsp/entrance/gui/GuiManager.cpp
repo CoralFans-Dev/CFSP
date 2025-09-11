@@ -8,7 +8,6 @@
 #include "mc/world/actor/player/Player.h"
 #include <string>
 
-
 namespace coral_fans::cfsp::gui {
 GuiManager& GuiManager::getInstance() {
     static GuiManager instance;
@@ -26,6 +25,14 @@ std::optional<Vec3> GuiManager::tryGetVec3(std::string& str) {
 std::optional<int> GuiManager::tryGetInt(std::string& str) {
     std::istringstream iss(str);
     int                i;
+    char               test;
+    if (!(iss >> i) || iss >> test) return std::nullopt;
+    return i;
+}
+
+std::optional<float> GuiManager::tryGetFloat(std::string& str) {
+    std::istringstream iss(str);
+    float              i;
     char               test;
     if (!(iss >> i) || iss >> test) return std::nullopt;
     return i;

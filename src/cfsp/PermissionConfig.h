@@ -38,5 +38,6 @@ struct PermissionConfig {
     FuncStruct spNavTo     = {true, CommandPermissionLevel::Any};
     FuncStruct spTp        = {true, CommandPermissionLevel::Any};
     FuncStruct groupCreate = {true, CommandPermissionLevel::Any};
+    FuncStruct groupRm     = {true, CommandPermissionLevel::Any};
 };
 } // namespace coral_fans::cfsp::config
