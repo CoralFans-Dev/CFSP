@@ -55,7 +55,7 @@ base::OperateResult CFSPManager::groupRm(Player* player, std::string const& gnam
     ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspGroup", {gname});
     std::filesystem::remove_all(
         CFSP::getInstance().getSelf().getDataDir() / "group"
-        / ("-" + std::to_string(std::hash<std::string>()(it->second->mData.name)))
+        / std::to_string(std::hash<std::string>()(it->second->mData.name))
     );
     this->mGroupMap.erase(it);
     return base::OperateResult::success("manager.success.operate"_tr());
