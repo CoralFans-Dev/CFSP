@@ -14,5 +14,6 @@ public:
 public:
     void save();
     bool hasPermission(Player*, GroupPermission permission);
+    uint getPermission(const Player* player);
 };
 } // namespace coral_fans::cfsp::group

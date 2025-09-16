@@ -19,22 +19,20 @@ bool SimPlayer::isFree() {
     return !schedule->isRunning(this->mTaskid) && !schedule->isRunning(this->mScriptid);
 }
 
-bool SimPlayer::hasPermission(Player* player, SimPlayerPermission permission) {
+bool SimPlayer::hasPermission(const Player* player, SimPlayerPermission permission) {
     using ll::i18n_literals::operator""_tr;
     auto uuid = player->getUuid().asString();
     if (this->mSaveData.ownerUuid == uuid) return true;
-    if (auto it = this->mSaveData.permission.find(uuid);
-        it != this->mSaveData.permission.end() && ((uint)it->second & (uint)permission) == (uint)permission)
-        return true;
-    if (((uint)this->mSaveData.publicPermission & (uint)permission) == (uint)permission) return true;
-    return false;
+    if ((this->mSaveData.publicPermission & (uint)permission) == (uint)permission) return true;
+    auto it = this->mSaveData.permission.find(uuid);
+    return it != this->mSaveData.permission.end() && (it->second & (uint)permission) == (uint)permission;
 }
 
-SimPlayerPermission SimPlayer::getPermission(Player* player) {
+uint SimPlayer::getPermission(Player* player) {
     auto uuid = player->getUuid().asString();
-    if (this->mSaveData.ownerUuid == uuid) return (SimPlayerPermission)-1;
+    if (this->mSaveData.ownerUuid == uuid) return (uint)-1;
     if (auto it = this->mSaveData.permission.find(uuid); it != this->mSaveData.permission.end())
-        return (SimPlayerPermission)((uint)it->second | (uint)this->mSaveData.publicPermission);
+        return (it->second | this->mSaveData.publicPermission);
     return this->mSaveData.publicPermission;
 }
 } // namespace coral_fans::cfsp::simulated_player

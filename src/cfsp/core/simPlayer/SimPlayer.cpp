@@ -53,8 +53,13 @@ base::OperateResult SimPlayer::stop() {
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-std::shared_ptr<SimPlayer>
-SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& pos, DimensionType dim) {
+std::shared_ptr<SimPlayer> SimPlayer::create(
+    const Player*      player,
+    std::string const& spname,
+    Vec3 const&        pos,
+    DimensionType      dim,
+    bool               lockUniqueId
+) {
     auto uuid = player ? player->getUuid().asString() : "";
     auto mc   = ll::service::getMinecraft();
     if (!mc) return nullptr;
@@ -69,8 +74,8 @@ SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& p
     simPlayer->mPlayerRespawnPoint->mDimension      = dim;
 
     SimPlayerSaveData saveData;
-    saveData.name            = spname;
-    saveData.uniqueId        = simPlayer->getOrCreateUniqueID().rawID;
+    saveData.name = spname;
+    if (lockUniqueId) saveData.uniqueId = simPlayer->getOrCreateUniqueID().rawID;
     saveData.xuid            = xuid;
     saveData.ownerUuid       = uuid;
     saveData.lastSpawnerUuid = uuid;
@@ -84,7 +89,7 @@ SimPlayer::create(const Player* player, std::string const& spname, Vec3 const& p
     return cfsp;
 }
 
-base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool lockUniqueId) {
+base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     using ll::i18n_literals::operator""_tr;
     auto mc = ll::service::getMinecraft();
     if (!mc) return base::OperateResult::error("manager.error.failedtocreate"_tr());
@@ -97,7 +102,9 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player, bool l
         0,
         serverNetworkHandler,
         this->mSaveData.xuid,
-        lockUniqueId ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId)) : std::nullopt
+        this->mSaveData.uniqueId.has_value()
+            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
+            : std::nullopt
     );
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.failedtocreate"_tr());
@@ -129,7 +136,7 @@ base::OperateResult SimPlayer::respawn() {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    if (this->mSimPlayer->isAlive()) return base::OperateResult::error("manager.fail.SpIsAlive"_tr());
+    if (this->mSimPlayer->isAlive()) return base::OperateResult::error("manager.fail.spIsAlive"_tr());
     auto& spawnPos                              = this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition;
     this->mSimPlayer->mRespawnPositionCandidate = {spawnPos->x + 0.5f, spawnPos->y + 1.62001f, spawnPos->z + 0.5f};
     this->mSimPlayer->mRespawnReady             = true;

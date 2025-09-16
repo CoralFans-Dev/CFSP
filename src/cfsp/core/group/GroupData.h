@@ -5,11 +5,11 @@
 
 namespace coral_fans::cfsp::group {
 struct GroupData {
-    int                                              version = 1;
-    std::string                                      name;
-    std::unordered_set<std::string>                  splist;    // 假人名称
-    std::string                                      ownerUuid; // 所有者uuid
-    GroupPermission                                  publicPermission;
-    std::unordered_map<std::string, GroupPermission> permission; // <玩家uuid, permission>
+    int                                           version = 1;
+    std::string                                   name;
+    std::unordered_set<std::string>               splist;    // 假人名称
+    std::string                                   ownerUuid; // 所有者uuid
+    unsigned int                                  publicPermission;
+    std::unordered_map<std::string, unsigned int> permission; // <玩家uuid, permission>
 };
 } // namespace coral_fans::cfsp::group

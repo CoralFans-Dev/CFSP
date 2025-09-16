@@ -75,5 +75,6 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
 
     this->registerGuiCommand();
     this->registerSpComand();
+    this->registerGroupComand();
 }
 } // namespace coral_fans::cfsp::command

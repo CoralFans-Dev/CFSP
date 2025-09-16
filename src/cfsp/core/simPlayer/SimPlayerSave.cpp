@@ -4,7 +4,7 @@
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/nbt/CompoundTag.h"
 #include <boost/iostreams/device/mapped_file.hpp>
-
+#include <filesystem>
 
 namespace coral_fans::cfsp::simulated_player {
 
@@ -12,7 +12,8 @@ bool SimPlayer::save() {
     if (this->mShouldSave) {
         if (ll::config::saveConfig(
                 this->mSaveData,
-                CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "data.json"
+                CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+                    / reinterpret_cast<const char8_t*>(this->mSaveData.name.c_str()) / "data.json"
             )) [[likely]]
             this->mShouldSave = false;
     }
@@ -24,7 +25,8 @@ bool SimPlayer::save() {
     if (!tag) [[unlikely]]
         return false;
     std::ofstream f(
-        CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "nbt",
+        CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+            / reinterpret_cast<const char8_t*>(this->mSaveData.name.c_str()) / "nbt",
         std::ios_base::out | std::ios_base::trunc
     );
     if (!f.is_open()) [[unlikely]]
@@ -37,7 +39,8 @@ bool SimPlayer::save() {
 bool SimPlayer::loadSpNbt() {
     if (!this->mSimPlayer) [[unlikely]]
         return false;
-    auto path = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer" / this->mSaveData.xuid / "nbt";
+    auto path = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+              / reinterpret_cast<const char8_t*>(this->mSaveData.name.c_str()) / "nbt";
     if (!std::filesystem::exists(path)) [[unlikely]]
         return false;
     std::ifstream f(path, std::ios::binary | std::ios::ate);

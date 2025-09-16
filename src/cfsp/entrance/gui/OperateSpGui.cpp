@@ -58,9 +58,10 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                         std::to_string(pos.x) + " " + std::to_string(pos.y) + " " + std::to_string(pos.z)
                     );
                 });
-            form.appendButton("gui.operateSp.inv"_tr(), [this, cfsp, perm](Player& player) {
-                this->sendSpInvOperatorPage(player, cfsp, perm);
-            });
+            if (perm)
+                form.appendButton("gui.operateSp.inv"_tr(), [this, cfsp, perm](Player& player) {
+                    this->sendSpInvOperatorPage(player, cfsp, perm);
+                });
             if (perm & (uint)simulated_player::SimPlayerPermission::Chat
                 || perm & (uint)simulated_player::SimPlayerPermission::RunCmd)
                 form.appendButton("gui.operateSp.message"_tr(), [this, cfsp, perm](Player& player) {
@@ -125,14 +126,15 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                 if (perm & (uint)simulated_player::SimPlayerPermission::Attack
                     || perm & (uint)simulated_player::SimPlayerPermission::Build
                     || perm & (uint)simulated_player::SimPlayerPermission::Interact
-                    || perm & (uint)simulated_player::SimPlayerPermission::Jump) {
+                    || perm & (uint)simulated_player::SimPlayerPermission::Jump)
                     form.appendButton("gui.operateSp.perform"_tr(), [this, cfsp, perm](Player& player) {
                         this->sendSpActionOperatorPage(player, cfsp, perm);
                     });
+                if (perm & (uint)simulated_player::SimPlayerPermission::Use
+                    || perm & (uint)simulated_player::SimPlayerPermission::Destroy)
                     form.appendButton("gui.operateSp.perform2"_tr(), [this, cfsp, perm](Player& player) {
                         this->sendSpLongActionOperatorPage(player, cfsp, perm);
                     });
-                }
             }
             if (perm & (uint)simulated_player::SimPlayerPermission::Stop)
                 form.appendButton("gui.operateSp.stop"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
@@ -153,7 +155,7 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                 });
         }
     }
-    if (perm & (uint)simulated_player::SimPlayerPermission::Rm)
+    if (perm & (uint)simulated_player::SimPlayerPermission::Delete)
         form.appendButton("gui.operateSp.rm"_tr(), [this, cfsp](Player& player) {
             auto confirmForm = ll::form::ModalForm(
                 "gui.operateSp.rm"_tr(),
@@ -166,7 +168,7 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                 [this,
                  cfsp](Player& player, ll::form::ModalFormResult result, ll::form::FormCancelReason cancelReason) {
                     if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
-                        this->sendOperateSpPage(player, cfsp);
+                        return this->sendOperateSpPage(player, cfsp);
                     if (!result.has_value()) return;
 
                     if (result.value() == ll::form::ModalFormSelectedButton::Upper) {
@@ -174,7 +176,7 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                             return base::OperateResult::error("manager.error.loseSimplayer"_tr()).sendTo(player);
                         if (cfsp->mSaveData.isEmptyInv)
                             return manager::CFSPManager::getInstance()
-                                .spRm(&player, cfsp->mSaveData.name)
+                                .spDelete(&player, cfsp->mSaveData.name)
                                 .sendTo(player);
                         auto confirmForm2 = ll::form::ModalForm(
                             "gui.operateSp.rm"_tr(),
@@ -195,7 +197,7 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
 
                                 if (result.value() == ll::form::ModalFormSelectedButton::Upper)
                                     return manager::CFSPManager::getInstance()
-                                        .spRm(&player, cfsp->mSaveData.name)
+                                        .spDelete(&player, cfsp->mSaveData.name)
                                         .sendTo(player);
                                 if (result.value() == ll::form::ModalFormSelectedButton::Lower)
                                     return this->sendOperateSpPage(player, cfsp);
@@ -209,7 +211,13 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
     form.sendTo(player);
 }
 
-void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos, std::string defName) {
+void GuiManager::sendCreateSpPage(
+    Player&     player,
+    int         defDim,
+    std::string defPos,
+    std::string defName,
+    int         defLockUniqueId
+) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.createSp.title"_tr());
     form.appendInput("name", "gui.createSp.name"_tr(), "", defName);
@@ -223,6 +231,12 @@ void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos
             "base.dimension.theend"_tr()
         },
         defDim
+    );
+    form.appendDropdown(
+        "lockUniqueId",
+        "gui.para.lockUniqueId"_tr(),
+        std::vector<std::string>{"base.yesOrNo.yes", "base.yesOrNo.no"},
+        defLockUniqueId
     );
     form.sendTo(
         player,
@@ -242,6 +256,15 @@ void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos
             auto elePos    = std::get<std::string>(it->second);
             auto targetPos = this->tryGetVec3(elePos);
 
+            it = elements.value().find("lockUniqueId");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleLockUniqueId = std::get<std::string>(it->second);
+            bool lockUniqueId;
+            if (eleLockUniqueId == "base.yesOrNo.yes") lockUniqueId = true;
+            else if (eleLockUniqueId == "base.yesOrNo.no") lockUniqueId = false;
+            else return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
             it = elements.value().find("dim");
             if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
                 return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
@@ -254,11 +277,11 @@ void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos
 
             if (!targetPos.has_value()) {
                 base::OperateResult::error("gui.para.posError"_tr()).sendTo(player);
-                return this->sendCreateSpPage(player, dim, elePos, name);
+                return this->sendCreateSpPage(player, dim, elePos, name, lockUniqueId);
             }
-            auto res = manager::CFSPManager::getInstance().spCreate(&player, name, targetPos.value(), dim);
-            res.sendTo(player);
-            if (!res) this->sendCreateSpPage(player, dim, elePos, name);
+            manager::CFSPManager::getInstance()
+                .spCreate(&player, name, targetPos.value(), dim, lockUniqueId)
+                .sendTo(player);
         }
     );
 }
@@ -266,7 +289,7 @@ void GuiManager::sendCreateSpPage(Player& player, int defDim, std::string defPos
 void GuiManager::sendSpInfoPage(Player& player, std::shared_ptr<simulated_player::SimPlayer> cfsp) {
     using ll::i18n_literals::operator""_tr;
     ll::form::SimpleForm(
-        "gui.spinfo.title"_tr(),
+        "gui.info.spTitle"_tr(),
         manager::CFSPManager::getInstance().spInfo(&player, cfsp->mSaveData.name).mInfo
     )
         .sendTo(player, [this, cfsp](Player& player, int, ll::form::FormCancelReason cancelReason) {
@@ -277,11 +300,11 @@ void GuiManager::sendSpInfoPage(Player& player, std::shared_ptr<simulated_player
 
 void GuiManager::sendSpInvOperatorPage(Player& player, std::shared_ptr<simulated_player::SimPlayer> cfsp, uint perm) {
     using ll::i18n_literals::operator""_tr;
-    auto form = ll::form::SimpleForm("gui.spinv.title"_tr());
+    auto form = ll::form::SimpleForm("gui.inv.sp.title"_tr());
     if (perm)
-        form.appendButton("gui.spinv.invinfo"_tr(), [this, cfsp, perm](Player& player) {
+        form.appendButton("gui.inv.sp.invinfo"_tr(), [this, cfsp, perm](Player& player) {
             ll::form::SimpleForm(
-                "gui.spinfo.title"_tr(),
+                "gui.inv.sp.invinfo"_tr(),
                 manager::CFSPManager::getInstance().spInvInfo(&player, cfsp->mSaveData.name).mInfo
             )
                 .sendTo(player, [this, cfsp, perm](Player& player, int, ll::form::FormCancelReason cancelReason) {
@@ -290,15 +313,15 @@ void GuiManager::sendSpInvOperatorPage(Player& player, std::shared_ptr<simulated
                 });
         });
     if (perm & (uint)simulated_player::SimPlayerPermission::Swap)
-        form.appendButton("gui.spinv.swap"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+        form.appendButton("gui.inv.sp.swap"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spSwap(&player, spname).sendTo(player);
         });
     if (perm & (uint)simulated_player::SimPlayerPermission::Drop)
-        form.appendButton("gui.spinv.drop"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+        form.appendButton("gui.inv.sp.drop"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spDrop(&player, spname).sendTo(player);
         });
     if (perm & (uint)simulated_player::SimPlayerPermission::DropInv)
-        form.appendButton("gui.spinv.dropinv"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+        form.appendButton("gui.inv.sp.dropinv"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spDropInv(&player, spname).sendTo(player);
         });
     form.sendTo(player, [this, cfsp](Player& player, int, ll::form::FormCancelReason cancelReason) {
@@ -314,7 +337,7 @@ void GuiManager::sendSpTpOperatorPage(
     std::string                                  defPos
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto form = ll::form::CustomForm("gui.spTp.title"_tr());
+    auto form = ll::form::CustomForm("gui.tp.spTitle"_tr());
     form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
     form.appendDropdown(
         "dim",
@@ -367,10 +390,10 @@ void GuiManager::sendSpMessageOperatorPage(
     uint                                         perm
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto                     form = ll::form::CustomForm("gui.spMessage.title"_tr());
+    auto                     form = ll::form::CustomForm("gui.message.spTitle"_tr());
     std::vector<std::string> op;
-    if (perm & (uint)simulated_player::SimPlayerPermission::Chat) op.emplace_back("gui.spMessage.chat"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::RunCmd) op.emplace_back("gui.spMessage.runcmd"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Chat) op.emplace_back("gui.message.chat"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::RunCmd) op.emplace_back("gui.message.runcmd"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op);
     form.appendInput("text", "gui.para.text"_tr());
     form.sendTo(
@@ -390,11 +413,11 @@ void GuiManager::sendSpMessageOperatorPage(
                 return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
             auto eleText = std::get<std::string>(it->second);
 
-            if (eleOp == "gui.spMessage.chat"_tr())
+            if (eleOp == "gui.message.chat"_tr())
                 return manager::CFSPManager::getInstance()
                     .spChat(&player, cfsp->mSaveData.name, eleText)
                     .sendTo(player);
-            if (eleOp == "gui.spMessage.runcmd"_tr())
+            if (eleOp == "gui.message.runcmd"_tr())
                 return manager::CFSPManager::getInstance()
                     .spRunCmd(&player, cfsp->mSaveData.name, eleText)
                     .sendTo(player);
@@ -412,10 +435,10 @@ void GuiManager::sendSpMoveOperatorPage(
     int                                          defOp
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto                     form = ll::form::CustomForm("gui.spMessage.title"_tr());
+    auto                     form = ll::form::CustomForm("gui.move.spTitle"_tr());
     std::vector<std::string> op;
-    if (perm & (uint)simulated_player::SimPlayerPermission::MoveTo) op.emplace_back("gui.spMove.moveto"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::NavTo) op.emplace_back("gui.spMove.navto"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::MoveTo) op.emplace_back("gui.move.moveto"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::NavTo) op.emplace_back("gui.move.navto"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op, defOp);
     form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
     form.appendInput("speed", "gui.para.speed"_tr(), "4.3", defSpeed);
@@ -457,11 +480,11 @@ void GuiManager::sendSpMoveOperatorPage(
                 base::OperateResult::error("gui.para.posError"_tr()).sendTo(player);
                 return this->sendSpMoveOperatorPage(player, cfsp, perm, elePos, eleSpeed, opIndex);
             }
-            if (eleOp == "gui.spMove.moveto"_tr())
+            if (eleOp == "gui.move.moveto"_tr())
                 return manager::CFSPManager::getInstance()
                     .spMoveTo(&player, cfsp->mSaveData.name, targetPos.value(), speed.value())
                     .sendTo(player);
-            if (eleOp == "gui.spMove.navto"_tr())
+            if (eleOp == "gui.move.navto"_tr())
                 return manager::CFSPManager::getInstance()
                     .spNavTo(&player, cfsp->mSaveData.name, targetPos.value(), speed.value())
                     .sendTo(player);
@@ -476,7 +499,7 @@ void GuiManager::sendSpLookOperatorPage(
     std::string                                  defPos
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto form = ll::form::CustomForm("gui.spLook.title"_tr());
+    auto form = ll::form::CustomForm("gui.look.spTitle"_tr());
     form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
     form.sendTo(
         player,
@@ -513,12 +536,12 @@ void GuiManager::sendSpActionOperatorPage(
     int                                          defOp
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto                     form = ll::form::CustomForm("gui.spAction.title"_tr());
+    auto                     form = ll::form::CustomForm("gui.action.spTitle"_tr());
     std::vector<std::string> op;
-    if (perm & (uint)simulated_player::SimPlayerPermission::Attack) op.emplace_back("gui.spAction.attack"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::Build) op.emplace_back("gui.spAction.build"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::Interact) op.emplace_back("gui.spAction.interact"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::Jump) op.emplace_back("gui.spAction.jump"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Attack) op.emplace_back("gui.action.attack"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Build) op.emplace_back("gui.action.build"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Interact) op.emplace_back("gui.action.interact"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Jump) op.emplace_back("gui.action.jump"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op, defOp);
     form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
     form.appendInput("interval", "gui.para.interval"_tr(), "1", defInterval);
@@ -561,19 +584,19 @@ void GuiManager::sendSpActionOperatorPage(
                 return this->sendSpActionOperatorPage(player, cfsp, perm, eleTimes, eleInterval, opIndex);
             }
 
-            if (eleOp == "gui.spAction.attack"_tr())
+            if (eleOp == "gui.action.attack"_tr())
                 return manager::CFSPManager::getInstance()
                     .spAttack(&player, cfsp->mSaveData.name, times.value(), interval.value())
                     .sendTo(player);
-            if (eleOp == "gui.spAction.build"_tr())
+            if (eleOp == "gui.action.build"_tr())
                 return manager::CFSPManager::getInstance()
                     .spBuild(&player, cfsp->mSaveData.name, times.value(), interval.value())
                     .sendTo(player);
-            if (eleOp == "gui.spAction.interact"_tr())
+            if (eleOp == "gui.action.interact"_tr())
                 return manager::CFSPManager::getInstance()
                     .spInteract(&player, cfsp->mSaveData.name, times.value(), interval.value())
                     .sendTo(player);
-            if (eleOp == "gui.spAction.jump"_tr())
+            if (eleOp == "gui.action.jump"_tr())
                 return manager::CFSPManager::getInstance()
                     .spJump(&player, cfsp->mSaveData.name, times.value(), interval.value())
                     .sendTo(player);
@@ -592,10 +615,10 @@ void GuiManager::sendSpLongActionOperatorPage(
     int                                          defOp
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto                     form = ll::form::CustomForm("gui.spLongAction.title"_tr());
+    auto                     form = ll::form::CustomForm("gui.longAction.spTitle"_tr());
     std::vector<std::string> op;
-    if (perm & (uint)simulated_player::SimPlayerPermission::Use) op.emplace_back("gui.spLongAction.use"_tr());
-    if (perm & (uint)simulated_player::SimPlayerPermission::Destroy) op.emplace_back("gui.spLongAction.destroy"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Use) op.emplace_back("gui.longAction.use"_tr());
+    if (perm & (uint)simulated_player::SimPlayerPermission::Destroy) op.emplace_back("gui.longAction.destroy"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op, defOp);
     form.appendInput("long", "gui.para.long"_tr(), "10", defLong);
     form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
@@ -645,11 +668,11 @@ void GuiManager::sendSpLongActionOperatorPage(
                 return this->sendSpLongActionOperatorPage(player, cfsp, perm, eleLong, eleTimes, eleInterval, opIndex);
             }
 
-            if (eleOp == "gui.spLongAction.use"_tr())
+            if (eleOp == "gui.longAction.use"_tr())
                 return manager::CFSPManager::getInstance()
                     .spUse(&player, cfsp->mSaveData.name, _long.value(), times.value(), interval.value())
                     .sendTo(player);
-            if (eleOp == "gui.spLongAction.destroy"_tr())
+            if (eleOp == "gui.longAction.destroy"_tr())
                 return manager::CFSPManager::getInstance()
                     .spDestroy(&player, cfsp->mSaveData.name, _long.value(), times.value(), interval.value())
                     .sendTo(player);
@@ -665,34 +688,34 @@ void GuiManager::sendSpStatusOperatorPage(
 ) {
     using ll::i18n_literals::operator""_tr;
     if (!cfsp->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr()).sendTo(player);
-    auto form = ll::form::CustomForm("gui.spStatus.title"_tr());
+    auto form = ll::form::CustomForm("gui.status.spTitle"_tr());
     if (perm & (uint)simulated_player::SimPlayerPermission::Sneaking)
         form.appendDropdown(
             "sneaking",
-            "gui.spStatus.sneaking"_tr(),
-            std::vector<std::string>{"gui.spStatus.sneak"_tr(), "gui.spStatus.releasesneak"_tr()},
+            "gui.status.sneaking"_tr(),
+            std::vector<std::string>{"gui.status.sneak"_tr(), "gui.status.releasesneak"_tr()},
             cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sneaking) ? 0 : 1
         );
     if (perm & (uint)simulated_player::SimPlayerPermission::Swimming)
         form.appendDropdown(
             "swimming",
-            "gui.spStatus.swimming"_tr(),
-            std::vector<std::string>{"gui.spStatus.swim"_tr(), "gui.spStatus.releaseswim"_tr()},
+            "gui.status.swimming"_tr(),
+            std::vector<std::string>{"gui.status.swim"_tr(), "gui.status.releaseswim"_tr()},
             cfsp->mSimPlayer->getStatusFlag(ActorFlags::Swimming) ? 0 : 1
         );
     if (perm & (uint)simulated_player::SimPlayerPermission::Flying
         && cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal)
         form.appendDropdown(
             "flying",
-            "gui.spStatus.flying"_tr(),
-            std::vector<std::string>{"gui.spStatus.fly"_tr(), "gui.spStatus.releasefly"_tr()},
+            "gui.status.flying"_tr(),
+            std::vector<std::string>{"gui.status.fly"_tr(), "gui.status.releasefly"_tr()},
             cfsp->mSimPlayer->isFlying() ? 0 : 1
         );
     if (perm & (uint)simulated_player::SimPlayerPermission::Sprinting)
         form.appendDropdown(
             "sprinting",
-            "gui.spStatus.sprinting"_tr(),
-            std::vector<std::string>{"gui.spStatus.sprint"_tr(), "gui.spStatus.releasesprint"_tr()},
+            "gui.status.sprinting"_tr(),
+            std::vector<std::string>{"gui.status.sprint"_tr(), "gui.status.releasesprint"_tr()},
             cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sprinting) ? 0 : 1
         );
     form.sendTo(
@@ -728,26 +751,26 @@ void GuiManager::sendSpStatusOperatorPage(
                 return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
             auto sprinting = std::get<std::string>(it->second);
 
-            if (sneaking == "gui.spStatus.sneak"_tr())
+            if (sneaking == "gui.status.sneak"_tr())
                 manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (sneaking == "gui.spStatus.releasesneak"_tr())
+            else if (sneaking == "gui.status.releasesneak"_tr())
                 manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, false).sendTo(player);
 
-            if (swimming == "gui.spStatus.swim"_tr())
+            if (swimming == "gui.status.swim"_tr())
                 manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (swimming == "gui.spStatus.releaseswim"_tr())
+            else if (swimming == "gui.status.releaseswim"_tr())
                 manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, false).sendTo(player);
 
             if (cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
-                if (flying == "gui.spStatus.fly"_tr())
+                if (flying == "gui.status.fly"_tr())
                     manager::CFSPManager::getInstance().spFlying(&player, cfsp->mSaveData.name, true).sendTo(player);
-                else if (flying == "gui.spStatus.releasefly"_tr())
+                else if (flying == "gui.status.releasefly"_tr())
                     manager::CFSPManager::getInstance().spFlying(&player, cfsp->mSaveData.name, false).sendTo(player);
             }
 
-            if (sprinting == "gui.spStatus.sprint"_tr())
+            if (sprinting == "gui.status.sprint"_tr())
                 manager::CFSPManager::getInstance().spSprinting(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (sprinting == "gui.spStatus.releasesprint"_tr())
+            else if (sprinting == "gui.status.releasesprint"_tr())
                 manager::CFSPManager::getInstance().spSprinting(&player, cfsp->mSaveData.name, false).sendTo(player);
         }
     );

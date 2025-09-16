@@ -10,7 +10,7 @@
 #include "mc/world/Minecraft.h"
 
 namespace coral_fans::cfsp::simulated_player {
-base::OperateResult SimPlayer::chat(std::string& messasge) {
+base::OperateResult SimPlayer::chat(std::string const& messasge) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
@@ -18,7 +18,7 @@ base::OperateResult SimPlayer::chat(std::string& messasge) {
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::runcmd(std::string& cmd) {
+base::OperateResult SimPlayer::runcmd(std::string const& cmd) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());

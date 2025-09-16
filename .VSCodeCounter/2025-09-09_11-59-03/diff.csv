@@ -1,8 +1,0 @@
-"filename", "language", "JSON", "C++", "comment", "blank", "total"
-"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.cpp", "C++", 0, -97, 0, -3, -100
-"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSp.cpp", "C++", 0, 97, 0, 3, 100
-"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\GuiManager.cpp", "C++", 0, 7, 0, 1, 8
-"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\GuiManager.h", "C++", 0, 23, 0, 0, 23
-"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\OperateSpGui.cpp", "C++", 0, 485, 0, 42, 527
-"f:\Project\levilamina\1.4.x\CFSP\src\lang\zh_CN.json", "JSON", 53, 0, 0, 0, 53
-"Total", "-", 53, 515, 0, 43, 611

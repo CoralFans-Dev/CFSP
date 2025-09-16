@@ -55,7 +55,8 @@
             "runcmd": "假人执行命令出错",
             "selectNoFound": "假人背包中没有该物品",
             "speedSmallerThan0": "速度应不小于0",
-            "groupNotExisted": "假人组不存在"
+            "groupNotExisted": "假人组不存在",
+            "spNotExistedInGroup": "假人组中没有该假人"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
@@ -65,6 +66,7 @@
         "info": {
             "onlineCount": "在线假人数量：{}",
             "offlineCount": "离线假人数量：{}",
+            "groupCount": "假人组数量：{}",
             "onlineCountPerplayer": "您在线的假人数量：{}",
             "offlineCountPerplayer": "您离线的假人数量：{}",
             "onlineSp": "\n名称: {}  所有者：{}  坐标: {}",
@@ -144,7 +146,7 @@
         "createSp": {
             "title": "创建假人",
             "name": "假人名称 :",
-            "lockUniqueId": "锁定UniqueId (锁定之后不会丢失与三叉戟的联系)"
+            "lockUniqueId": "是否锁定UniqueId (锁定之后不会丢失与三叉戟的联系)"
         },
         "operateSp": {
             "spinfo": "假人信息",
@@ -163,47 +165,64 @@
             "status": "假人状态操作",
             "rm": "删除假人",
             "confirmRm": "您确定要删除{}吗",
-            "confirmRm2": "假人背包不为空，您确定要删除{}吗"
+            "confirmRm2": "假人背包不为空，是否强制删除{}"
         },
-        "spinfo": {
-            "title": "假人信息"
+        "info": {
+            "spTitle": "假人信息",
+            "groupTitle": "假人组信息"
         },
-        "spinv": {
-            "title": "假人背包操作",
-            "invinfo": "假人背包信息",
-            "swap": "与假人交换背包",
-            "drop": "假人丢弃手持物品",
-            "dropinv": "假人丢弃背包内全部物品"
+        "inv": {
+            "sp": {
+                "title": "假人背包操作",
+                "invinfo": "假人背包信息",
+                "swap": "与假人交换背包",
+                "drop": "假人丢弃手持物品",
+                "dropinv": "假人丢弃背包内全部物品"
+            },
+            "group": {
+                "title": "假人组背包操作",
+                "invInfo": "假人组背包信息",
+                "drop": "假人组丢弃手持物品",
+                "dropinv": "假人组丢弃背包内全部物品"
+            }
         },
-        "spTp": {
-            "title": "假人传送操作"
+        "tp": {
+            "spTitle": "假人传送操作",
+            "groupTitle": "假人组传送操作"
         },
-        "spMessage": {
-            "title": "假人文本操作",
+        "message": {
+            "spTitle": "假人文本操作",
+            "groupTitle": "假人组文本操作",
             "chat": "发送消息",
             "runcmd": "执行指令"
         },
-        "spMove": {
+        "move": {
+            "spTitle": "假人移动操作",
+            "groupTitle": "假人组移动操作",
             "moveto": "移动",
             "navto": "寻路"
         },
-        "spLook": {
-            "title": "假人看向操作"
+        "look": {
+            "spTitle": "假人看向操作",
+            "groupTitle": "假人组看向操作"
         },
-        "spAction": {
-            "title": "假人执行操作",
+        "action": {
+            "spTitle": "假人执行操作",
+            "groupTitle": "假人组执行操作",
             "attack": "攻击",
             "build": "放置",
             "interact": "交互",
             "jump": "跳跃"
         },
-        "spLongAction": {
-            "title": "假人执行操作",
+        "longAction": {
+            "spTitle": "假人执行长操作",
+            "groupTitle": "假人组执行长操作",
             "use": "使用",
             "destroy": "挖掘"
         },
-        "spStatus": {
-            "title": "假人状态操作",
+        "status": {
+            "spTitle": "假人状态操作",
+            "groupTitle": "假人组状态操作",
             "sneaking": "假人潜行",
             "sneak": "潜行",
             "releasesneak": "取消潜行",
@@ -216,6 +235,30 @@
             "sprinting": "假人疾跑",
             "sprint": "疾跑",
             "releasesprint": "取消疾跑"
+        },
+        "manageSpInGroup": {
+            "title": "管理组内假人"
+        },
+        "operateGroup": {
+            "groupInfo": "假人组信息",
+            "online": "上线假人组",
+            "offline": "下线假人组",
+            "respawn": "假人组重生",
+            "tp": "假人组传送操作",
+            "message": "假人组文本操作",
+            "inv": "假人组背包操作",
+            "move": "假人组移动操作",
+            "lookat": "假人组看向操作",
+            "perform": "假人组执行操作",
+            "perform2": "假人组执行长操作",
+            "stop": "假人组停止操作",
+            "status": "假人组状态操作",
+            "rm": "删除假人组",
+            "confirmRm": "您确定要删除{}吗",
+            "manageSp": "管理组内假人",
+            "deleteSp": "删除组内假人",
+            "confirmDeleteSp": "您确定要删除{}组内的假人吗",
+            "confirmDeleteSp2": "背包不为空，是否强制删除{}"
         }
     }
 }

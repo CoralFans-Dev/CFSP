@@ -3,10 +3,12 @@
 #include "SimPlayerSaveData.h"
 #include "cfsp/base/Macros.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/server/SimulatedPlayer.h"
 #include <memory>
 #include <optional>
+
 
 namespace coral_fans::cfsp::simulated_player {
 class SimPlayer {
@@ -31,8 +33,8 @@ public:
     CFSP_API std::string getXuid();
     CFSP_API bool        isOnline();
     CFSP_API bool        isFree();
-    bool                 hasPermission(Player*, SimPlayerPermission);
-    SimPlayerPermission  getPermission(Player*);
+    bool                 hasPermission(const Player*, SimPlayerPermission);
+    uint                 getPermission(Player*);
     base::OperateResult  setPermission(Player*, SimPlayerPermission);
 
 public:
@@ -40,9 +42,8 @@ public:
     CFSP_API void cancelScript();
     CFSP_API base::OperateResult stop();
     CFSP_API static std::shared_ptr<SimPlayer>
-             create(const Player* player, std::string const& name, Vec3 const& pos, DimensionType dim);
-    CFSP_API base::OperateResult
-    spawn(std::optional<const Player*> player, bool lockUniqueId = true); // 当player为std::nullopt时，为autojoin
+    create(const Player* player, std::string const& name, Vec3 const& pos, DimensionType dim, bool lockUniqueId = true);
+    CFSP_API base::OperateResult spawn(std::optional<const Player*> player); // 当player为std::nullopt时，为autojoin
     CFSP_API base::OperateResult despawn();
     CFSP_API base::OperateResult respawn();
     CFSP_API base::OperateResult lookAt(Vec3 const& pos);
@@ -71,8 +72,8 @@ public:
     CFSP_API base::OperateResult destroy(int _long = 1, int times = 1, int interval = 1);
 
 public:
-    CFSP_API base::OperateResult chat(std::string&);
-    CFSP_API base::OperateResult runcmd(std::string&);
+    CFSP_API base::OperateResult chat(std::string const&);
+    CFSP_API base::OperateResult runcmd(std::string const&);
 
 public:
     CFSP_API base::OperateResult moveTo(Vec3 const& pos, float speed = 4.3f);

@@ -22,12 +22,22 @@ public:
 private:
     OperateResult(Type type, std::string info) : mType(type), mInfo(info) {}
 
+
 public:
     OperateResult() {}
     static OperateResult success(std::string info = "") { return OperateResult(Type::Success, info); }
     static OperateResult error(std::string info = "") { return OperateResult(Type::Error, info); }
     static OperateResult swing(std::string info = "") { return OperateResult(Type::Swing, info); }
     operator bool() const { return mType != Type::Error; }
+    OperateResult(const OperateResult& other) : mType(other.mType), mInfo(other.mInfo) {}
+    OperateResult(OperateResult&& other) : mType(std::move(other.mType)), mInfo(std::move(other.mInfo)) {}
+    OperateResult& operator=(OperateResult&& other) noexcept {
+        if (this != &other) {
+            mType = std::move(other.mType);
+            mInfo = std::move(other.mInfo);
+        }
+        return *this;
+    }
 
 public:
     void sendTo(Player& player) {

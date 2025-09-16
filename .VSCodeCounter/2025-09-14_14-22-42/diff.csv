@@ -1,0 +1,10 @@
+"filename", "language", "JSON", "C++", "comment", "blank", "total"
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\PermissionConfig.h", "C++", 0, 17, 0, 0, 17
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\group\GroupPermission.h", "C++", 0, 16, 0, 0, 16
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.h", "C++", 0, 32, 0, 9, 41
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerGroup.cpp", "C++", 0, 43, 0, 2, 45
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\ComandManager.cpp", "C++", 0, 1, 0, 0, 1
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\GroupCommand.cpp", "C++", 0, 347, 7, 11, 365
+"f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\SpCommand.cpp", "C++", 0, -1, 0, 0, -1
+"f:\Project\levilamina\1.4.x\CFSP\src\lang\zh_CN.json", "JSON", 1, 0, 0, 0, 1
+"Total", "-", 1, 455, 7, 22, 485
