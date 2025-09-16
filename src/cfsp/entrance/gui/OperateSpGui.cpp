@@ -6,8 +6,10 @@
 #include "ll/api/form/ModalForm.h"
 #include "ll/api/form/SimpleForm.h"
 #include "ll/api/i18n/I18n.h"
+#include "ll/api/service/Bedrock.h"
 #include "mc/server/commands/CommandPermissionLevel.h"
 #include "mc/world/actor/player/LayeredAbilities.h"
+#include "mc/world/level/Level.h"
 #include "mc/world/phys/HitResult.h"
 #include <optional>
 #include <string>
@@ -776,5 +778,14 @@ void GuiManager::sendSpStatusOperatorPage(
     );
 }
 
-void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>) { using ll::i18n_literals::operator""_tr; }
+void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>) {
+    using ll::i18n_literals::operator""_tr;
+    std::vector<std::string> splist;
+    auto                     level = ll::service::getLevel();
+    if (level.has_value())
+        level->forEachPlayer([&splist](Player& player) {
+            splist.emplace_back(player.mName);
+            return true;
+        });
+}
 } // namespace coral_fans::cfsp::gui

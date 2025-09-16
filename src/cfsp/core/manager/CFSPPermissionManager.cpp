@@ -311,13 +311,19 @@ base::OperateResult CFSPManager::spPerm(
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     if (targetUUid.has_value()) {
         if (enable) {
-            if (it->second->mSaveData.permission[targetUUid.value()] & (uint)perm)
+            auto permIt = it->second->mSaveData.permission.find(targetUUid.value());
+            if (permIt == it->second->mSaveData.permission.end())
+                it->second->mSaveData.permission[targetUUid.value()] = (uint)perm;
+            else if (permIt->second & (uint)perm)
                 return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
-            it->second->mSaveData.permission[targetUUid.value()] |= (uint)perm;
+            else it->second->mSaveData.permission[targetUUid.value()] |= (uint)perm;
         } else {
-            if (!(it->second->mSaveData.permission[targetUUid.value()] & (uint)perm))
+            auto permIt = it->second->mSaveData.permission.find(targetUUid.value());
+            if (permIt == it->second->mSaveData.permission.end()
+                || !(it->second->mSaveData.permission[targetUUid.value()] & (uint)perm))
                 return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
-            it->second->mSaveData.permission[targetUUid.value()] &= (~(uint)perm);
+            permIt->second &= (~(uint)perm);
+            if (permIt->second == 0) it->second->mSaveData.permission.erase(permIt);
         }
     } else if (enable) {
         if (it->second->mSaveData.publicPermission & (uint)perm)
@@ -350,15 +356,22 @@ base::OperateResult CFSPManager::groupPerm(
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     if (targetUUid == std::nullopt) {
         if (enable) {
-            if (it->second->mData.permission[targetUUid.value()] & (uint)perm)
+            auto permIt = it->second->mData.permission.find(targetUUid.value());
+            if (permIt == it->second->mData.permission.end())
+                it->second->mData.permission[targetUUid.value()] = (uint)perm;
+            else if (permIt->second & (uint)perm)
                 return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
-            it->second->mData.permission[targetUUid.value()] |= (uint)perm;
+            else it->second->mData.permission[targetUUid.value()] |= (uint)perm;
         } else {
-            if (!(it->second->mData.permission[targetUUid.value()] & (uint)perm))
+            auto permIt = it->second->mData.permission.find(targetUUid.value());
+            if (permIt == it->second->mData.permission.end()
+                || !(it->second->mData.permission[targetUUid.value()] & (uint)perm))
                 return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
-            it->second->mData.permission[targetUUid.value()] &= (~(uint)perm);
+            permIt->second &= (~(uint)perm);
+            if (permIt->second == 0) it->second->mData.permission.erase(permIt);
         }
     } else if (enable) {
+
         if (it->second->mData.publicPermission & (uint)perm)
             return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
         it->second->mData.publicPermission |= (uint)perm;
