@@ -1,9 +1,11 @@
 #include "ComandManager.h"
 #include "cfsp/core/manager/CFSPManager.h"
+#include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/command/runtime/ParamKind.h"
 #include "ll/api/command/runtime/RuntimeCommand.h"
 #include "ll/api/command/runtime/RuntimeOverload.h"
 #include "ll/api/i18n/I18n.h"
+#include "mc/server/commands/CommandSelectorResults.h"
 #include "mc/world/phys/HitResult.h"
 
 namespace coral_fans::cfsp::command {
@@ -577,6 +579,84 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p perm <name: cfspSplist> <permissionType> <player: player> <enable: bool>
+    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+        "cfspSpPermType",
+        {
+            {"Spawn",          0 },
+            {"Despawn",        1 },
+            {"Respawn",        2 },
+            {"Delete",         3 },
+            {"Stop",           4 },
+            {"Drop",           5 },
+            {"DropInv",        6 },
+            {"Swap",           7 },
+            {"Sneaking",       8 },
+            {"Swimming",       9 },
+            {"Flying",         10},
+            {"Sprinting",      11},
+            {"Attack",         12},
+            {"Build",          13},
+            {"Interact",       14},
+            {"Jump",           15},
+            {"Use",            16},
+            {"Destroy",        17},
+            {"Chat",           18},
+            {"RunCmd",         19},
+            {"Select",         20},
+            {"LookAt",         21},
+            {"MoveTo",         22},
+            {"NavTo",          23},
+            {"Tp",             24},
+            {"BeAddedToGroup", 25},
+    }
+    );
+    // sp p perm <name: cfspSplist> <permType: cfspSpPermType> <player: player> <enable: bool>
+    this->command->runtimeOverload()
+        .text("p")
+        .text("perm")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspSplist")
+        .required("permType", ll::command::ParamKind::Enum, "cfspSpPermType")
+        .required("targetPlayer", ll::command::ParamKind::Player)
+        .required("enable", ll::command::ParamKind::Bool)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            auto targetPlayer = self["targetPlayer"].get<ll::command::ParamKind::Player>().results(origin);
+            if (targetPlayer.size() > 1) return output.error("manager.fail.targetNotSingle"_tr());
+            if (targetPlayer.data->data()[0]->isSimulatedPlayer()) return output.error("manager.fail.targetIsSp"_tr());
+            manager::CFSPManager::getInstance()
+                .spPerm(
+                    player.value(),
+                    self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                    (simulated_player::SimPlayerPermission)(
+                        1 << self["permType"].get<ll::command::ParamKind::Enum>().index
+                    ),
+                    self["enable"].get<ll::command::ParamKind::Bool>(),
+                    targetPlayer.data->data()[0]->getUuid().asString()
+                )
+                .output(output);
+        });
+
+    // sp p permpublic <name: cfspSplist> <permType: cfspSpPermType> <enable: bool>
+    this->command->runtimeOverload()
+        .text("p")
+        .text("permpublic")
+        .required("spname", ll::command::ParamKind::SoftEnum, "cfspSplist")
+        .required("permType", ll::command::ParamKind::Enum, "cfspSpPermType")
+        .required("enable", ll::command::ParamKind::Bool)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            manager::CFSPManager::getInstance()
+                .spPerm(
+                    player.value(),
+                    self["spname"].get<ll::command::ParamKind::SoftEnum>(),
+                    (simulated_player::SimPlayerPermission)(
+                        1 << self["permType"].get<ll::command::ParamKind::Enum>().index
+                    ),
+                    self["enable"].get<ll::command::ParamKind::Bool>()
+                )
+                .output(output);
+        });
 }
 } // namespace coral_fans::cfsp::command

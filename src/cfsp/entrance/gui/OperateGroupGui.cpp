@@ -163,11 +163,14 @@ void GuiManager::sendOperateGroupPage(Player& player, std::shared_ptr<group::CFS
                 }
             );
         });
+    form.sendTo(player);
 }
 
-void GuiManager::sendGroupDeleteSpConfrim(Player& player, std::unordered_set<std::string>& confirmList) {
+void GuiManager::sendGroupDeleteSpConfrim(Player& player, std::unordered_set<std::string> confirmList) {
     using ll::i18n_literals::operator""_tr;
-    auto spname      = confirmList.extract(confirmList.begin()).value();
+    auto        it     = confirmList.begin();
+    std::string spname = it->data();
+    confirmList.erase(it);
     auto confirmForm = ll::form::ModalForm(
         "gui.operateGroup.deleteSp"_tr(),
         "gui.operateGroup.confirmDeleteSp2"_tr(spname),
@@ -178,7 +181,7 @@ void GuiManager::sendGroupDeleteSpConfrim(Player& player, std::unordered_set<std
         player,
         [this,
          spname,
-         &confirmList](Player& player, ll::form::ModalFormResult result, ll::form::FormCancelReason cancelReason) {
+         confirmList](Player& player, ll::form::ModalFormResult result, ll::form::FormCancelReason cancelReason) {
             if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed) return;
             if (!result.has_value()) return;
 
@@ -219,7 +222,7 @@ void GuiManager::sendCreateGroupPage(Player& player) {
 
 void GuiManager::sendManageSpInGroupPage(Player& player, std::shared_ptr<group::CFSPGroup> group, uint perm) {
     using ll::i18n_literals::operator""_tr;
-    auto                     form = ll::form::CustomForm("gui.managesp.title"_tr());
+    auto                     form = ll::form::CustomForm("gui.manageSpInGroup.title"_tr());
     std::vector<std::string> splist;
     if (manager::CFSPManager::getInstance().isManager(&player))
         splist = manager::CFSPManager::getInstance().getAllSpNamesSorted();
@@ -232,10 +235,11 @@ void GuiManager::sendManageSpInGroupPage(Player& player, std::shared_ptr<group::
     }
     form.sendTo(
         player,
-        [splist,
+        [this,
+         splist,
          group,
          perm](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
-            if (cancelReason.has_value()) return;
+            if (cancelReason.has_value()) return this->sendOperateGroupPage(player, group);
             if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
 
             std::vector<std::string> addList, removeList;
@@ -262,8 +266,8 @@ void GuiManager::sendManageSpInGroupPage(Player& player, std::shared_ptr<group::
 void GuiManager::sendGroupInfoPage(Player& player, std::shared_ptr<group::CFSPGroup> group) {
     using ll::i18n_literals::operator""_tr;
     std::string info = "";
-
-    for (auto perRes : manager::CFSPManager::getInstance().groupInfo(&player, group->mData.name)) info += perRes + '\n';
+    for (auto perRes : manager::CFSPManager::getInstance().groupInfo(&player, group->mData.name))
+        info += perRes.mInfo + '\n';
     ll::form::SimpleForm("gui.info.groupTitle"_tr(), info)
         .sendTo(player, [this, group](Player& player, int, ll::form::FormCancelReason cancelReason) {
             if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
@@ -430,11 +434,11 @@ void GuiManager::sendGroupInvOperatorPage(Player& player, std::shared_ptr<group:
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::SimpleForm("gui.inv.group.title"_tr());
     if (perm)
-        form.appendButton("gui.inv.group.invinfo"_tr(), [this, group, perm](Player& player) {
+        form.appendButton("gui.inv.group.invInfo"_tr(), [this, group, perm](Player& player) {
             std::string info = "";
             for (auto& perRes : manager::CFSPManager::getInstance().groupInvInfo(&player, group->mData.name))
                 info += perRes.mInfo;
-            ll::form::SimpleForm("gui.inv.group.invinfo"_tr(), info)
+            ll::form::SimpleForm("gui.inv.group.invInfo"_tr(), info)
                 .sendTo(player, [this, group, perm](Player& player, int, ll::form::FormCancelReason cancelReason) {
                     if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
                         this->sendGroupInvOperatorPage(player, group, perm);

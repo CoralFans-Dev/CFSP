@@ -3,6 +3,7 @@
 #include "cfsp/entrance/gui/GuiManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/server/commands/CommandOutput.h"
+#include "mc/world/level/Level.h"
 
 namespace coral_fans::cfsp::command {
 void ComandManager::registerGuiCommand() {

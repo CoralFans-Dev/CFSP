@@ -124,6 +124,7 @@ base::OperateResult SimPlayer::despawn() {
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     this->stop();
     this->mSaveData.isOnline = false;
+    this->mShouldSave        = true;
     this->save();
     this->mSimPlayer->disconnect();
     this->mSimPlayer->remove();
@@ -150,10 +151,9 @@ base::OperateResult SimPlayer::info() {
     std::string res  = "\n  " + "manager.info.spname"_tr() + this->mSaveData.name + "\n  ";
     res             += "manager.info.spOwner"_tr() + base::utils::tryGetPlayerName(this->mSaveData.ownerUuid) + "\n  ";
     res             += "manager.info.spStatus"_tr()
-         + (this->mSimPlayer              ? "base.spstatus.offline"_tr()
-            : this->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr()
-                                          : "base.spstatus.dead"_tr())
-         + '\n';
+         + (this->mSimPlayer ? this->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr() : "base.spstatus.dead"_tr()
+                             : "base.spstatus.offline"_tr())
+         + "\n  ";
     if (this->mSimPlayer) {
         res += "manager.info.spPos"_tr() + base::utils::getDimName(this->mSimPlayer->getDimensionId()) + " "
              + this->mSimPlayer->getPosition().toJsonString() + "\n  ";

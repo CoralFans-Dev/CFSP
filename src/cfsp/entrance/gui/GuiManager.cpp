@@ -98,6 +98,7 @@ void GuiManager::sendGroupList(Player& player) {
     if (manager::CFSPManager::getInstance().canCreateGroup(&player)) {
         form.appendButton("gui.grouplist.newgroup"_tr(), [this](Player& player) { this->sendCreateGroupPage(player); });
     }
+    form.sendTo(player);
 }
 
 void GuiManager::sendPublicSplist(Player& player) {

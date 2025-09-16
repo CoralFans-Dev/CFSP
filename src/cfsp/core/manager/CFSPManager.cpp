@@ -1,7 +1,6 @@
 #include "CFSPManager.h"
 #include "cfsp/CFSP.h"
 #include "cfsp/ConFig.h"
-#include "cfsp/base/OperateResult.h"
 #include "cfsp/core/fix/CFSPFixManager.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/helper/CFSPHelperManager.h"
@@ -10,7 +9,6 @@
 #include "cfsp/entrance/command/ComandManager.h"
 #include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
-#include "ll/api/i18n/I18n.h"
 #include "mc/world/actor/player/Player.h"
 #include <boost/filesystem.hpp>
 #include <memory>

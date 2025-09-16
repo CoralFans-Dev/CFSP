@@ -775,4 +775,6 @@ void GuiManager::sendSpStatusOperatorPage(
         }
     );
 }
+
+void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>) { using ll::i18n_literals::operator""_tr; }
 } // namespace coral_fans::cfsp::gui

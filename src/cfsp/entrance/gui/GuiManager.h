@@ -67,6 +67,7 @@ private:
         int                                          defOp       = 0
     );
     void sendSpStatusOperatorPage(Player&, std::shared_ptr<simulated_player::SimPlayer>, uint);
+    void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
 
 private:
     void sendAllGroupList(Player&);
@@ -109,7 +110,7 @@ private:
         int                               defOp       = 0
     );
     void sendGroupStatusOperatorPage(Player&, std::shared_ptr<group::CFSPGroup>, uint);
-    void sendGroupDeleteSpConfrim(Player&, std::unordered_set<std::string>&);
+    void sendGroupDeleteSpConfrim(Player&, std::unordered_set<std::string>);
 
 public:
     void sendMainMenu(Player&);

@@ -540,5 +540,82 @@ void ComandManager::registerGroupComand() {
             );
             for (auto perRes : res) perRes.output(output);
         });
+
+    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+        "cfspGroupPermType",
+        {
+            {"AddSp",     0 },
+            {"RmSp",      1 },
+            {"Delete",    2 },
+            {"Spawn",     3 },
+            {"Despawn",   4 },
+            {"Respawn",   5 },
+            {"DeleteSp",  6 },
+            {"Stop",      7 },
+            {"Drop",      8 },
+            {"DropInv",   9 },
+            {"Sneaking",  10},
+            {"Swimming",  11},
+            {"Flying",    12},
+            {"Sprinting", 13},
+            {"Attack",    14},
+            {"Build",     15},
+            {"Interact",  16},
+            {"Jump",      17},
+            {"Use",       18},
+            {"Destroy",   19},
+            {"Chat",      20},
+            {"RunCmd",    21},
+            {"LookAt",    22},
+            {"MoveTo",    23},
+            {"NavTo",     24},
+            {"Tp",        25},
+            {"Select",    26},
+    }
+    );
+    // sp g perm <gname: cfspGroup> <permType: cfspGroupPermType> <player: player> <enable: bool>
+    this->command->runtimeOverload()
+        .text("g")
+        .text("perm")
+        .required("gname", ll::command::ParamKind::SoftEnum, "cfspGroup")
+        .required("permType", ll::command::ParamKind::Enum, "cfspGroupPermType")
+        .required("targetPlayer", ll::command::ParamKind::Player)
+        .required("enable", ll::command::ParamKind::Bool)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            auto targetPlayer = self["targetPlayer"].get<ll::command::ParamKind::Player>().results(origin);
+            if (targetPlayer.size() > 1) output.error("manager.fail.targetNotSingle"_tr());
+            if (targetPlayer.data->data()[0]->isSimulatedPlayer()) return output.error("manager.fail.targetIsSp"_tr());
+            manager::CFSPManager::getInstance()
+                .groupPerm(
+                    player.value(),
+                    self["gname"].get<ll::command::ParamKind::SoftEnum>(),
+                    (group::GroupPermission)(1 << self["permType"].get<ll::command::ParamKind::Enum>().index),
+                    self["enable"].get<ll::command::ParamKind::Bool>(),
+                    targetPlayer.data->data()[0]->getUuid().asString()
+                )
+                .output(output);
+        });
+
+    // sp g permpublic <gname: cfspGroup> <permType: cfspGroupPermType> <enable: bool>
+    this->command->runtimeOverload()
+        .text("g")
+        .text("permpublic")
+        .required("gname", ll::command::ParamKind::SoftEnum, "cfspGroup")
+        .required("permType", ll::command::ParamKind::Enum, "cfspGroupPermType")
+        .required("enable", ll::command::ParamKind::Bool)
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            manager::CFSPManager::getInstance()
+                .groupPerm(
+                    player.value(),
+                    self["gname"].get<ll::command::ParamKind::SoftEnum>(),
+                    (group::GroupPermission)(1 << self["permType"].get<ll::command::ParamKind::Enum>().index),
+                    self["enable"].get<ll::command::ParamKind::Bool>()
+                )
+                .output(output);
+        });
 }
 } // namespace coral_fans::cfsp::command

@@ -41,107 +41,6 @@ void CFSPManager::saveSps() {
     for (auto cfsp : this->mOnlineSpMap) cfsp.second->save();
 }
 
-uint CFSPManager::getSpBasePermissionMask() {
-    uint perm = 0;
-    if (this->mPermissionConfig.spSpawn.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Spawn;
-    if (this->mPermissionConfig.spDespawn.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Despawn;
-    if (this->mPermissionConfig.spRespawn.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Respawn;
-    if (this->mPermissionConfig.spDelete.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Delete;
-    if (this->mPermissionConfig.spStop.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Stop;
-    if (this->mPermissionConfig.spDrop.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Drop;
-    if (this->mPermissionConfig.spDropInv.enabled) perm |= (uint)simulated_player::SimPlayerPermission::DropInv;
-    if (this->mPermissionConfig.spSwap.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Swap;
-    if (this->mPermissionConfig.spSneaking.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Sneaking;
-    if (this->mPermissionConfig.spSwimming.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Swimming;
-    if (this->mPermissionConfig.spFlying.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Flying;
-    if (this->mPermissionConfig.spSprinting.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Sprinting;
-    if (this->mPermissionConfig.spAttack.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Attack;
-    if (this->mPermissionConfig.spBuild.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Build;
-    if (this->mPermissionConfig.spInteract.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Interact;
-    if (this->mPermissionConfig.spJump.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Jump;
-    if (this->mPermissionConfig.spUse.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Use;
-    if (this->mPermissionConfig.spDestroy.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Destroy;
-    if (this->mPermissionConfig.spChat.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Chat;
-    if (this->mPermissionConfig.spRunCmd.enabled) perm |= (uint)simulated_player::SimPlayerPermission::RunCmd;
-    if (this->mPermissionConfig.spSelect.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Select;
-    if (this->mPermissionConfig.spLookAt.enabled) perm |= (uint)simulated_player::SimPlayerPermission::LookAt;
-    if (this->mPermissionConfig.spMoveTo.enabled) perm |= (uint)simulated_player::SimPlayerPermission::MoveTo;
-    if (this->mPermissionConfig.spNavTo.enabled) perm |= (uint)simulated_player::SimPlayerPermission::NavTo;
-    if (this->mPermissionConfig.spTp.enabled) perm |= (uint)simulated_player::SimPlayerPermission::Tp;
-    return perm;
-}
-
-uint CFSPManager::getSpPermissionMask(CommandPermissionLevel level) {
-    uint perm = 0;
-    if (level >= this->mPermissionConfig.spSpawn.permission) perm |= (uint)simulated_player::SimPlayerPermission::Spawn;
-    if (level >= this->mPermissionConfig.spDespawn.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Despawn;
-    if (level >= this->mPermissionConfig.spRespawn.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Respawn;
-    if (level >= this->mPermissionConfig.spDelete.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Delete;
-    if (level >= this->mPermissionConfig.spStop.permission) perm |= (uint)simulated_player::SimPlayerPermission::Stop;
-    if (level >= this->mPermissionConfig.spDrop.permission) perm |= (uint)simulated_player::SimPlayerPermission::Drop;
-    if (level >= this->mPermissionConfig.spDropInv.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::DropInv;
-    if (level >= this->mPermissionConfig.spSwap.permission) perm |= (uint)simulated_player::SimPlayerPermission::Swap;
-    if (level >= this->mPermissionConfig.spSneaking.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Sneaking;
-    if (level >= this->mPermissionConfig.spSwimming.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Swimming;
-    if (level >= this->mPermissionConfig.spFlying.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Flying;
-    if (level >= this->mPermissionConfig.spSprinting.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Sprinting;
-    if (level >= this->mPermissionConfig.spAttack.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Attack;
-    if (level >= this->mPermissionConfig.spBuild.permission) perm |= (uint)simulated_player::SimPlayerPermission::Build;
-    if (level >= this->mPermissionConfig.spInteract.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Interact;
-    if (level >= this->mPermissionConfig.spJump.permission) perm |= (uint)simulated_player::SimPlayerPermission::Jump;
-    if (level >= this->mPermissionConfig.spUse.permission) perm |= (uint)simulated_player::SimPlayerPermission::Use;
-    if (level >= this->mPermissionConfig.spDestroy.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Destroy;
-    if (level >= this->mPermissionConfig.spChat.permission) perm |= (uint)simulated_player::SimPlayerPermission::Chat;
-    if (level >= this->mPermissionConfig.spRunCmd.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::RunCmd;
-    if (level >= this->mPermissionConfig.spSelect.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::Select;
-    if (level >= this->mPermissionConfig.spLookAt.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::LookAt;
-    if (level >= this->mPermissionConfig.spMoveTo.permission)
-        perm |= (uint)simulated_player::SimPlayerPermission::MoveTo;
-    if (level >= this->mPermissionConfig.spNavTo.permission) perm |= (uint)simulated_player::SimPlayerPermission::NavTo;
-    if (level >= this->mPermissionConfig.spTp.permission) perm |= (uint)simulated_player::SimPlayerPermission::Tp;
-    return perm;
-}
-
-uint CFSPManager::getSpPermissionMask(std::optional<CommandPermissionLevel> level) {
-    static uint baseMask = this->getSpBasePermissionMask();
-    if (!level.has_value()) return baseMask;
-    switch (level.value()) {
-    case CommandPermissionLevel::Any:
-        static uint maskAny = baseMask & getSpPermissionMask(level.value());
-        return maskAny;
-    case CommandPermissionLevel::GameDirectors:
-        static uint maskGameDirectors = baseMask & getSpPermissionMask(level.value());
-        return maskGameDirectors;
-    case CommandPermissionLevel::Admin:
-        static uint maskAdmin = baseMask & getSpPermissionMask(level.value());
-        return maskAdmin;
-    case CommandPermissionLevel::Host:
-        static uint maskHost = baseMask & getSpPermissionMask(level.value());
-        return maskHost;
-    case CommandPermissionLevel::Owner:
-        static uint maskOwner = baseMask & getSpPermissionMask(level.value());
-        return maskOwner;
-    case CommandPermissionLevel::Internal:
-        static uint maskInternal = baseMask & getSpPermissionMask(level.value());
-        return maskInternal;
-    }
-    return 0;
-}
-
 std::string CFSPManager::listOnlineSp(const Player* player) {
     using ll::i18n_literals::operator""_tr;
     std::string res = "";
@@ -352,6 +251,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
             return checkResult;
         else if (checkResult.mType == base::OperateResult::Type::Success) nocheck = true;
     }
+    bool deleteFail = false;
     if (auto it = this->mOnlineSpMap.find(spname); it != this->mOnlineSpMap.end()) {
         // check：permission
         if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Delete))
@@ -371,10 +271,14 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
             it->second->mSimPlayer->remove();
             it->second->mSimPlayer->setGameTestHelper(nullptr);
         }
-        std::filesystem::remove_all(
-            CFSP::getInstance().getSelf().getDataDir() / "simplayer"
-            / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
-        );
+        try {
+            std::filesystem::remove_all(
+                CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+                / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
+            );
+        } catch (...) {
+            deleteFail = true;
+        }
         this->mOnlineSpMap.erase(it);
     } else if (it = this->mOfflineSpMap.find(spname); it != this->mOfflineSpMap.end()) {
         // check：permission
@@ -384,11 +288,15 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
             return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
-        std::filesystem::remove_all(
-            CFSP::getInstance().getSelf().getDataDir() / "simplayer"
-            / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
-        );
-        this->mOfflineSpMap.erase(it);
+        try {
+            std::filesystem::remove_all(
+                CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+                / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
+            );
+            this->mOfflineSpMap.erase(it);
+        } catch (...) {
+            deleteFail = true;
+        }
     } else return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     for (auto group : this->mGroupMap) {
         if (auto it = group.second->mData.splist.find(spname); it != group.second->mData.splist.end()) {
@@ -396,6 +304,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
             group.second->save();
         }
     }
+    if (deleteFail) return base::OperateResult::error("manager.error.deleteFileFail"_tr());
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -407,9 +316,8 @@ base::OperateResult CFSPManager::spInfo(Player* player, std::string const& spnam
     }
     auto it = this->mOnlineSpMap.find(spname);
     if (it == this->mOnlineSpMap.end()) {
-        if (this->mOfflineSpMap.find(spname) != this->mOfflineSpMap.end())
-            return base::OperateResult::error("manager.fail.spHasOffline"_tr());
-        return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+        it = this->mOfflineSpMap.find(spname);
+        if (it == this->mOfflineSpMap.end()) return base::OperateResult::error("manager.fail.spNotExisted"_tr());
     }
     if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::None))
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());

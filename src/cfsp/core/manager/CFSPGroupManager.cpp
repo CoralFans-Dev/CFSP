@@ -31,96 +31,6 @@ namespace coral_fans::cfsp::manager {
         return res;                                                                                                    \
     }
 
-uint CFSPManager::getGroupBasePermissionMask() {
-    uint perm = 0;
-    if (this->mPermissionConfig.groupDelete.enabled) perm |= (uint)group::GroupPermission::Delete;
-    if (this->mPermissionConfig.groupAddSp.enabled) perm |= (uint)group::GroupPermission::AddSp;
-    if (this->mPermissionConfig.groupRmSp.enabled) perm |= (uint)group::GroupPermission::RmSp;
-    if (this->mPermissionConfig.groupSpawn.enabled) perm |= (uint)group::GroupPermission::Spawn;
-    if (this->mPermissionConfig.groupDespawn.enabled) perm |= (uint)group::GroupPermission::Despawn;
-    if (this->mPermissionConfig.groupRespawn.enabled) perm |= (uint)group::GroupPermission::Respawn;
-    if (this->mPermissionConfig.groupDeleteSp.enabled) perm |= (uint)group::GroupPermission::DeleteSp;
-    if (this->mPermissionConfig.groupStop.enabled) perm |= (uint)group::GroupPermission::Stop;
-    if (this->mPermissionConfig.groupDrop.enabled) perm |= (uint)group::GroupPermission::Drop;
-    if (this->mPermissionConfig.groupDropInv.enabled) perm |= (uint)group::GroupPermission::DropInv;
-    if (this->mPermissionConfig.groupSneaking.enabled) perm |= (uint)group::GroupPermission::Sneaking;
-    if (this->mPermissionConfig.groupSwimming.enabled) perm |= (uint)group::GroupPermission::Swimming;
-    if (this->mPermissionConfig.groupFlying.enabled) perm |= (uint)group::GroupPermission::Flying;
-    if (this->mPermissionConfig.groupSprinting.enabled) perm |= (uint)group::GroupPermission::Sprinting;
-    if (this->mPermissionConfig.groupAttack.enabled) perm |= (uint)group::GroupPermission::Attack;
-    if (this->mPermissionConfig.groupBuild.enabled) perm |= (uint)group::GroupPermission::Build;
-    if (this->mPermissionConfig.groupInteract.enabled) perm |= (uint)group::GroupPermission::Interact;
-    if (this->mPermissionConfig.groupJump.enabled) perm |= (uint)group::GroupPermission::Jump;
-    if (this->mPermissionConfig.groupUse.enabled) perm |= (uint)group::GroupPermission::Use;
-    if (this->mPermissionConfig.groupDestroy.enabled) perm |= (uint)group::GroupPermission::Destroy;
-    if (this->mPermissionConfig.groupChat.enabled) perm |= (uint)group::GroupPermission::Chat;
-    if (this->mPermissionConfig.groupRunCmd.enabled) perm |= (uint)group::GroupPermission::RunCmd;
-    if (this->mPermissionConfig.groupLookAt.enabled) perm |= (uint)group::GroupPermission::LookAt;
-    if (this->mPermissionConfig.groupMoveTo.enabled) perm |= (uint)group::GroupPermission::MoveTo;
-    if (this->mPermissionConfig.groupNavTo.enabled) perm |= (uint)group::GroupPermission::NavTo;
-    if (this->mPermissionConfig.groupTp.enabled) perm |= (uint)group::GroupPermission::Tp;
-    if (this->mPermissionConfig.groupSelect.enabled) perm |= (uint)group::GroupPermission::Select;
-    return perm;
-}
-
-uint CFSPManager::getGroupPermissionMask(CommandPermissionLevel level) {
-    uint perm = 0;
-    if (level >= this->mPermissionConfig.groupDelete.permission) perm |= (uint)group::GroupPermission::Delete;
-    if (level >= this->mPermissionConfig.groupAddSp.permission) perm |= (uint)group::GroupPermission::AddSp;
-    if (level >= this->mPermissionConfig.groupRmSp.permission) perm |= (uint)group::GroupPermission::RmSp;
-    if (level >= this->mPermissionConfig.groupSpawn.permission) perm |= (uint)group::GroupPermission::Spawn;
-    if (level >= this->mPermissionConfig.groupDespawn.permission) perm |= (uint)group::GroupPermission::Despawn;
-    if (level >= this->mPermissionConfig.groupRespawn.permission) perm |= (uint)group::GroupPermission::Respawn;
-    if (level >= this->mPermissionConfig.groupDeleteSp.permission) perm |= (uint)group::GroupPermission::DeleteSp;
-    if (level >= this->mPermissionConfig.groupStop.permission) perm |= (uint)group::GroupPermission::Stop;
-    if (level >= this->mPermissionConfig.groupDrop.permission) perm |= (uint)group::GroupPermission::Drop;
-    if (level >= this->mPermissionConfig.groupDropInv.permission) perm |= (uint)group::GroupPermission::DropInv;
-    if (level >= this->mPermissionConfig.groupSneaking.permission) perm |= (uint)group::GroupPermission::Sneaking;
-    if (level >= this->mPermissionConfig.groupSwimming.permission) perm |= (uint)group::GroupPermission::Swimming;
-    if (level >= this->mPermissionConfig.groupFlying.permission) perm |= (uint)group::GroupPermission::Flying;
-    if (level >= this->mPermissionConfig.groupSprinting.permission) perm |= (uint)group::GroupPermission::Sprinting;
-    if (level >= this->mPermissionConfig.groupAttack.permission) perm |= (uint)group::GroupPermission::Attack;
-    if (level >= this->mPermissionConfig.groupBuild.permission) perm |= (uint)group::GroupPermission::Build;
-    if (level >= this->mPermissionConfig.groupInteract.permission) perm |= (uint)group::GroupPermission::Interact;
-    if (level >= this->mPermissionConfig.groupJump.permission) perm |= (uint)group::GroupPermission::Jump;
-    if (level >= this->mPermissionConfig.groupUse.permission) perm |= (uint)group::GroupPermission::Use;
-    if (level >= this->mPermissionConfig.groupDestroy.permission) perm |= (uint)group::GroupPermission::Destroy;
-    if (level >= this->mPermissionConfig.groupChat.permission) perm |= (uint)group::GroupPermission::Chat;
-    if (level >= this->mPermissionConfig.groupRunCmd.permission) perm |= (uint)group::GroupPermission::RunCmd;
-    if (level >= this->mPermissionConfig.groupLookAt.permission) perm |= (uint)group::GroupPermission::LookAt;
-    if (level >= this->mPermissionConfig.groupMoveTo.permission) perm |= (uint)group::GroupPermission::MoveTo;
-    if (level >= this->mPermissionConfig.groupNavTo.permission) perm |= (uint)group::GroupPermission::NavTo;
-    if (level >= this->mPermissionConfig.groupTp.permission) perm |= (uint)group::GroupPermission::Tp;
-    if (level >= this->mPermissionConfig.groupSelect.permission) perm |= (uint)group::GroupPermission::Select;
-    return perm;
-}
-
-uint CFSPManager::getGroupPermissionMask(std::optional<CommandPermissionLevel> level) {
-    static uint baseMask = this->getGroupBasePermissionMask();
-    if (!level.has_value()) return baseMask;
-    switch (level.value()) {
-    case CommandPermissionLevel::Any:
-        static uint maskAny = baseMask & getGroupPermissionMask(level.value());
-        return maskAny;
-    case CommandPermissionLevel::GameDirectors:
-        static uint maskGameDirectors = baseMask & getGroupPermissionMask(level.value());
-        return maskGameDirectors;
-    case CommandPermissionLevel::Admin:
-        static uint maskAdmin = baseMask & getGroupPermissionMask(level.value());
-        return maskAdmin;
-    case CommandPermissionLevel::Host:
-        static uint maskHost = baseMask & getGroupPermissionMask(level.value());
-        return maskHost;
-    case CommandPermissionLevel::Owner:
-        static uint maskOwner = baseMask & getGroupPermissionMask(level.value());
-        return maskOwner;
-    case CommandPermissionLevel::Internal:
-        static uint maskInternal = baseMask & getGroupPermissionMask(level.value());
-        return maskInternal;
-    }
-    return 0;
-}
-
 base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& gname) {
     using ll::i18n_literals::operator""_tr;
     if (auto checkResult = this->canCreateGroup(player); !checkResult) return checkResult;
@@ -173,11 +83,15 @@ base::OperateResult CFSPManager::groupDelete(Player* player, std::string const& 
         && !it->second->hasPermission(player, group::GroupPermission::Delete))
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
     ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspGroup", {gname});
-    std::filesystem::remove_all(
-        CFSP::getInstance().getSelf().getDataDir() / "group"
-        / reinterpret_cast<const char8_t*>(it->second->mData.name.c_str())
-    );
     this->mGroupMap.erase(it);
+    try {
+        std::filesystem::remove_all(
+            CFSP::getInstance().getSelf().getDataDir() / "group"
+            / reinterpret_cast<const char8_t*>(it->second->mData.name.c_str())
+        );
+    } catch (...) {
+        return base::OperateResult::error("manager.error.deleteFileFail"_tr());
+    }
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -249,7 +163,7 @@ std ::vector<base::OperateResult> CFSPManager::groupInfo(Player* player, std::st
         return {base::OperateResult::error("manager.fail.permissionDenied"_tr())};
     std::vector<base::OperateResult> res;
     res.reserve(it->second->mData.splist.size());
-    for (auto& spname : it->second->mData.splist) res.emplace_back(spInfo(player, spname, true));
+    for (auto& spname : it->second->mData.splist) res.emplace_back(this->spInfo(player, spname, true));
     return res;
 }
 

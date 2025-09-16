@@ -1,7 +1,9 @@
 #include "CFSPManager.h"
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/simPlayer/SimPlayer.h"
+#include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/i18n/I18n.h"
+#include <optional>
 
 namespace coral_fans::cfsp::manager {
 bool CFSPManager::isAllowed(const Player* player) {
@@ -286,5 +288,85 @@ uint CFSPManager::getGroupPermissionMask(std::optional<CommandPermissionLevel> l
         return maskInternal;
     }
     return 0;
+}
+
+base::OperateResult CFSPManager::spPerm(
+    const Player*                         player,
+    std::string                           spname,
+    simulated_player::SimPlayerPermission perm,
+    bool                                  enable,
+    std::optional<std::string>            targetUUid
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto checkResult = targetUUid.has_value() ? this->baseCheck(player, this->mPermissionConfig.spPerm)
+                                              : this->baseCheck(player, this->mPermissionConfig.spPublicPerm);
+    if (!checkResult) return checkResult;
+    auto it = this->mOnlineSpMap.find(spname);
+    if (it == this->mOnlineSpMap.end()) {
+        it = this->mOfflineSpMap.find(spname);
+        if (it == this->mOfflineSpMap.end()) return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    }
+    if (checkResult.mType != base::OperateResult::Type::Success
+        && it->second->mSaveData.ownerUuid != player->getUuid().asString())
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    if (targetUUid.has_value()) {
+        if (enable) {
+            if (it->second->mSaveData.permission[targetUUid.value()] & (uint)perm)
+                return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
+            it->second->mSaveData.permission[targetUUid.value()] |= (uint)perm;
+        } else {
+            if (!(it->second->mSaveData.permission[targetUUid.value()] & (uint)perm))
+                return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
+            it->second->mSaveData.permission[targetUUid.value()] &= (~(uint)perm);
+        }
+    } else if (enable) {
+        if (it->second->mSaveData.publicPermission & (uint)perm)
+            return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
+        it->second->mSaveData.publicPermission |= (uint)perm;
+    } else {
+        if (!(it->second->mSaveData.publicPermission & (uint)perm))
+            return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
+        it->second->mSaveData.publicPermission &= (~(uint)perm);
+    }
+    it->second->mShouldSave = true;
+    return base::OperateResult::success("manager.success.set"_tr());
+}
+
+base::OperateResult CFSPManager::groupPerm(
+    const Player*              player,
+    std::string                spname,
+    group::GroupPermission     perm,
+    bool                       enable,
+    std::optional<std::string> targetUUid
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto checkResult = targetUUid.has_value() ? this->baseCheck(player, this->mPermissionConfig.groupPerm)
+                                              : this->baseCheck(player, this->mPermissionConfig.groupPublicPerm);
+    if (!checkResult) return checkResult;
+    auto it = this->mGroupMap.find(spname);
+    if (it == this->mGroupMap.end()) return base::OperateResult::error("manager.fail.spNotExisted"_tr());
+    if (checkResult.mType != base::OperateResult::Type::Success
+        && it->second->mData.ownerUuid != player->getUuid().asString())
+        return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    if (targetUUid == std::nullopt) {
+        if (enable) {
+            if (it->second->mData.permission[targetUUid.value()] & (uint)perm)
+                return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
+            it->second->mData.permission[targetUUid.value()] |= (uint)perm;
+        } else {
+            if (!(it->second->mData.permission[targetUUid.value()] & (uint)perm))
+                return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
+            it->second->mData.permission[targetUUid.value()] &= (~(uint)perm);
+        }
+    } else if (enable) {
+        if (it->second->mData.publicPermission & (uint)perm)
+            return base::OperateResult::error("manager.fail.targetHasHadPerm"_tr());
+        it->second->mData.publicPermission |= (uint)perm;
+    } else {
+        if (!(it->second->mData.publicPermission & (uint)perm))
+            return base::OperateResult::error("manager.fail.targetNotHavePerm"_tr());
+        it->second->mData.publicPermission &= (~(uint)perm);
+    }
+    return base::OperateResult::success("manager.success.set"_tr());
 }
 } // namespace coral_fans::cfsp::manager

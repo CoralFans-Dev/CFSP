@@ -56,12 +56,17 @@
             "selectNoFound": "假人背包中没有该物品",
             "speedSmallerThan0": "速度应不小于0",
             "groupNotExisted": "假人组不存在",
-            "spNotExistedInGroup": "假人组中没有该假人"
+            "spNotExistedInGroup": "假人组中没有该假人",
+            "targetNotSingle": "目标对象不为一",
+            "targetHasHadPerm": "目标已有该权限",
+            "targetNotHavePerm": "目标没有该权限",
+            "targetIsSp": "目标对象为假人"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
             "loseSimplayer": "Error: 假人对象丢失",
-            "runcmd": "Error: 获取minecraft对象失败"
+            "runcmd": "Error: 获取minecraft对象失败",
+            "deleteFileFail": "Error: 删除文件失败"
         },
         "info": {
             "onlineCount": "在线假人数量：{}",
@@ -147,6 +152,9 @@
             "title": "创建假人",
             "name": "假人名称 :",
             "lockUniqueId": "是否锁定UniqueId (锁定之后不会丢失与三叉戟的联系)"
+        },
+        "createGroup": {
+            "title": "创建假人组"
         },
         "operateSp": {
             "spinfo": "假人信息",

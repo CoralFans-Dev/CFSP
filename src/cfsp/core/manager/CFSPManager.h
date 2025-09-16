@@ -8,6 +8,7 @@
 #include "ll/api/base/StdInt.h"
 #include "mc/deps/core/math/Vec3.h"
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -49,6 +50,20 @@ public:
     base::OperateResult canCreateGroup(const Player*);
     uint                getSpPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
     uint                getGroupPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
+    base::OperateResult spPerm(
+        const Player*                         player,
+        std::string                           spname,
+        simulated_player::SimPlayerPermission perm,
+        bool                                  enable,
+        std::optional<std::string>            targetUUid = std::nullopt
+    );
+    base::OperateResult groupPerm(
+        const Player*              player,
+        std::string                gname,
+        group::GroupPermission     perm,
+        bool                       enable,
+        std::optional<std::string> targetUUid = std::nullopt
+    );
 
 private:
     bool tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir);
