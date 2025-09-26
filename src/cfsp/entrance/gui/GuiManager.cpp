@@ -53,6 +53,9 @@ void GuiManager::sendManagerMainMenu(Player& player) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::SimpleForm("gui.mainmenu.title"_tr());
     form.appendButton("gui.managermainmenu.splistButton"_tr(), [this](Player& player) { this->sendAllSplist(player); });
+    form.appendButton("gui.mainmenu.publicSplistButton"_tr(), [this](Player& player) {
+        this->sendPublicSplist(player);
+    });
     form.appendButton("gui.managermainmenu.grouplistButton"_tr(), [this](Player& player) {
         this->sendAllGroupList(player);
     });

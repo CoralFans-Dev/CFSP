@@ -26,7 +26,7 @@ bool CFSPManager::isAllowed(const Player* player) {
 bool CFSPManager::isManager(const Player* player) {
     return !player // 当player==null时，为控制台在执行命令
         || player->getCommandPermissionLevel() >= this->mConfig.adminPermission
-        || this->mConfig.superManagerList.contains(*player->mName);
+        || this->mConfig.superManagerList.contains(player->getUuid().asString());
 }
 
 base::OperateResult CFSPManager::baseCheck(const Player* player, config::FuncStruct func) {

@@ -1,5 +1,7 @@
 #include "ComandManager.h"
+#include "cfsp/CFSP.h"
 #include "cfsp/core/manager/CFSPManager.h"
+#include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/command/runtime/RuntimeOverload.h"
 #include "ll/api/i18n/I18n.h"
@@ -71,6 +73,50 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
                 break;
             }
             output.success("manager.success.set"_tr());
+        });
+
+    // sp <addmanager|rmmanager> <player: Player>
+    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+        "cfspManagerSettingType",
+        {
+            {"addmanager", 0},
+            {"rmmanager",  1}
+    }
+    );
+    this->command->runtimeOverload()
+        .required("type", ll::command::ParamKind::Enum, "cfspManagerSettingType")
+        .required("targetPlayer", ll::command::ParamKind::Player)
+        .execute([](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
+            if (origin.getOriginType() != CommandOriginType::DedicatedServer)
+                return output.error("command.fail.onlyDedicateServer"_tr());
+            auto targetPlayer = self["targetPlayer"].get<ll::command::ParamKind::Player>().results(origin);
+            if (targetPlayer.size() > 1) return output.error("manager.fail.targetNotSingle"_tr());
+            if (targetPlayer.data->data()[0]->isSimulatedPlayer()) return output.error("manager.fail.targetIsSp"_tr());
+            switch (self["type"].get<ll::command::ParamKind::Enum>().index) {
+            case 0:
+                if (manager::CFSPManager::getInstance()
+                        .getConfig()
+                        .superManagerList.insert(targetPlayer.data->data()[0]->getUuid().asString())
+                        .second) {
+                    ll::config::saveConfig(
+                        manager::CFSPManager::getInstance().getConfig(),
+                        cfsp::CFSP::getInstance().getSelf().getConfigDir() / "config.json"
+                    );
+                    output.success("manager.success.set"_tr());
+                } else output.error("manager.fail.targetIsManager"_tr());
+                break;
+            case 1:
+                if (manager::CFSPManager::getInstance().getConfig().superManagerList.erase(
+                        targetPlayer.data->data()[0]->getUuid().asString()
+                    )) {
+                    ll::config::saveConfig(
+                        manager::CFSPManager::getInstance().getConfig(),
+                        cfsp::CFSP::getInstance().getSelf().getConfigDir() / "config.json"
+                    );
+                    output.success("manager.success.set"_tr());
+                } else output.error("manager.fail.targetNotManager"_tr());
+                break;
+            }
         });
 
     this->registerGuiCommand();

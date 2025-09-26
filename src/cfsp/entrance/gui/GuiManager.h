@@ -4,6 +4,7 @@
 #include "cfsp/core/simPlayer/SimPlayer.h"
 #include "mc/world/actor/player/Player.h"
 #include <optional>
+#include <string>
 #include <unordered_set>
 
 namespace coral_fans::cfsp::gui {
@@ -68,6 +69,12 @@ private:
     );
     void sendSpStatusOperatorPage(Player&, std::shared_ptr<simulated_player::SimPlayer>, uint);
     void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
+    void sendSpPermPage2(
+        Player&                                      player,
+        std::shared_ptr<simulated_player::SimPlayer> cfsp,
+        std::string                                  targetPlayerName = "",
+        std::string                                  targetPlayerUuid = ""
+    );
 
 private:
     void sendAllGroupList(Player&);
@@ -111,6 +118,13 @@ private:
     );
     void sendGroupStatusOperatorPage(Player&, std::shared_ptr<group::CFSPGroup>, uint);
     void sendGroupDeleteSpConfrim(Player&, std::unordered_set<std::string>);
+    void sendGroupPermPage(Player&, std::shared_ptr<group::CFSPGroup>);
+    void sendGroupPermPage2(
+        Player&                           player,
+        std::shared_ptr<group::CFSPGroup> group,
+        std::string                       targetPlayerName = "",
+        std::string                       targetPlayerUuid = ""
+    );
 
 public:
     void sendMainMenu(Player&);

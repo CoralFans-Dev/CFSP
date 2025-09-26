@@ -1,7 +1,9 @@
 #include "cfsp/CFSP.h"
+#include "cfsp/core/helper/CFSPHelperManager.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/mod/RegisterHelper.h"
+
 
 namespace coral_fans::cfsp {
 

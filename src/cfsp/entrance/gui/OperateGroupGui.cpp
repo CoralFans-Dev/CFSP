@@ -1,21 +1,25 @@
 #include "GuiManager.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/base/Utils.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/form/CustomForm.h"
 #include "ll/api/form/ModalForm.h"
 #include "ll/api/form/SimpleForm.h"
 #include "ll/api/i18n/I18n.h"
+#include "ll/api/service/Bedrock.h"
+#include "mc/world/level/Level.h"
 #include "mc/world/phys/HitResult.h"
 #include <vector>
+
 
 namespace coral_fans::cfsp::gui {
 void GuiManager::sendOperateGroupPage(Player& player, std::shared_ptr<group::CFSPGroup> group) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::SimpleForm(group->mData.name);
     uint perm;
-    if (manager::CFSPManager::getInstance().isManager(&player))
-        perm = manager::CFSPManager::getInstance().getGroupPermissionMask();
+    bool ismanager = manager::CFSPManager::getInstance().isManager(&player);
+    if (ismanager) perm = manager::CFSPManager::getInstance().getGroupPermissionMask();
     else
         perm = (uint)group->getPermission(&player)
              & manager::CFSPManager::getInstance().getGroupPermissionMask(
@@ -163,6 +167,11 @@ void GuiManager::sendOperateGroupPage(Player& player, std::shared_ptr<group::CFS
                 }
             );
         });
+    if (group->mData.ownerUuid == player.getUuid().asString() || ismanager)
+        form.appendButton("gui.operateGroup.perm"_tr(), [this, group](Player& player) {
+            this->sendGroupPermPage(player, group);
+        });
+
     form.sendTo(player);
 }
 
@@ -655,30 +664,11 @@ void GuiManager::sendGroupLongActionOperatorPage(
 void GuiManager::sendGroupStatusOperatorPage(Player& player, std::shared_ptr<group::CFSPGroup> group, uint perm) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.status.groupTitle"_tr());
-    if (perm & (uint)group::GroupPermission::Sneaking)
-        form.appendDropdown(
-            "sneaking",
-            "gui.status.sneaking"_tr(),
-            std::vector<std::string>{"gui.status.sneak"_tr(), "gui.status.releasesneak"_tr()}
-        );
-    if (perm & (uint)group::GroupPermission::Swimming)
-        form.appendDropdown(
-            "swimming",
-            "gui.status.swimming"_tr(),
-            std::vector<std::string>{"gui.status.swim"_tr(), "gui.status.releaseswim"_tr()}
-        );
-    if (perm & (uint)group::GroupPermission::Flying)
-        form.appendDropdown(
-            "flying",
-            "gui.status.flying"_tr(),
-            std::vector<std::string>{"gui.status.fly"_tr(), "gui.status.releasefly"_tr()}
-        );
+    if (perm & (uint)group::GroupPermission::Sneaking) form.appendToggle("sneaking", "gui.status.sneaking"_tr(), false);
+    if (perm & (uint)group::GroupPermission::Swimming) form.appendToggle("swimming", "gui.status.swimming"_tr(), false);
+    if (perm & (uint)group::GroupPermission::Flying) form.appendToggle("flying", "gui.status.flying"_tr(), false);
     if (perm & (uint)group::GroupPermission::Sprinting)
-        form.appendDropdown(
-            "sprinting",
-            "gui.status.sprinting"_tr(),
-            std::vector<std::string>{"gui.status.sprint"_tr(), "gui.status.releasesprint"_tr()}
-        );
+        form.appendToggle("sprinting", "gui.status.sprinting"_tr(), false);
     form.sendTo(
         player,
         [this,
@@ -687,57 +677,266 @@ void GuiManager::sendGroupStatusOperatorPage(Player& player, std::shared_ptr<gro
                 return this->sendOperateGroupPage(player, group);
             if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
 
-            auto it = elements.value().find("sneaking");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto sneaking = std::get<std::string>(it->second);
+            if (auto it = elements.value().find("sneaking");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSneaking(&player, group->mData.name, true))
+                        perRes.sendTo(player);
+                } else
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSneaking(&player, group->mData.name, false))
+                        perRes.sendTo(player);
+            }
 
-            it = elements.value().find("swimming");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto swimming = std::get<std::string>(it->second);
+            if (auto it = elements.value().find("swimming");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSwimming(&player, group->mData.name, true))
+                        perRes.sendTo(player);
+                } else
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSwimming(&player, group->mData.name, false))
+                        perRes.sendTo(player);
+            }
 
-            it = elements.value().find("flying");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto flying = std::get<std::string>(it->second);
+            if (auto it = elements.value().find("flying");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupFlying(&player, group->mData.name, true))
+                        perRes.sendTo(player);
+                } else
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupFlying(&player, group->mData.name, false))
+                        perRes.sendTo(player);
+            }
 
-            it = elements.value().find("sprinting");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto sprinting = std::get<std::string>(it->second);
+            if (auto it = elements.value().find("sprinting");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSprinting(&player, group->mData.name, true))
+                        perRes.sendTo(player);
+                } else
+                    for (auto& perRes :
+                         manager::CFSPManager::getInstance().groupSprinting(&player, group->mData.name, false))
+                        perRes.sendTo(player);
+            }
+        }
+    );
+}
 
-            if (sneaking == "gui.status.sneak"_tr())
-                for (auto& perRes : manager::CFSPManager::getInstance().groupSneaking(&player, group->mData.name, true))
-                    perRes.sendTo(player);
-            else if (sneaking == "gui.status.releasesneak"_tr())
-                for (auto& perRes :
-                     manager::CFSPManager::getInstance().groupSneaking(&player, group->mData.name, false))
-                    perRes.sendTo(player);
+void GuiManager::sendGroupPermPage(Player& player, std::shared_ptr<group::CFSPGroup> group) {
+    using ll::i18n_literals::operator""_tr;
+    std::vector<std::pair<std::string, std::string>> splist;
+    auto                                             level = ll::service::getLevel();
+    if (level.has_value())
+        level->forEachPlayer([&splist](Player& player) {
+            splist.emplace_back(std::make_pair(player.mName, player.getUuid().asString()));
+            return true;
+        });
+    for (auto i : group->mData.permission)
+        splist.emplace_back(std::make_pair(base::utils::tryGetPlayerName(i.first), i.first));
+    std::sort(splist.begin(), splist.end());
 
-            if (swimming == "gui.status.swim"_tr())
-                for (auto& perRes : manager::CFSPManager::getInstance().groupSwimming(&player, group->mData.name, true))
-                    perRes.sendTo(player);
-            else if (swimming == "gui.status.releaseswim"_tr())
-                for (auto& perRes :
-                     manager::CFSPManager::getInstance().groupSwimming(&player, group->mData.name, false))
-                    perRes.sendTo(player);
+    auto form = ll::form::SimpleForm("gui.perm.groupTitle"_tr());
+    int  size = (int)splist.size();
+    if (!size) {
+        form.appendButton(splist[0].first, [this, group, targetPlayer = splist[0]](Player& player) {
+            this->sendGroupPermPage2(player, group, targetPlayer.first, targetPlayer.second);
+        });
+        for (int i = 1; i < size; i++)
+            if (splist[i] != splist[i - 1])
+                form.appendButton(splist[i].first, [this, group, targetPlayer = splist[i]](Player& player) {
+                    this->sendGroupPermPage2(player, group, targetPlayer.first, targetPlayer.second);
+                });
+    }
+    form.appendButton("gui.perm.publicGroup"_tr(), [this, group](Player& player) {
+        this->sendGroupPermPage2(player, group);
+    });
+    form.sendTo(player, [this, group](Player& player, int, ll::form::FormCancelReason cancelReason) {
+        if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+            this->sendOperateGroupPage(player, group);
+    });
+}
 
-            if (flying == "gui.status.fly"_tr())
-                for (auto& perRes : manager::CFSPManager::getInstance().groupFlying(&player, group->mData.name, true))
-                    perRes.sendTo(player);
-            else if (flying == "gui.status.releasefly"_tr())
-                for (auto& perRes : manager::CFSPManager::getInstance().groupFlying(&player, group->mData.name, false))
-                    perRes.sendTo(player);
+void GuiManager::sendGroupPermPage2(
+    Player&                           player,
+    std::shared_ptr<group::CFSPGroup> group,
+    std::string                       targetPlayerName,
+    std::string                       targetPlayerUuid
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.perm.groupTitle2"_tr(
+        group->mData.name,
+        targetPlayerName != "" ? targetPlayerName : "gui.perm.publicGroup"_tr()
+    ));
 
-            if (sprinting == "gui.status.sprint"_tr())
-                for (auto& perRes :
-                     manager::CFSPManager::getInstance().groupSprinting(&player, group->mData.name, true))
-                    perRes.sendTo(player);
-            else if (sprinting == "gui.status.releasesprint"_tr())
-                for (auto& perRes :
-                     manager::CFSPManager::getInstance().groupSprinting(&player, group->mData.name, false))
-                    perRes.sendTo(player);
+    uint perm = 0;
+    if (targetPlayerName == "") perm = group->mData.publicPermission;
+    else {
+        auto it = group->mData.permission.find(targetPlayerUuid);
+        if (it != group->mData.permission.end()) perm = it->second;
+    }
+
+    form.appendToggle("addSp", "gui.perm.addSp"_tr(), perm & (uint)group::GroupPermission::AddSp);
+    form.appendToggle("rmSp", "gui.perm.rmSp"_tr(), perm & (uint)group::GroupPermission::RmSp);
+    form.appendToggle("delete", "gui.perm.delete"_tr(), perm & (uint)group::GroupPermission::Delete);
+    form.appendToggle("spawn", "gui.perm.spawn"_tr(), perm & (uint)group::GroupPermission::Spawn);
+    form.appendToggle("despawn", "gui.perm.despawn"_tr(), perm & (uint)group::GroupPermission::Despawn);
+    form.appendToggle("respawn", "gui.perm.respawn"_tr(), perm & (uint)group::GroupPermission::Respawn);
+    form.appendToggle("deleteSp", "gui.perm.deleteSp"_tr(), perm & (uint)group::GroupPermission::DeleteSp);
+    form.appendToggle("stop", "gui.perm.stop"_tr(), perm & (uint)group::GroupPermission::Stop);
+    form.appendToggle("drop", "gui.perm.drop"_tr(), perm & (uint)group::GroupPermission::Drop);
+    form.appendToggle("dropInv", "gui.perm.dropInv"_tr(), perm & (uint)group::GroupPermission::DropInv);
+    form.appendToggle("sneaking", "gui.perm.sneaking"_tr(), perm & (uint)group::GroupPermission::Sneaking);
+    form.appendToggle("dwimming", "gui.perm.dwimming"_tr(), perm & (uint)group::GroupPermission::Swimming);
+    form.appendToggle("flying", "gui.perm.flying"_tr(), perm & (uint)group::GroupPermission::Flying);
+    form.appendToggle("sprinting", "gui.perm.sprinting"_tr(), perm & (uint)group::GroupPermission::Sprinting);
+    form.appendToggle("attack", "gui.perm.attack"_tr(), perm & (uint)group::GroupPermission::Attack);
+    form.appendToggle("build", "gui.perm.build"_tr(), perm & (uint)group::GroupPermission::Build);
+    form.appendToggle("interact", "gui.perm.interact"_tr(), perm & (uint)group::GroupPermission::Interact);
+    form.appendToggle("jump", "gui.perm.jump"_tr(), perm & (uint)group::GroupPermission::Jump);
+    form.appendToggle("use", "gui.perm.use"_tr(), perm & (uint)group::GroupPermission::Use);
+    form.appendToggle("destroy", "gui.perm.destroy"_tr(), perm & (uint)group::GroupPermission::Destroy);
+    form.appendToggle("chat", "gui.perm.chat"_tr(), perm & (uint)group::GroupPermission::Chat);
+    form.appendToggle("runCmd", "gui.perm.runCmd"_tr(), perm & (uint)group::GroupPermission::RunCmd);
+    form.appendToggle("lookAt", "gui.perm.lookAt"_tr(), perm & (uint)group::GroupPermission::LookAt);
+    form.appendToggle("moveTo", "gui.perm.moveTo"_tr(), perm & (uint)group::GroupPermission::MoveTo);
+    form.appendToggle("navTo", "gui.perm.navTo"_tr(), perm & (uint)group::GroupPermission::NavTo);
+    form.appendToggle("tp", "gui.perm.tp"_tr(), perm & (uint)group::GroupPermission::Tp);
+    form.appendToggle("select", "gui.perm.select"_tr(), perm & (uint)group::GroupPermission::Select);
+
+    form.sendTo(
+        player,
+        [this, group, targetPlayerUuid](
+            Player&                           player,
+            ll::form::CustomFormResult const& elements,
+            ll::form::FormCancelReason        cancelReason
+        ) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendGroupPermPage(player, group);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            uint newPerm = 0;
+
+            if (auto it = elements.value().find("addSp");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::AddSp;
+
+            if (auto it = elements.value().find("rmSp");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::RmSp;
+
+            if (auto it = elements.value().find("delete");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Delete;
+
+            if (auto it = elements.value().find("spawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Spawn;
+
+            if (auto it = elements.value().find("despawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Despawn;
+
+            if (auto it = elements.value().find("respawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Respawn;
+
+            if (auto it = elements.value().find("deleteSp");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::DeleteSp;
+
+            if (auto it = elements.value().find("stop");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Stop;
+
+            if (auto it = elements.value().find("drop");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Drop;
+
+            if (auto it = elements.value().find("dropInv");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::DropInv;
+
+            if (auto it = elements.value().find("sneaking");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Sneaking;
+
+            if (auto it = elements.value().find("dwimming");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Swimming;
+
+            if (auto it = elements.value().find("flying");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Flying;
+
+            if (auto it = elements.value().find("sprinting");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Sprinting;
+
+            if (auto it = elements.value().find("attack");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Attack;
+
+            if (auto it = elements.value().find("build");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Build;
+
+            if (auto it = elements.value().find("interact");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Interact;
+
+            if (auto it = elements.value().find("jump");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Jump;
+
+            if (auto it = elements.value().find("use");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Use;
+
+            if (auto it = elements.value().find("destroy");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Destroy;
+
+            if (auto it = elements.value().find("chat");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Chat;
+
+            if (auto it = elements.value().find("runCmd");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::RunCmd;
+
+            if (auto it = elements.value().find("lookAt");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::LookAt;
+
+            if (auto it = elements.value().find("moveTo");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::MoveTo;
+
+            if (auto it = elements.value().find("navTo");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::NavTo;
+
+            if (auto it = elements.value().find("tp");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Tp;
+
+            if (auto it = elements.value().find("select");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)group::GroupPermission::Select;
+
+            if (targetPlayerUuid == "") group->mData.publicPermission = newPerm;
+            else if (newPerm) group->mData.permission[targetPlayerUuid] = newPerm;
+            else if (auto it = group->mData.permission.find(targetPlayerUuid); it != group->mData.permission.end())
+                group->mData.permission.erase(it);
+            group->save();
+
+            base::OperateResult::success("manager.success.operate"_tr()).sendTo(player);
         }
     );
 }

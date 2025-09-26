@@ -141,7 +141,12 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
             if (!this->mSimPlayer) [[unlikely]]
                 return false;
             if (!_long && t >= (unsigned long long)interval) {
-                this->mSimPlayer->simulateDestroyLookAt();
+                auto hit = this->mSimPlayer->traceRay(5.25f);
+                if (hit.mType == HitResultType::Tile)
+                    this->mSimPlayer->simulateDestroyBlock(
+                        hit.mBlock,
+                        static_cast<ScriptModuleMinecraft::ScriptFacing>(hit.mFacing)
+                    );
                 return true;
             }
             auto index = t % (interval + _long);
@@ -150,10 +155,12 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                 return t / (interval + _long) != (unsigned long long)times;
             }
             if (index >= (unsigned long long)interval) {
-                const auto& hit = this->mSimPlayer->traceRay(5.25f);
-                if (hit.mType == HitResultType::Tile) {
-                    this->mSimPlayer->simulateDestroyLookAt();
-                }
+                auto hit = this->mSimPlayer->traceRay(5.25f);
+                if (hit.mType == HitResultType::Tile)
+                    this->mSimPlayer->simulateDestroyBlock(
+                        hit.mBlock,
+                        static_cast<ScriptModuleMinecraft::ScriptFacing>(hit.mFacing)
+                    );
             }
             return true;
         });

@@ -115,6 +115,7 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     if (player.has_value())
         this->mSaveData.lastSpawnerUuid = player.value() ? player.value()->getUuid().asString() : "";
     this->mSaveData.isOnline = true;
+    this->mShouldSave        = true;
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 

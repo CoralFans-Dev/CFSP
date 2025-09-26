@@ -25,7 +25,7 @@ base::OperateResult SimPlayer ::invInfo() {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
-    std::string res = '\n' + "manager.info.spname"_tr() + this->mSaveData.name + "\n  " + "manager.info.spOffhand"_tr();
+    std::string res = '\n' + "manager.info.spname"_tr() + this->mSaveData.name + "\n" + "manager.info.spOffhand"_tr();
     auto&       _itemstack  = this->mSimPlayer->getOffhandSlot();
     res                    += "§6" + _itemstack.getName() + "§2(" + std::to_string(_itemstack.mCount) + ")§r";
     res                    += "  " + "manager.info.spEquip"_tr();

@@ -196,10 +196,10 @@ std::vector<std::string> CFSPManager::getGroupNamesSorted(const Player* player) 
 std::vector<std::string> CFSPManager::getPublicSpNamesSorted() {
     std::vector<std::string> res;
     for (auto i : mOnlineSpMap) {
-        if (i.second->mSaveData.permission.contains("")) res.emplace_back(i.first);
+        if (i.second->mSaveData.publicPermission) res.emplace_back(i.first);
     }
     for (auto i : mOfflineSpMap) {
-        if (i.second->mSaveData.permission.contains("")) res.emplace_back(i.first);
+        if (i.second->mSaveData.publicPermission) res.emplace_back(i.first);
     }
     std::sort(res.begin(), res.end());
     return res;

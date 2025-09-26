@@ -1,5 +1,6 @@
 #include "GuiManager.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/base/Utils.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/form/CustomForm.h"
@@ -11,9 +12,12 @@
 #include "mc/world/actor/player/LayeredAbilities.h"
 #include "mc/world/level/Level.h"
 #include "mc/world/phys/HitResult.h"
+#include <algorithm>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
+
 
 namespace coral_fans::cfsp::gui {
 
@@ -21,8 +25,8 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::SimpleForm(cfsp->mSaveData.name);
     uint perm;
-    if (manager::CFSPManager::getInstance().isManager(&player))
-        perm = manager::CFSPManager::getInstance().getSpPermissionMask();
+    bool ismanager = manager::CFSPManager::getInstance().isManager(&player);
+    if (ismanager) perm = manager::CFSPManager::getInstance().getSpPermissionMask();
     else
         perm = (uint)cfsp->getPermission(&player)
              & manager::CFSPManager::getInstance().getSpPermissionMask(
@@ -210,6 +214,11 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                 }
             );
         });
+    if (cfsp->mSaveData.ownerUuid == player.getUuid().asString() || ismanager)
+        form.appendButton("gui.operateSp.perm"_tr(), [this, cfsp](Player& player) {
+            this->sendSpPermPage(player, cfsp);
+        });
+
     form.sendTo(player);
 }
 
@@ -692,33 +701,25 @@ void GuiManager::sendSpStatusOperatorPage(
     if (!cfsp->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr()).sendTo(player);
     auto form = ll::form::CustomForm("gui.status.spTitle"_tr());
     if (perm & (uint)simulated_player::SimPlayerPermission::Sneaking)
-        form.appendDropdown(
+        form.appendToggle(
             "sneaking",
             "gui.status.sneaking"_tr(),
-            std::vector<std::string>{"gui.status.sneak"_tr(), "gui.status.releasesneak"_tr()},
-            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sneaking) ? 0 : 1
+            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sneaking)
         );
     if (perm & (uint)simulated_player::SimPlayerPermission::Swimming)
-        form.appendDropdown(
+        form.appendToggle(
             "swimming",
             "gui.status.swimming"_tr(),
-            std::vector<std::string>{"gui.status.swim"_tr(), "gui.status.releaseswim"_tr()},
-            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Swimming) ? 0 : 1
+            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Swimming)
         );
     if (perm & (uint)simulated_player::SimPlayerPermission::Flying
         && cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal)
-        form.appendDropdown(
-            "flying",
-            "gui.status.flying"_tr(),
-            std::vector<std::string>{"gui.status.fly"_tr(), "gui.status.releasefly"_tr()},
-            cfsp->mSimPlayer->isFlying() ? 0 : 1
-        );
+        form.appendToggle("flying", "gui.status.flying"_tr(), cfsp->mSimPlayer->isFlying());
     if (perm & (uint)simulated_player::SimPlayerPermission::Sprinting)
-        form.appendDropdown(
+        form.appendToggle(
             "sprinting",
             "gui.status.sprinting"_tr(),
-            std::vector<std::string>{"gui.status.sprint"_tr(), "gui.status.releasesprint"_tr()},
-            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sprinting) ? 0 : 1
+            cfsp->mSimPlayer->getStatusFlag(ActorFlags::Sprinting)
         );
     form.sendTo(
         player,
@@ -730,62 +731,279 @@ void GuiManager::sendSpStatusOperatorPage(
 
             if (!cfsp->mSimPlayer) return base::OperateResult::error("manager.error.loseSimplayer"_tr()).sendTo(player);
 
-            auto it = elements.value().find("sneaking");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto sneaking = std::get<std::string>(it->second);
-
-            it = elements.value().find("swimming");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto swimming = std::get<std::string>(it->second);
-
-            std::string flying;
-            if (cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
-                it = elements.value().find("flying");
-                if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                    return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-                flying = std::get<std::string>(it->second);
+            if (auto it = elements.value().find("sneaking");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, true).sendTo(player);
+                } else
+                    manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, false).sendTo(player);
             }
 
-            it = elements.value().find("sprinting");
-            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
-                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
-            auto sprinting = std::get<std::string>(it->second);
-
-            if (sneaking == "gui.status.sneak"_tr())
-                manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (sneaking == "gui.status.releasesneak"_tr())
-                manager::CFSPManager::getInstance().spSneaking(&player, cfsp->mSaveData.name, false).sendTo(player);
-
-            if (swimming == "gui.status.swim"_tr())
-                manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (swimming == "gui.status.releaseswim"_tr())
-                manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, false).sendTo(player);
-
-            if (cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal) {
-                if (flying == "gui.status.fly"_tr())
-                    manager::CFSPManager::getInstance().spFlying(&player, cfsp->mSaveData.name, true).sendTo(player);
-                else if (flying == "gui.status.releasefly"_tr())
-                    manager::CFSPManager::getInstance().spFlying(&player, cfsp->mSaveData.name, false).sendTo(player);
+            if (auto it = elements.value().find("swimming");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, true).sendTo(player);
+                } else
+                    manager::CFSPManager::getInstance().spSwimming(&player, cfsp->mSaveData.name, false).sendTo(player);
             }
 
-            if (sprinting == "gui.status.sprint"_tr())
-                manager::CFSPManager::getInstance().spSprinting(&player, cfsp->mSaveData.name, true).sendTo(player);
-            else if (sprinting == "gui.status.releasesprint"_tr())
-                manager::CFSPManager::getInstance().spSprinting(&player, cfsp->mSaveData.name, false).sendTo(player);
+            if (cfsp->mSimPlayer->getAbilities().getAbility(AbilitiesIndex::MayFly).mValue->mBoolVal)
+                if (auto it = elements.value().find("flying");
+                    it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                    if ((bool)std::get<uint64>(it->second)) {
+                        manager::CFSPManager::getInstance()
+                            .spFlying(&player, cfsp->mSaveData.name, true)
+                            .sendTo(player);
+                    } else
+                        manager::CFSPManager::getInstance()
+                            .spFlying(&player, cfsp->mSaveData.name, false)
+                            .sendTo(player);
+                }
+
+            if (auto it = elements.value().find("sprinting");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second)) {
+                if ((bool)std::get<uint64>(it->second)) {
+                    manager::CFSPManager::getInstance().spSprinting(&player, cfsp->mSaveData.name, true).sendTo(player);
+                } else
+                    manager::CFSPManager::getInstance()
+                        .spSprinting(&player, cfsp->mSaveData.name, false)
+                        .sendTo(player);
+            }
         }
     );
 }
 
-void sendSpPermPage(Player&, std::shared_ptr<simulated_player::SimPlayer>) {
+void GuiManager::sendSpPermPage(Player& player, std::shared_ptr<simulated_player::SimPlayer> cfsp) {
     using ll::i18n_literals::operator""_tr;
-    std::vector<std::string> splist;
-    auto                     level = ll::service::getLevel();
+    std::vector<std::pair<std::string, std::string>> splist;
+    auto                                             level = ll::service::getLevel();
     if (level.has_value())
         level->forEachPlayer([&splist](Player& player) {
-            splist.emplace_back(player.mName);
+            splist.emplace_back(std::make_pair(player.mName, player.getUuid().asString()));
             return true;
         });
+    for (auto i : cfsp->mSaveData.permission)
+        splist.emplace_back(std::make_pair(base::utils::tryGetPlayerName(i.first), i.first));
+    std::sort(splist.begin(), splist.end());
+
+    auto form = ll::form::SimpleForm("gui.perm.spTitle"_tr());
+    int  size = (int)splist.size();
+    if (!size) {
+        form.appendButton(splist[0].first, [this, cfsp, targetPlayer = splist[0]](Player& player) {
+            this->sendSpPermPage2(player, cfsp, targetPlayer.first, targetPlayer.second);
+        });
+        for (int i = 1; i < size; i++)
+            if (splist[i] != splist[i - 1])
+                form.appendButton(splist[i].first, [this, cfsp, targetPlayer = splist[i]](Player& player) {
+                    this->sendSpPermPage2(player, cfsp, targetPlayer.first, targetPlayer.second);
+                });
+    }
+    form.appendButton("gui.perm.publicSp"_tr(), [this, cfsp](Player& player) { this->sendSpPermPage2(player, cfsp); });
+    form.sendTo(player, [this, cfsp](Player& player, int, ll::form::FormCancelReason cancelReason) {
+        if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+            this->sendOperateSpPage(player, cfsp);
+    });
+}
+
+void GuiManager::sendSpPermPage2(
+    Player&                                      player,
+    std::shared_ptr<simulated_player::SimPlayer> cfsp,
+    std::string                                  targetPlayerName,
+    std::string                                  targetPlayerUuid
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.perm.spTitle2"_tr(
+        cfsp->mSaveData.name,
+        targetPlayerName != "" ? targetPlayerName : "gui.perm.publicSp"_tr()
+    ));
+
+    uint perm = 0;
+    if (targetPlayerName == "") perm = cfsp->mSaveData.publicPermission;
+    else {
+        auto it = cfsp->mSaveData.permission.find(targetPlayerUuid);
+        if (it != cfsp->mSaveData.permission.end()) perm = it->second;
+    }
+
+    form.appendToggle("spawn", "gui.perm.spawn"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Spawn);
+    form.appendToggle("despawn", "gui.perm.despawn"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Despawn);
+    form.appendToggle("respawn", "gui.perm.respawn"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Respawn);
+    form.appendToggle("delete", "gui.perm.delete"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Delete);
+    form.appendToggle("stop", "gui.perm.stop"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Stop);
+    form.appendToggle("drop", "gui.perm.drop"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Drop);
+    form.appendToggle("dropInv", "gui.perm.dropInv"_tr(), perm & (uint)simulated_player::SimPlayerPermission::DropInv);
+    form.appendToggle("swap", "gui.perm.swap"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Swap);
+    form.appendToggle(
+        "sneaking",
+        "gui.perm.sneaking"_tr(),
+        perm & (uint)simulated_player::SimPlayerPermission::Sneaking
+    );
+    form.appendToggle(
+        "swimming",
+        "gui.perm.swimming"_tr(),
+        perm & (uint)simulated_player::SimPlayerPermission::Swimming
+    );
+    form.appendToggle("flying", "gui.perm.flying"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Flying);
+    form.appendToggle(
+        "sprinting",
+        "gui.perm.sprinting"_tr(),
+        perm & (uint)simulated_player::SimPlayerPermission::Sprinting
+    );
+    form.appendToggle("attack", "gui.perm.attack"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Attack);
+    form.appendToggle("build", "gui.perm.build"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Build);
+    form.appendToggle(
+        "interact",
+        "gui.perm.interact"_tr(),
+        perm & (uint)simulated_player::SimPlayerPermission::Interact
+    );
+    form.appendToggle("jump", "gui.perm.jump"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Jump);
+    form.appendToggle("use", "gui.perm.use"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Use);
+    form.appendToggle("destroy", "gui.perm.destroy"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Destroy);
+    form.appendToggle("chat", "gui.perm.chat"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Chat);
+    form.appendToggle("runCmd", "gui.perm.runCmd"_tr(), perm & (uint)simulated_player::SimPlayerPermission::RunCmd);
+    form.appendToggle("select", "gui.perm.select"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Select);
+    form.appendToggle("lookAt", "gui.perm.lookAt"_tr(), perm & (uint)simulated_player::SimPlayerPermission::LookAt);
+    form.appendToggle("moveTo", "gui.perm.moveTo"_tr(), perm & (uint)simulated_player::SimPlayerPermission::MoveTo);
+    form.appendToggle("navTo", "gui.perm.navTo"_tr(), perm & (uint)simulated_player::SimPlayerPermission::NavTo);
+    form.appendToggle("tp", "gui.perm.tp"_tr(), perm & (uint)simulated_player::SimPlayerPermission::Tp);
+    form.appendToggle(
+        "beAddedToGroup",
+        "gui.perm.beAddedToGroup"_tr(),
+        perm & (uint)simulated_player::SimPlayerPermission::BeAddedToGroup
+    );
+
+    form.sendTo(
+        player,
+        [this, cfsp, targetPlayerUuid](
+            Player&                           player,
+            ll::form::CustomFormResult const& elements,
+            ll::form::FormCancelReason        cancelReason
+        ) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendSpPermPage(player, cfsp);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            uint newPerm = 0;
+
+            if (auto it = elements.value().find("spawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Spawn;
+
+            if (auto it = elements.value().find("despawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Despawn;
+
+            if (auto it = elements.value().find("respawn");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Respawn;
+
+            if (auto it = elements.value().find("delete");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Delete;
+
+            if (auto it = elements.value().find("stop");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Stop;
+
+            if (auto it = elements.value().find("drop");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Drop;
+
+            if (auto it = elements.value().find("dropInv");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::DropInv;
+
+            if (auto it = elements.value().find("swap");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Swap;
+
+            if (auto it = elements.value().find("sneaking");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second))
+                    newPerm |= (uint)simulated_player::SimPlayerPermission::Sneaking;
+
+            if (auto it = elements.value().find("swimming");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second))
+                    newPerm |= (uint)simulated_player::SimPlayerPermission::Swimming;
+
+            if (auto it = elements.value().find("flying");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Flying;
+
+            if (auto it = elements.value().find("sprinting");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second))
+                    newPerm |= (uint)simulated_player::SimPlayerPermission::Sprinting;
+
+            if (auto it = elements.value().find("attack");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Attack;
+
+            if (auto it = elements.value().find("build");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Build;
+
+            if (auto it = elements.value().find("interact");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second))
+                    newPerm |= (uint)simulated_player::SimPlayerPermission::Interact;
+
+            if (auto it = elements.value().find("jump");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Jump;
+
+            if (auto it = elements.value().find("use");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Use;
+
+            if (auto it = elements.value().find("destroy");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Destroy;
+
+            if (auto it = elements.value().find("chat");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Chat;
+
+            if (auto it = elements.value().find("runCmd");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::RunCmd;
+
+            if (auto it = elements.value().find("select");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Select;
+
+            if (auto it = elements.value().find("lookAt");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::LookAt;
+
+            if (auto it = elements.value().find("moveTo");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::MoveTo;
+
+            if (auto it = elements.value().find("navTo");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::NavTo;
+
+            if (auto it = elements.value().find("tp");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second)) newPerm |= (uint)simulated_player::SimPlayerPermission::Tp;
+
+            if (auto it = elements.value().find("beAddedToGroup");
+                it != elements.value().end() && std::holds_alternative<uint64>(it->second))
+                if ((bool)std::get<uint64>(it->second))
+                    newPerm |= (uint)simulated_player::SimPlayerPermission::BeAddedToGroup;
+
+
+            if (targetPlayerUuid == "") cfsp->mSaveData.publicPermission = newPerm;
+            else if (newPerm) cfsp->mSaveData.permission[targetPlayerUuid] = newPerm;
+            else if (auto it = cfsp->mSaveData.permission.find(targetPlayerUuid);
+                     it != cfsp->mSaveData.permission.end())
+                cfsp->mSaveData.permission.erase(it);
+
+            cfsp->mShouldSave = true;
+
+            base::OperateResult::success("manager.success.operate"_tr()).sendTo(player);
+        }
+    );
 }
 } // namespace coral_fans::cfsp::gui
