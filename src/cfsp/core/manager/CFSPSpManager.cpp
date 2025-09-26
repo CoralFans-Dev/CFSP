@@ -50,7 +50,7 @@ std::string CFSPManager::listOnlineSp(const Player* player) {
             res += "manager.info.onlineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
-                cfsp.second->mSimPlayer->getFeetPos().toJsonString()
+                cfsp.second->mSimPlayer->getFeetPos().toString()
             );
         return res;
     }
@@ -61,7 +61,7 @@ std::string CFSPManager::listOnlineSp(const Player* player) {
             res += "manager.info.onlineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
-                cfsp.second->mSimPlayer->getFeetPos().toJsonString()
+                cfsp.second->mSimPlayer->getFeetPos().toString()
             );
             count++;
         }
@@ -78,7 +78,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
             res += "manager.info.offlineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
-                cfsp.second->mSimPlayer->getFeetPos().toJsonString()
+                cfsp.second->mSimPlayer->getFeetPos().toString()
             );
         return res;
     }
@@ -89,7 +89,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
             res += "manager.info.oflineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
-                cfsp.second->mSimPlayer->getFeetPos().toJsonString()
+                cfsp.second->mSimPlayer->getFeetPos().toString()
             );
             count++;
         }

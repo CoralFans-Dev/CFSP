@@ -157,7 +157,7 @@ base::OperateResult SimPlayer::info() {
          + "\n  ";
     if (this->mSimPlayer) {
         res += "manager.info.spPos"_tr() + base::utils::getDimName(this->mSimPlayer->getDimensionId()) + " "
-             + this->mSimPlayer->getPosition().toJsonString() + "\n  ";
+             + this->mSimPlayer->getPosition().toString() + "\n  ";
         res += "manager.info.spRespawnpos"_tr()
              + base::utils::getDimName(this->mSimPlayer->mPlayerRespawnPoint->mDimension->id) + " "
              + this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
