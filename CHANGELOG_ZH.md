@@ -5,7 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.7.0] - 2025-7-26
+## [3.0.0] - 2025-9-26
+
+### Added
+
++ 项目重构
++ 更新假人/假人组权限系统，现在假人所有的功能都有独立的权限，且可以设置公共权限
+
+### Changed
+
++ 假人移动时不再锁定视角（但是寻路仍会）
++ 假人移动/寻路新增参数speed，可以调节假人的移动速度
++ 假人执行操作现在可以进行持续操作，需将需要的参数times或long设置为0
++ 现在假人数据使用json与nbt进行保存，可以直接在插件目录的data文件夹下直接查看假人数据
+
+### Removed
+
++ 暂时移除假人脚本系统
+
+### Fixed
+
++ 修复了假人数据概率丢失的问题
+
+## [2.7.0] - 2025-8-26
 
 ### Added
 
