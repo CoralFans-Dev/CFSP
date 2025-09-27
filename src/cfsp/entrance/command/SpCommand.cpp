@@ -579,6 +579,7 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
+    // sp p perm <name: cfspSplist> <permType: cfspSpPermType> <player: player> <enable: bool>
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspSpPermType",
         {
@@ -610,7 +611,6 @@ void ComandManager::registerSpComand() {
             {"BeAddedToGroup", 25},
     }
     );
-    // sp p perm <name: cfspSplist> <permType: cfspSpPermType> <player: player> <enable: bool>
     this->command->runtimeOverload()
         .text("p")
         .text("perm")

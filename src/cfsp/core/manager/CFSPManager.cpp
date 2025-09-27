@@ -32,11 +32,29 @@ bool CFSPManager::getAutoRespawn() { return this->mConfig.autoRespawn; }
 
 bool CFSPManager::getAutoDespawn() { return this->mConfig.autoDespawn; }
 
-void CFSPManager::setAutoJoin(bool isOpen) { this->mConfig.autoJoin = isOpen; }
+void CFSPManager::setAutoJoin(bool isOpen) {
+    this->mConfig.autoJoin = isOpen;
+    ll::config::saveConfig(
+        manager::CFSPManager::getInstance().getConfig(),
+        cfsp::CFSP::getInstance().getSelf().getConfigDir() / "config.json"
+    );
+}
 
-void CFSPManager::setAutoRespawn(bool isOpen) { this->mConfig.autoRespawn = isOpen; }
+void CFSPManager::setAutoRespawn(bool isOpen) {
+    this->mConfig.autoRespawn = isOpen;
+    ll::config::saveConfig(
+        manager::CFSPManager::getInstance().getConfig(),
+        cfsp::CFSP::getInstance().getSelf().getConfigDir() / "config.json"
+    );
+}
 
-void CFSPManager::setAutoDespawn(bool isOpen) { this->mConfig.autoDespawn = isOpen; }
+void CFSPManager::setAutoDespawn(bool isOpen) {
+    this->mConfig.autoDespawn = isOpen;
+    ll::config::saveConfig(
+        manager::CFSPManager::getInstance().getConfig(),
+        cfsp::CFSP::getInstance().getSelf().getConfigDir() / "config.json"
+    );
+}
 
 bool CFSPManager::tryCreateDiretory(const std::filesystem::path& basePath, const std::string& dir) {
     if (dir.empty()) return false;
@@ -222,12 +240,21 @@ std::vector<std::string> CFSPManager::getAllGroupNamesSorted() {
 
 std::vector<std::string> CFSPManager::getCanBeAddedSpList(const Player* player) {
     std::vector<std::string> res;
+    auto                     uuid = player->getUuid().asString();
     for (auto i : mOnlineSpMap)
-        if (i.second->hasPermission(player, simulated_player::SimPlayerPermission::BeAddedToGroup))
+        if (i.second->mSaveData.ownerUuid == uuid) res.emplace_back(i.first);
+        else if (auto it = i.second->mSaveData.permission.find(uuid);
+                 it != i.second->mSaveData.permission.end()
+                 && it->second & (uint)simulated_player::SimPlayerPermission::BeAddedToGroup) {
             res.emplace_back(i.first);
+        }
     for (auto i : mOfflineSpMap)
-        if (i.second->hasPermission(player, simulated_player::SimPlayerPermission::BeAddedToGroup))
+        if (i.second->mSaveData.ownerUuid == uuid) res.emplace_back(i.first);
+        else if (auto it = i.second->mSaveData.permission.find(uuid);
+                 it != i.second->mSaveData.permission.end()
+                 && it->second & (uint)simulated_player::SimPlayerPermission::BeAddedToGroup) {
             res.emplace_back(i.first);
+        }
     std::sort(res.begin(), res.end());
     return res;
 }
