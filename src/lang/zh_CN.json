@@ -105,7 +105,7 @@
     },
     "gui": {
         "para": {
-            "targetpos": "目标坐标 : x y z",
+            "targetPos": "目标坐标 : x y z",
             "targetDim": "目标维度 :",
             "paraError": "Error: 参数解析错误",
             "posError": "坐标参数错误",

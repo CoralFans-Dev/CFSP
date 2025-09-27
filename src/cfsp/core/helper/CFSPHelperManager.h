@@ -22,6 +22,5 @@ private:
 
 public:
     void SimPlayerHelperHook();
-    void SimPlayerHelperHookWhenLoad();
 };
 } // namespace coral_fans::cfsp::helper

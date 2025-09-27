@@ -292,7 +292,7 @@ void GuiManager::sendGroupTpOperatorPage(
 ) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.tp.groupTitle"_tr());
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.appendDropdown(
         "dim",
         "gui.para.targetDim"_tr(),
@@ -345,7 +345,7 @@ void GuiManager::sendGroupLookOperatorPage(
 ) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.look.groupTitle"_tr());
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.sendTo(
         player,
         [this,
@@ -386,7 +386,7 @@ void GuiManager::sendGroupMoveOperatorPage(
     if (perm & (uint)group::GroupPermission::MoveTo) op.emplace_back("gui.move.moveto"_tr());
     if (perm & (uint)group::GroupPermission::NavTo) op.emplace_back("gui.move.navto"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op, defOp);
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.appendInput("speed", "gui.para.speed"_tr(), "4.3", defSpeed);
     form.sendTo(
         player,

@@ -245,8 +245,8 @@ void GuiManager::sendCreateSpPage(
     );
     form.appendDropdown(
         "lockUniqueId",
-        "gui.para.lockUniqueId"_tr(),
-        std::vector<std::string>{"base.yesOrNo.yes", "base.yesOrNo.no"},
+        "gui.createSp.lockUniqueId"_tr(),
+        std::vector<std::string>{"base.yesOrNo.yes"_tr(), "base.yesOrNo.no"_tr()},
         defLockUniqueId
     );
     form.sendTo(
@@ -349,7 +349,7 @@ void GuiManager::sendSpTpOperatorPage(
 ) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.tp.spTitle"_tr());
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.appendDropdown(
         "dim",
         "gui.para.targetDim"_tr(),
@@ -451,7 +451,7 @@ void GuiManager::sendSpMoveOperatorPage(
     if (perm & (uint)simulated_player::SimPlayerPermission::MoveTo) op.emplace_back("gui.move.moveto"_tr());
     if (perm & (uint)simulated_player::SimPlayerPermission::NavTo) op.emplace_back("gui.move.navto"_tr());
     form.appendDropdown("operate", "gui.para.operate"_tr(), op, defOp);
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.appendInput("speed", "gui.para.speed"_tr(), "4.3", defSpeed);
     form.sendTo(
         player,
@@ -511,7 +511,7 @@ void GuiManager::sendSpLookOperatorPage(
 ) {
     using ll::i18n_literals::operator""_tr;
     auto form = ll::form::CustomForm("gui.look.spTitle"_tr());
-    form.appendInput("targetpos", "gui.para.targetpos"_tr(), "0 0 0", defPos);
+    form.appendInput("targetpos", "gui.para.targetPos"_tr(), "0 0 0", defPos);
     form.sendTo(
         player,
         [this,
