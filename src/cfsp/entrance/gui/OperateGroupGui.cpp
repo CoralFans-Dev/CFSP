@@ -732,18 +732,18 @@ void GuiManager::sendGroupPermPage(Player& player, std::shared_ptr<group::CFSPGr
     using ll::i18n_literals::operator""_tr;
     std::vector<std::pair<std::string, std::string>> splist;
     auto                                             level = ll::service::getLevel();
-    if (level.has_value())
-        level->forEachPlayer([&splist](Player& player) {
+    level->forEachPlayer([&splist, pname = player.mName.get()](Player& player) {
+        if (!player.isSimulatedPlayer() && pname != player.mName.get())
             splist.emplace_back(std::make_pair(player.mName, player.getUuid().asString()));
-            return true;
-        });
+        return true;
+    });
     for (auto i : group->mData.permission)
         splist.emplace_back(std::make_pair(base::utils::tryGetPlayerName(i.first), i.first));
     std::sort(splist.begin(), splist.end());
 
     auto form = ll::form::SimpleForm("gui.perm.groupTitle"_tr());
     int  size = (int)splist.size();
-    if (!size) {
+    if (size) {
         form.appendButton(splist[0].first, [this, group, targetPlayer = splist[0]](Player& player) {
             this->sendGroupPermPage2(player, group, targetPlayer.first, targetPlayer.second);
         });
