@@ -203,7 +203,7 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
 
                                 if (result.value() == ll::form::ModalFormSelectedButton::Upper)
                                     return manager::CFSPManager::getInstance()
-                                        .spDelete(&player, cfsp->mSaveData.name)
+                                        .spDelete(&player, cfsp->mSaveData.name, true)
                                         .sendTo(player);
                                 if (result.value() == ll::form::ModalFormSelectedButton::Lower)
                                     return this->sendOperateSpPage(player, cfsp);
