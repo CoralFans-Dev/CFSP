@@ -272,8 +272,8 @@ void GuiManager::sendCreateSpPage(
                 return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
             auto eleLockUniqueId = std::get<std::string>(it->second);
             bool lockUniqueId;
-            if (eleLockUniqueId == "base.yesOrNo.yes") lockUniqueId = true;
-            else if (eleLockUniqueId == "base.yesOrNo.no") lockUniqueId = false;
+            if (eleLockUniqueId == "base.yesOrNo.yes"_tr()) lockUniqueId = true;
+            else if (eleLockUniqueId == "base.yesOrNo.no"_tr()) lockUniqueId = false;
             else return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
 
             it = elements.value().find("dim");
@@ -778,8 +778,9 @@ void GuiManager::sendSpPermPage(Player& player, std::shared_ptr<simulated_player
     std::vector<std::pair<std::string, std::string>> splist;
     auto                                             level = ll::service::getLevel();
     if (level.has_value())
-        level->forEachPlayer([&splist](Player& player) {
-            splist.emplace_back(std::make_pair(player.mName, player.getUuid().asString()));
+        level->forEachPlayer([&splist, pname = player.mName.get()](Player& player) {
+            if (!player.isSimulatedPlayer() && pname != player.mName.get())
+                splist.emplace_back(std::make_pair(player.mName, player.getUuid().asString()));
             return true;
         });
     for (auto i : cfsp->mSaveData.permission)
@@ -788,7 +789,7 @@ void GuiManager::sendSpPermPage(Player& player, std::shared_ptr<simulated_player
 
     auto form = ll::form::SimpleForm("gui.perm.spTitle"_tr());
     int  size = (int)splist.size();
-    if (!size) {
+    if (size) {
         form.appendButton(splist[0].first, [this, cfsp, targetPlayer = splist[0]](Player& player) {
             this->sendSpPermPage2(player, cfsp, targetPlayer.first, targetPlayer.second);
         });
