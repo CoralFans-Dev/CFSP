@@ -316,7 +316,6 @@ void ComandManager::registerSpComand() {
                 .spDelete(
                     player.value(),
                     self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                    false,
                     self["force"].get<ll::command::ParamKind::Bool>()
                 )
                 .output(output);
