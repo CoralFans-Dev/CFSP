@@ -6,12 +6,14 @@
 #include "ll/api/service/Bedrock.h"
 #include "mc/entity/components_json_legacy/NavigationComponent.h"
 #include "mc/server/SimulatedPlayer.h"
+#include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/actor/ai/navigation/PathNavigation.h"
 #include "mc/world/actor/provider/ActorAttribute.h"
 #include "mc/world/actor/provider/MobMovement.h"
 #include <optional>
+
 
 namespace coral_fans::cfsp::simulated_player {
 void SimPlayer::cancelTask() { base::Schedule::getInstance().getSchedule()->cancel(this->mTaskid); }
@@ -36,10 +38,10 @@ base::OperateResult SimPlayer::stop() {
     auto& type = this->mSimPlayer->mSimulatedMovement->mType.get();
     if (std::holds_alternative<sim::MoveInDirectionIntent>(type)
         || std::holds_alternative<sim::MoveToPositionIntent>(type)) {
-        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), Vec3::ZERO());
+        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), 0.0f, 0.0f, 0.0f);
     } else if (std::holds_alternative<sim::NavigateToPositionsIntent>(type)
                || std::holds_alternative<sim::NavigateToEntityIntent>(type)) {
-        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), Vec3::ZERO());
+        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), 0.0f, 0.0f, 0.0f);
         auto component = this->mSimPlayer->getEntityContext().tryGetComponent<NavigationComponent>();
         if (component) {
             component->mNavigation->stop(component, *this->mSimPlayer);
@@ -65,8 +67,10 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     if (!mc) return nullptr;
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return nullptr;
-    auto  xuid      = "-" + std::to_string(std::hash<std::string>()(spname));
-    auto* simPlayer = SimulatedPlayer::create(spname, pos, dim, serverNetworkHandler, xuid, std::nullopt);
+    auto xuid = "-" + std::to_string(std::hash<std::string>()(spname));
+    // auto* simPlayer = SimulatedPlayer::create(spname, pos, dim, serverNetworkHandler, xuid, std::nullopt);
+    auto* simPlayer =
+        SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, serverNetworkHandler, xuid, std::nullopt);
     if (!simPlayer) [[unlikely]]
         return nullptr;
 
@@ -99,6 +103,9 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     this->mSimPlayer = SimulatedPlayer::create(
         this->mSaveData.name,
         {0, 0, 0},
+        {0, 0, 0},
+        {0, 0},
+        false,
         0,
         serverNetworkHandler,
         this->mSaveData.xuid,
@@ -177,10 +184,8 @@ base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    this->mSimPlayer->mLookAtIntent->mType = std::get<::sim::ContinuousLookAtPositionIntent>(
-        sim::lookAt(*this->mSimPlayer, glm::vec3(pos.x, pos.y, pos.z), ::sim::LookDuration::UntilMove).mType.get()
-    );
-    this->mSaveData.lookAtOffSet = pos - this->mSimPlayer->getEyePos();
+    this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
+    this->mSaveData.lookAtOffSet           = pos - this->mSimPlayer->getEyePos();
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 } // namespace coral_fans::cfsp::simulated_player
