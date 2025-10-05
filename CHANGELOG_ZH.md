@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 2025-10.5
+
+### Added
+
++ 添加en-US语言文件
+
+### Fixed
+
++ 修复了假人在lookat时无法转身的bug
++ 添加en-US语言文件
+
 ## [3.2.0] - 2025-10.4
 
 ### Added

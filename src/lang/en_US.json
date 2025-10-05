@@ -1,7 +1,313 @@
 {
+    "base": {
+        "gamemode": {
+            "survival": "Survival",
+            "creative": "Creative",
+            "adventure": "Adventure",
+            "spectator": "Spectator",
+            "undefined": "Undefined Game Mode"
+        },
+        "dimension": {
+            "overworld": "Overworld",
+            "nether": "Nether",
+            "theend": "The End",
+            "undefined": "Undefined Dimension"
+        },
+        "spstatus": {
+            "offline": "Offline",
+            "alive": "Online",
+            "dead": "Dead",
+            "undefined": "Undefined Status"
+        },
+        "yesOrNo": {
+            "yes": "Yes",
+            "no": "No"
+        }
+    },
     "manager": {
+        "success": {
+            "create": "Created successfully",
+            "operate": "Operation successful",
+            "set": "Set successfully",
+            "spOffline": "§g{} is now offline",
+            "autoDespawn": "§c{} died too frequently, now offline"
+        },
+        "fail": {
+            "funcUnabled": "This function is not enabled",
+            "permissionDenied": "Insufficient permissions",
+            "spHasExisted": "A SimulatedPlayer with the same name already exists",
+            "tooManyOnline": "Total online SimulatedPlayers has reached the limit",
+            "tooManyOnlinePerPlayer": "Your online SimulatedPlayer limit has been reached",
+            "tooManyOwnSp": "Your owned SimulatedPlayer limit has been reached",
+            "tooManyOwnGroup": "Your owned SimulatedPlayer group limit has been reached",
+            "groupHasExisted": "A SimulatedPlayer group with the same name already exists",
+            "spHasOnline": "SimulatedPlayer is already online",
+            "spNotExisted": "SimulatedPlayer does not exist",
+            "spHasOffline": "SimulatedPlayer is already offline",
+            "spIsAlive": "SimulatedPlayer is not dead",
+            "notEmpty": "Failed to delete SimulatedPlayer, {}'s inventory is not empty\nAdd \"true\" after the command to force deletion",
+            "failToSave": "Failed to save NBT",
+            "faileToSetFlying": "Failed to set flying state",
+            "FailedToOperate": "Operation failed",
+            "spIsDead": "SimulatedPlayer is dead",
+            "playerIsNull": "Player object is null",
+            "spIsBusy": "SimulatedPlayer is busy",
+            "runcmd": "Error executing command for SimulatedPlayer",
+            "selectNoFound": "Item not found in SimulatedPlayer's inventory",
+            "speedSmallerThan0": "Speed should not be less than 0",
+            "groupNotExisted": "SimulatedPlayer group does not exist",
+            "spNotExistedInGroup": "SimulatedPlayer not found in the group",
+            "targetNotSingle": "Target object is not singular",
+            "targetHasHadPerm": "Target already has this permission",
+            "targetNotHavePerm": "Target does not have this permission",
+            "targetIsSp": "Target object is a SimulatedPlayer",
+            "targetIsManager": "Target object is already a manager",
+            "targetNotManager": "Target object is not a manager"
+        },
         "error": {
-            "permissiondenied": "Permission Denied"
+            "failedtocreate": "Error: Failed to create SimulatedPlayer",
+            "loseSimplayer": "Error: SimulatedPlayer object lost",
+            "runcmd": "Error: Failed to get Minecraft object",
+            "deleteFileFail": "Error: Failed to delete file"
+        },
+        "info": {
+            "onlineCount": "Online SimulatedPlayers: {}",
+            "offlineCount": "Offline SimulatedPlayers: {}",
+            "groupCount": "SimulatedPlayer groups: {}",
+            "onlineCountPerplayer": "Your online SimulatedPlayers: {}",
+            "offlineCountPerplayer": "Your offline SimulatedPlayers: {}",
+            "onlineSp": "\nName: {}  Owner: {}  Coordinates: {}",
+            "offlineSp": "\nName: {}  Owner: {}",
+            "group": "Name: {}\nOwner: {}\nSimulatedPlayers in group:\n",
+            "spname": "SimulatedPlayer Name : ",
+            "spStatus": "SimulatedPlayer Status : ",
+            "spOwner": "Owner           : ",
+            "spPos": "Coordinates     : ",
+            "spRespawnpos": "Respawn Coords  : ",
+            "spGamemode": "Game Mode       : ",
+            "spHealth": "Health          : ",
+            "spIsFree": "Is Free         : ",
+            "spOffhand": "Offhand        : ",
+            "spEquip": "\nEquipment      : ",
+            "spInv": "\nInventory      : "
+        }
+    },
+    "command": {
+        "fail": {
+            "onlyplayer": "Only players can use this command",
+            "illegalOrigin": "Illegal command source",
+            "permissionDenied": "Insufficient permissions",
+            "spNoFind": "SimulatedPlayer not found",
+            "groupNoFind": "SimulatedPlayer group not found",
+            "lackPara": "Missing parameters",
+            "onlyDedicateServer": "Only the server console can use this command"
+        }
+    },
+    "gui": {
+        "para": {
+            "targetPos": "Target Coordinates : x y z",
+            "targetDim": "Target Dimension :",
+            "paraError": "Error: Parameter parsing error",
+            "posError": "Coordinate parameter error",
+            "text": "Enter text",
+            "operate": "Select Operation :",
+            "interval": "Operation Interval/gt (Min: 1, defaults to 1 if <1)",
+            "times": "Operation Count/gt (0=loop, <0 defaults to 0)",
+            "long": "Operation Duration/gt (0=continuous, <0 defaults to 0)",
+            "intError": "Integer parsing error",
+            "speed": "Movement Speed/b",
+            "floatError": "Float parsing error"
+        },
+        "mainmenu": {
+            "title": "CoralFans SimulatedPlayer System - Main Menu",
+            "splistButton": "SimulatedPlayer List",
+            "publicSplistButton": "Public SimulatedPlayer List",
+            "grouplistButton": "SimulatedPlayer Group List"
+        },
+        "managermainmenu": {
+            "title": "CoralFans SimulatedPlayer System - Admin Main Menu",
+            "splistButton": "SimulatedPlayer List",
+            "grouplistButton": "SimulatedPlayer Group List",
+            "managerlistButton": "Settings"
+        },
+        "splist": {
+            "title": "SimulatedPlayer List",
+            "newsp": "Create New SimulatedPlayer"
+        },
+        "grouplist": {
+            "title": "SimulatedPlayer Group List",
+            "newgroup": "Create New Group"
+        },
+        "publicSpList": {
+            "title": "Public SimulatedPlayer List"
+        },
+        "managerSpList": {
+            "title": "Admin: SimulatedPlayer List",
+            "newsp": "Create New SimulatedPlayer"
+        },
+        "manage": {
+            "title": "Admin: Settings Management",
+            "autojoin": "SimulatedPlayers auto-join on server start",
+            "autorespawn": "SimulatedPlayers auto-respawn on death",
+            "autodespawn": "SimulatedPlayers auto-offline on frequent death"
+        },
+        "createSp": {
+            "title": "Create SimulatedPlayer",
+            "name": "SimulatedPlayer Name :",
+            "lockUniqueId": "Lock UniqueId (prevents loss of connection to trident)"
+        },
+        "createGroup": {
+            "title": "Create SimulatedPlayer Group"
+        },
+        "operateSp": {
+            "spinfo": "SimulatedPlayer Info",
+            "online": "Spawn SimulatedPlayer",
+            "offline": "Despawn SimulatedPlayer",
+            "respawn": "Respawn SimulatedPlayer",
+            "tp": "SimulatedPlayer Teleport",
+            "swap": "Swap Inventory with SimulatedPlayer",
+            "message": "SimulatedPlayer Text Operations",
+            "inv": "SimulatedPlayer Inventory Operations",
+            "move": "SimulatedPlayer Movement",
+            "lookat": "SimulatedPlayer Look At",
+            "perform": "SimulatedPlayer Perform Action",
+            "perform2": "SimulatedPlayer Perform Long Action",
+            "stop": "SimulatedPlayer Stop Actions",
+            "status": "SimulatedPlayer Status",
+            "rm": "Delete SimulatedPlayer",
+            "confirmRm": "Are you sure you want to delete {}?",
+            "confirmRm2": "SimulatedPlayer inventory is not empty, force delete {}?",
+            "perm": "SimulatedPlayer Permissions"
+        },
+        "operateGroup": {
+            "groupInfo": "SimulatedPlayer Group Info",
+            "online": "Spawn Group",
+            "offline": "Despawn Group",
+            "respawn": "Respawn Group",
+            "tp": "Group Teleport",
+            "message": "Group Text Operations",
+            "inv": "Group Inventory Operations",
+            "move": "Group Movement",
+            "lookat": "Group Look At",
+            "perform": "Group Perform Action",
+            "perform2": "Group Perform Long Action",
+            "stop": "Group Stop Actions",
+            "status": "Group Status",
+            "rm": "Delete Group",
+            "confirmRm": "Are you sure you want to delete {}?",
+            "manageSp": "Manage Group SimulatedPlayers",
+            "deleteSp": "Delete SimulatedPlayer from Group",
+            "confirmDeleteSp": "Are you sure you want to delete the SimulatedPlayer from group {}?",
+            "confirmDeleteSp2": "Inventory not empty, force delete {}?",
+            "perm": "Group Permissions"
+        },
+        "info": {
+            "spTitle": "SimulatedPlayer Info",
+            "groupTitle": "SimulatedPlayer Group Info"
+        },
+        "inv": {
+            "sp": {
+                "title": "SimulatedPlayer Inventory Operations",
+                "invinfo": "SimulatedPlayer Inventory Info",
+                "swap": "Swap Inventory with SimulatedPlayer",
+                "drop": "SimulatedPlayer Drop Held Item",
+                "dropinv": "SimulatedPlayer Drop All Inventory Items"
+            },
+            "group": {
+                "title": "Group Inventory Operations",
+                "invInfo": "Group Inventory Info",
+                "drop": "Group Drop Held Item",
+                "dropinv": "Group Drop All Inventory Items"
+            }
+        },
+        "tp": {
+            "spTitle": "SimulatedPlayer Teleport",
+            "groupTitle": "Group Teleport"
+        },
+        "message": {
+            "spTitle": "SimulatedPlayer Text Operations",
+            "groupTitle": "Group Text Operations",
+            "chat": "Send Message",
+            "runcmd": "Execute Command"
+        },
+        "move": {
+            "spTitle": "SimulatedPlayer Movement",
+            "groupTitle": "Group Movement",
+            "moveto": "Move To",
+            "navto": "Navigate To"
+        },
+        "look": {
+            "spTitle": "SimulatedPlayer Look At",
+            "groupTitle": "Group Look At"
+        },
+        "action": {
+            "spTitle": "SimulatedPlayer Perform Action",
+            "groupTitle": "Group Perform Action",
+            "attack": "Attack",
+            "build": "Place Block",
+            "interact": "Interact",
+            "jump": "Jump"
+        },
+        "longAction": {
+            "spTitle": "SimulatedPlayer Perform Long Action",
+            "groupTitle": "Group Perform Long Action",
+            "use": "Use",
+            "destroy": "Break Block"
+        },
+        "status": {
+            "spTitle": "SimulatedPlayer Status",
+            "groupTitle": "Group Status",
+            "sneaking": "SimulatedPlayer Sneak",
+            "sneak": "Sneak",
+            "releasesneak": "Stop Sneaking",
+            "swimming": "SimulatedPlayer Swim",
+            "swim": "Swim",
+            "releaseswim": "Stop Swimming",
+            "flying": "SimulatedPlayer Fly",
+            "fly": "Fly",
+            "releasefly": "Stop Flying",
+            "sprinting": "SimulatedPlayer Sprint",
+            "sprint": "Sprint",
+            "releasesprint": "Stop Sprinting"
+        },
+        "manageSpInGroup": {
+            "title": "Manage Group SimulatedPlayers"
+        },
+        "perm": {
+            "spTitle": "SimulatedPlayer Permissions",
+            "spTitle2": "SimulatedPlayer Permissions: {}-{}",
+            "groupTitle": "Group Permissions",
+            "groupTitle2": "Group Permissions: {}-{}",
+            "publicSp": "SimulatedPlayer Public Permissions",
+            "publicGroup": "Group Public Permissions",
+            "spawn": "Spawn",
+            "despawn": "Despawn",
+            "respawn": "Respawn",
+            "delete": "Delete",
+            "stop": "Stop Actions",
+            "drop": "Drop Held Item",
+            "dropInv": "Drop All Inventory Items",
+            "swap": "Swap Inventory",
+            "sneaking": "Sneak",
+            "swimming": "Swim",
+            "flying": "Fly",
+            "sprinting": "Sprint",
+            "attack": "Attack",
+            "build": "Place Block",
+            "interact": "Interact",
+            "jump": "Jump",
+            "use": "Use",
+            "destroy": "Break Block",
+            "chat": "Send Message",
+            "runCmd": "Execute Command",
+            "select": "Select Item",
+            "lookAt": "Look At",
+            "moveTo": "Move To",
+            "navTo": "Navigate To",
+            "tp": "Teleport",
+            "beAddedToGroup": "Be Added To Group",
+            "addSp": "Add SimulatedPlayer",
+            "rmSp": "Remove SimulatedPlayer"
         }
     }
 }
