@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2025-10-19
+
+### Added
+
++ Added en-US language file
++ Added "all" parameter for all authorization operations to grant all permissions
+
+### Fixed
+
++ Fixed bug with dummy group authorization operations
++ Fixed bug where authorization results were not saved when using authorization operations on offline dummies
+
 ## [3.0.0] - 2025-9-26
 
 ### Added
