@@ -307,7 +307,8 @@
             "tp": "传送",
             "beAddedToGroup": "被添加到假人组",
             "addSp": "添加假人",
-            "rmSp": "移除假人"
+            "rmSp": "移除假人",
+            "deleteSp": "删除组内假人"
         }
     }
 }

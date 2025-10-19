@@ -793,7 +793,7 @@ void GuiManager::sendGroupPermPage2(
     form.appendToggle("drop", "gui.perm.drop"_tr(), perm & (uint)group::GroupPermission::Drop);
     form.appendToggle("dropInv", "gui.perm.dropInv"_tr(), perm & (uint)group::GroupPermission::DropInv);
     form.appendToggle("sneaking", "gui.perm.sneaking"_tr(), perm & (uint)group::GroupPermission::Sneaking);
-    form.appendToggle("dwimming", "gui.perm.dwimming"_tr(), perm & (uint)group::GroupPermission::Swimming);
+    form.appendToggle("dwimming", "gui.perm.swimming"_tr(), perm & (uint)group::GroupPermission::Swimming);
     form.appendToggle("flying", "gui.perm.flying"_tr(), perm & (uint)group::GroupPermission::Flying);
     form.appendToggle("sprinting", "gui.perm.sprinting"_tr(), perm & (uint)group::GroupPermission::Sprinting);
     form.appendToggle("attack", "gui.perm.attack"_tr(), perm & (uint)group::GroupPermission::Attack);
