@@ -1,6 +1,5 @@
 #include "ComandManager.h"
 #include "cfsp/core/manager/CFSPManager.h"
-#include "cfsp/core/simPlayer/SimPlayerPermission.h"
 #include "ll/api/command/runtime/ParamKind.h"
 #include "ll/api/command/runtime/RuntimeCommand.h"
 #include "ll/api/command/runtime/RuntimeOverload.h"
@@ -582,6 +581,7 @@ void ComandManager::registerSpComand() {
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspSpPermType",
         {
+            {"all",            -1},
             {"Spawn",          0 },
             {"Despawn",        1 },
             {"Respawn",        2 },
@@ -623,13 +623,15 @@ void ComandManager::registerSpComand() {
             auto targetPlayer = self["targetPlayer"].get<ll::command::ParamKind::Player>().results(origin);
             if (targetPlayer.size() > 1) return output.error("manager.fail.targetNotSingle"_tr());
             if (targetPlayer.data->data()[0]->isSimulatedPlayer()) return output.error("manager.fail.targetIsSp"_tr());
+            auto index = self["permType"].get<ll::command::ParamKind::Enum>().index;
+            uint perm;
+            if (index == (uint64)-1) perm = (uint)-1;
+            else perm = 1 << index;
             manager::CFSPManager::getInstance()
                 .spPerm(
                     player.value(),
                     self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                    (simulated_player::SimPlayerPermission)(
-                        1 << self["permType"].get<ll::command::ParamKind::Enum>().index
-                    ),
+                    perm,
                     self["enable"].get<ll::command::ParamKind::Bool>(),
                     targetPlayer.data->data()[0]->getUuid().asString()
                 )
@@ -646,13 +648,15 @@ void ComandManager::registerSpComand() {
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            auto index = self["permType"].get<ll::command::ParamKind::Enum>().index;
+            uint perm;
+            if (index == (uint64)-1) perm = (uint)-1;
+            else perm = 1 << index;
             manager::CFSPManager::getInstance()
                 .spPerm(
                     player.value(),
                     self["spname"].get<ll::command::ParamKind::SoftEnum>(),
-                    (simulated_player::SimPlayerPermission)(
-                        1 << self["permType"].get<ll::command::ParamKind::Enum>().index
-                    ),
+                    perm,
                     self["enable"].get<ll::command::ParamKind::Bool>()
                 )
                 .output(output);

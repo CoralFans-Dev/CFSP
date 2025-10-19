@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.7.0] - 2025-9-26
+## [3.1.1] - 2025-10-19
+
+### Added
+
++ 添加en-US语言文件
++ 为所有授权操作添加"all"参数，用于授权全部权限
+
+### Fixed
+
++ 修复假人组授权操作的bug
++ 修复了对不在线的假人使用授权操作时授权的结果没有保存的bug
+
+## [3.1.0] - 2025-9-26
 
 ### Added
 

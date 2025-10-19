@@ -1002,6 +1002,7 @@ void GuiManager::sendSpPermPage2(
                 cfsp->mSaveData.permission.erase(it);
 
             cfsp->mShouldSave = true;
+            if (!cfsp->mSimPlayer) cfsp->save();
 
             base::OperateResult::success("manager.success.operate"_tr()).sendTo(player);
         }
