@@ -544,6 +544,7 @@ void ComandManager::registerGroupComand() {
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspGroupPermType",
         {
+            {"all",       -1},
             {"AddSp",     0 },
             {"RmSp",      1 },
             {"Delete",    2 },
@@ -587,11 +588,15 @@ void ComandManager::registerGroupComand() {
             auto targetPlayer = self["targetPlayer"].get<ll::command::ParamKind::Player>().results(origin);
             if (targetPlayer.size() > 1) output.error("manager.fail.targetNotSingle"_tr());
             if (targetPlayer.data->data()[0]->isSimulatedPlayer()) return output.error("manager.fail.targetIsSp"_tr());
+            auto index = self["permType"].get<ll::command::ParamKind::Enum>().index;
+            uint perm;
+            if (index == (uint64)-1) perm = (uint)-1;
+            else perm = 1 << index;
             manager::CFSPManager::getInstance()
                 .groupPerm(
                     player.value(),
                     self["gname"].get<ll::command::ParamKind::SoftEnum>(),
-                    (group::GroupPermission)(1 << self["permType"].get<ll::command::ParamKind::Enum>().index),
+                    perm,
                     self["enable"].get<ll::command::ParamKind::Bool>(),
                     targetPlayer.data->data()[0]->getUuid().asString()
                 )
@@ -608,11 +613,15 @@ void ComandManager::registerGroupComand() {
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            auto index = self["permType"].get<ll::command::ParamKind::Enum>().index;
+            uint perm;
+            if (index == (uint64)-1) perm = (uint)-1;
+            else perm = 1 << index;
             manager::CFSPManager::getInstance()
                 .groupPerm(
                     player.value(),
                     self["gname"].get<ll::command::ParamKind::SoftEnum>(),
-                    (group::GroupPermission)(1 << self["permType"].get<ll::command::ParamKind::Enum>().index),
+                    perm,
                     self["enable"].get<ll::command::ParamKind::Bool>()
                 )
                 .output(output);

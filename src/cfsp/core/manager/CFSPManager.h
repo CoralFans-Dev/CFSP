@@ -51,16 +51,16 @@ public:
     uint                getSpPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
     uint                getGroupPermissionMask(std::optional<CommandPermissionLevel> level = std::nullopt);
     base::OperateResult spPerm(
-        const Player*                         player,
-        std::string                           spname,
-        simulated_player::SimPlayerPermission perm,
-        bool                                  enable,
-        std::optional<std::string>            targetUUid = std::nullopt
+        const Player*              player,
+        std::string                spname,
+        uint                       perm,
+        bool                       enable,
+        std::optional<std::string> targetUUid = std::nullopt
     );
     base::OperateResult groupPerm(
         const Player*              player,
         std::string                gname,
-        group::GroupPermission     perm,
+        uint                       perm,
         bool                       enable,
         std::optional<std::string> targetUUid = std::nullopt
     );

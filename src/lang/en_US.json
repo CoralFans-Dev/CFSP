@@ -307,7 +307,8 @@
             "tp": "Teleport",
             "beAddedToGroup": "Be Added To Group",
             "addSp": "Add SimulatedPlayer",
-            "rmSp": "Remove SimulatedPlayer"
+            "rmSp": "Remove SimulatedPlayer",
+            "deleteSp": "Delete SimulatedPlayer in Group"
         }
     }
 }

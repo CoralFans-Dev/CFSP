@@ -147,6 +147,7 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                         hit.mBlock,
                         static_cast<ScriptModuleMinecraft::ScriptFacing>(hit.mFacing)
                     );
+                else if (this->mSimPlayer->mDestroyingBlock) this->mSimPlayer->simulateStopDestroyingBlock();
                 return true;
             }
             auto index = t % (interval + _long);
@@ -161,6 +162,7 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                         hit.mBlock,
                         static_cast<ScriptModuleMinecraft::ScriptFacing>(hit.mFacing)
                     );
+                else if (this->mSimPlayer->mDestroyingBlock) this->mSimPlayer->simulateStopDestroyingBlock();
             }
             return true;
         });
