@@ -18,6 +18,5 @@ struct SimPlayerSaveData {
     std::unordered_map<std::string, uint> permission; // <玩家uuid, permission>
     bool                                  isOnline     = true;
     Vec3                                  lookAtOffSet = {0, 0, 0};
-    bool                                  isEmptyInv   = true;
 };
 } // namespace coral_fans::cfsp::simulated_player

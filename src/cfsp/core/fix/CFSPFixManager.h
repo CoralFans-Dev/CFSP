@@ -1,3 +1,6 @@
+#pragma once
+
+
 namespace coral_fans::cfsp::fix {
 class CFSPFixManager {
 public:
@@ -6,7 +9,11 @@ public:
         return instance;
     }
 
-public:
+private:
     void featureFix();
+    void handItemFix();
+
+public:
+    void cfspBugFixHook();
 };
 } // namespace coral_fans::cfsp::fix

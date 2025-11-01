@@ -166,7 +166,7 @@ void ComandManager::registerGroupComand() {
             }
         });
 
-    // sp g <delete|spawn|despawn|respawn|stop|drop|dropinv|info|invinfo> <gname: cfspGroup>
+    // sp g <delete|spawn|despawn|respawn|stop|info|invinfo> <gname: cfspGroup>
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspGroupOperate2",
         {
@@ -175,10 +175,8 @@ void ComandManager::registerGroupComand() {
             {"despawn", 2},
             {"respawn", 3},
             {"stop",    4},
-            {"drop",    5},
-            {"dropinv", 6},
-            {"info",    7},
-            {"invinfo", 8}
+            {"info",    6},
+            {"invinfo", 7}
     }
     );
     this->command->runtimeOverload()
@@ -221,24 +219,12 @@ void ComandManager::registerGroupComand() {
                 );
                 break;
             case 5:
-                res = manager::CFSPManager::getInstance().groupDrop(
-                    player.value(),
-                    self["gname"].get<ll::command::ParamKind::SoftEnum>()
-                );
-                break;
-            case 6:
-                res = manager::CFSPManager::getInstance().groupDropInv(
-                    player.value(),
-                    self["gname"].get<ll::command::ParamKind::SoftEnum>()
-                );
-                break;
-            case 7:
                 res = manager::CFSPManager::getInstance().groupInfo(
                     player.value(),
                     self["gname"].get<ll::command::ParamKind::SoftEnum>()
                 );
                 break;
-            case 8:
+            case 6:
                 res = manager::CFSPManager::getInstance().groupInvInfo(
                     player.value(),
                     self["gname"].get<ll::command::ParamKind::SoftEnum>()
@@ -304,14 +290,16 @@ void ComandManager::registerGroupComand() {
             for (auto perRes : res) perRes.output(output);
         });
 
-    // sp g <attack|build|interact|jump> <gname: cfspGroup> [times: int] [interval: int]
+    // sp g <attack|build|interact|jump|drop|dropinv> <gname: cfspGroup> [times: int] [interval: int]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspGroupOperate4",
         {
             {"attack",   0},
             {"build",    1},
             {"interact", 2},
-            {"jump",     3}
+            {"jump",     3},
+            {"drop",     4},
+            {"dropinv",  5}
     }
     );
     this->command->runtimeOverload()
@@ -333,6 +321,10 @@ void ComandManager::registerGroupComand() {
                 GROUP_ONLINE_OPERATE2_CALL(Interact)
             case 3:
                 GROUP_ONLINE_OPERATE2_CALL(Jump)
+            case 4:
+                GROUP_ONLINE_OPERATE2_CALL(Drop)
+            case 5:
+                GROUP_ONLINE_OPERATE2_CALL(DropInv)
             }
             for (auto perRes : res) perRes.output(output);
         });

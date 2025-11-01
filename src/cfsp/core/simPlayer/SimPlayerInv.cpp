@@ -1,5 +1,6 @@
 #include "SimPlayer.h"
 #include "cfsp/base/OperateResult.h"
+#include "cfsp/base/Schedule.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h "
 #include "mc/nbt/CompoundTag.h"
@@ -9,6 +10,7 @@
 #include "mc/world/actor/provider/ActorEquipment.h"
 #include <exception>
 
+
 namespace coral_fans::cfsp::simulated_player {
 bool SimPlayer::isEmptyInv() {
     if (!this->mSimPlayer) return false;
@@ -16,8 +18,7 @@ bool SimPlayer::isEmptyInv() {
         || this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
         || ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty())
         return false;
-    auto ec = this->mSimPlayer->getEnderChestContainer();
-    if (ec.has_value() && ec->isEmpty()) return false;
+    if (auto ec = this->mSimPlayer->getEnderChestContainer(); !ec.has_value() || ec->isEmpty()) return false;
     return true;
 }
 
@@ -37,31 +38,47 @@ base::OperateResult SimPlayer ::invInfo() {
     return base::OperateResult::success(res);
 }
 
-base::OperateResult SimPlayer::drop() {
+base::OperateResult SimPlayer::drop(int times, int interval) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
-        this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
+    if (!this->isFree()) return base::OperateResult::error("manager.fail.spIsBusy"_tr());
+    if (times < 0) times = 0;
+    if (interval < 1) interval = 1;
+    this->mTaskid = base::Schedule::getInstance().getSchedule()->add(interval, [times, this](unsigned long long t) {
+        if (!this->mSimPlayer) [[unlikely]]
+            return false;
+        if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
+            this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
+        return !times || t < (unsigned long long)times - 1;
+    });
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::dropInv() {
+base::OperateResult SimPlayer::dropInv(int times, int interval) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    auto& inv  = *this->mSimPlayer->mInventory->mInventory;
-    int   sel  = this->mSimPlayer->getSelectedItemSlot();
-    int   size = inv.getContainerSize();
-    for (int i = 0; i < size; ++i) {
-        inv.swapSlots(i, sel);
-        if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
-            this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
-    }
+    if (!this->isFree()) return base::OperateResult::error("manager.fail.spIsBusy"_tr());
+    if (times < 0) times = 0;
+    if (interval < 1) interval = 1;
+    this->mTaskid = base::Schedule::getInstance().getSchedule()->add(interval, [times, this](unsigned long long t) {
+        if (!this->mSimPlayer) [[unlikely]]
+            return false;
+        auto& inv  = *this->mSimPlayer->mInventory->mInventory;
+        int   sel  = this->mSimPlayer->getSelectedItemSlot();
+        int   size = inv.getContainerSize();
+        for (int i = 0; i < size; ++i) {
+            inv.swapSlots(i, sel);
+            if (this->mSimPlayer->drop(this->mSimPlayer->getSelectedItem(), 0)) [[likely]]
+                this->mSimPlayer->setSelectedItem(ItemStack::EMPTY_ITEM());
+        }
+        return !times || t < (unsigned long long)times - 1;
+    });
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -71,8 +88,8 @@ base::OperateResult SimPlayer::swap(Player* player) {
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (!player) [[unlikely]]
         return base::OperateResult::error("manager.fail.playerIsNull"_tr());
-    std::vector<std::string> invKeys = {"Armor", "EnderChestInventory", "Inventory", "Mainhand", "Offhand"};
-    auto                     spTag   = std::make_unique<CompoundTag>();
+    static std::vector<std::string> invKeys = {"Armor", "EnderChestInventory", "Inventory", "Mainhand", "Offhand"};
+    auto                            spTag   = std::make_unique<CompoundTag>();
     if (!this->mSimPlayer->save(*spTag)) [[unlikely]]
         return base::OperateResult::error("manager.fail.failToSave"_tr());
     auto pTag = std::make_unique<CompoundTag>();
@@ -92,6 +109,14 @@ base::OperateResult SimPlayer::swap(Player* player) {
     } catch (std::exception ex) {
         return base::OperateResult::error(std::string("Error: ") + ex.what());
     }
+    MobEquipmentPacket(
+        this->mSimPlayer->getRuntimeID(),
+        this->mSimPlayer->getOffhandSlot(),
+        1,
+        0,
+        ContainerID::Offhand
+    )
+        .sendToClients(); // fix::更新副手，主手通过CFSPSaveHelperHook1更新，装备mojang代码自动更新
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 

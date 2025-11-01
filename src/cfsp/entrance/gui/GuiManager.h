@@ -33,6 +33,20 @@ private:
     );
     void sendSpInfoPage(Player&, std::shared_ptr<simulated_player::SimPlayer>);
     void sendSpInvOperatorPage(Player&, std::shared_ptr<simulated_player::SimPlayer>, uint);
+    void sendSpDropPage(
+        Player&                                      player,
+        std::shared_ptr<simulated_player::SimPlayer> cfsp,
+        uint                                         perm,
+        std::string                                  defTimes    = "1",
+        std::string                                  defInterval = "1"
+    );
+    void sendSpDropInvPage(
+        Player&                                      player,
+        std::shared_ptr<simulated_player::SimPlayer> cfsp,
+        uint                                         perm,
+        std::string                                  defTimes    = "1",
+        std::string                                  defInterval = "1"
+    );
     void sendSpTpOperatorPage(
         Player&                                      player,
         std::shared_ptr<simulated_player::SimPlayer> cfsp,
@@ -98,6 +112,20 @@ private:
         int                               defOp    = 0
     );
     void sendGroupInvOperatorPage(Player&, std::shared_ptr<group::CFSPGroup>, uint);
+    void sendGroupDropPage(
+        Player&                           player,
+        std::shared_ptr<group::CFSPGroup> group,
+        uint                              perm,
+        std::string                       defTimes    = "1",
+        std::string                       defInterval = "1"
+    );
+    void sendGroupDropInvPage(
+        Player&                           player,
+        std::shared_ptr<group::CFSPGroup> group,
+        uint                              perm,
+        std::string                       defTimes    = "1",
+        std::string                       defInterval = "1"
+    );
     void sendGroupMessageOperatorPage(Player&, std::shared_ptr<group::CFSPGroup>, uint);
     void sendGroupActionOperatorPage(
         Player&                           player,

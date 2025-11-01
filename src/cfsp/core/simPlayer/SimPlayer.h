@@ -14,28 +14,29 @@ namespace coral_fans::cfsp::simulated_player {
 class SimPlayer {
 public:
     SimPlayerSaveData  mSaveData;
-    SimulatedPlayer*   mSimPlayer             = nullptr;
-    unsigned long long mTaskid                = 0;
-    unsigned long long mScriptid              = 0;
-    bool               mShouldSave            = true;
-    bool               mIsEnderContainerEmpty = true;
-    bool               mIsInventoryEmpty      = true;
-    bool               mIsOffhandEmpty        = true;
-    bool               mIsEquipmentEmpty      = true;
+    SimulatedPlayer*   mSimPlayer  = nullptr;
+    unsigned long long mTaskid     = 0;
+    unsigned long long mScriptid   = 0;
+    bool               mShouldSave = true;
 
 public:
     SimPlayer(SimPlayerSaveData saveData, SimulatedPlayer* sp = nullptr);
 
 public:
-    bool     save();
-    bool     loadSpNbt();
+    bool save();
+    bool loadSpNbt();
+    bool checkInvEmptyForOfflineCFSP();
+
+public:
     CFSP_API std::string getName();
     CFSP_API std::string getXuid();
     CFSP_API bool        isOnline();
     CFSP_API bool        isFree();
-    bool                 hasPermission(const Player*, SimPlayerPermission);
-    uint                 getPermission(Player*);
-    base::OperateResult  setPermission(Player*, SimPlayerPermission);
+
+public:
+    bool                hasPermission(const Player*, SimPlayerPermission);
+    uint                getPermission(Player*);
+    base::OperateResult setPermission(Player*, SimPlayerPermission);
 
 public:
     CFSP_API void cancelTask();
@@ -52,8 +53,8 @@ public:
 public:
     CFSP_API bool isEmptyInv();
     CFSP_API base::OperateResult invInfo();
-    CFSP_API base::OperateResult drop();
-    CFSP_API base::OperateResult dropInv();
+    CFSP_API base::OperateResult drop(int times = 1, int interval = 1);
+    CFSP_API base::OperateResult dropInv(int times = 1, int interval = 1);
     CFSP_API base::OperateResult swap(Player*);
     CFSP_API base::OperateResult select(int id);
 
