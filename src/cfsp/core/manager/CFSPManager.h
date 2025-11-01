@@ -101,8 +101,10 @@ public:
     base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
 
     base::OperateResult spInvInfo(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult spDrop(Player* player, std::string const& spname, bool nocheck = false);
-    base::OperateResult spDropInv(Player* player, std::string const& spname, bool nocheck = false);
+    base::OperateResult
+    spDrop(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
+    base::OperateResult
+    spDropInv(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
     base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spSelect(Player* player, std::string const& spname, int id, bool nocheck = false);
 
@@ -188,8 +190,10 @@ public:
 
     std::vector<base::OperateResult> groupStop(Player* player, std::string const& gname);
 
-    std::vector<base::OperateResult> groupDrop(Player* player, std::string const& gname);
-    std::vector<base::OperateResult> groupDropInv(Player* player, std::string const& gname);
+    std::vector<base::OperateResult>
+    groupDrop(Player* player, std::string const& gname, int times = 1, int interval = 1);
+    std::vector<base::OperateResult>
+    groupDropInv(Player* player, std::string const& gname, int times = 1, int interval = 1);
 
     std::vector<base::OperateResult>
     groupSneaking(Player* player, std::string const& gname, std::optional<bool> enabled = std::nullopt);

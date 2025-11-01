@@ -248,17 +248,15 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p <despawn|stop|drop|dropinv|swap|info|invinfo> <name: cfspOnlineSp>
+    // sp p <despawn|stop|swap|info|invinfo> <name: cfspOnlineSp>
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate1",
         {
             {"despawn", 0},
             {"stop",    1},
-            {"drop",    2},
-            {"dropinv", 3},
-            {"swap",    4},
-            {"info",    5},
-            {"invinfo", 6}
+            {"swap",    2},
+            {"info",    3},
+            {"invinfo", 4}
     }
     );
     this->command->runtimeOverload()
@@ -274,15 +272,11 @@ void ComandManager::registerSpComand() {
             case 1:
                 SP_ONLINE_OPERATE1_CALL(Stop)
             case 2:
-                SP_ONLINE_OPERATE1_CALL(Drop)
-            case 3:
-                SP_ONLINE_OPERATE1_CALL(DropInv)
-            case 4:
                 if (!player.has_value()) return output.error("command.fail.onlyplayer"_tr());
                 SP_ONLINE_OPERATE1_CALL(Swap)
-            case 5:
+            case 3:
                 SP_ONLINE_OPERATE1_CALL(Info)
-            case 6:
+            case 4:
                 SP_ONLINE_OPERATE1_CALL(InvInfo)
             }
         });
@@ -353,14 +347,16 @@ void ComandManager::registerSpComand() {
             }
         });
 
-    // sp p <attack|build|interact|jump> <name: cfspOnlineSp> [times: int] [interval: int]
+    // sp p <attack|build|interact|jump|drop|dropinv> <name: cfspOnlineSp> [times: int] [interval: int]
     ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate3",
         {
             {"attack",   0},
             {"build",    1},
             {"interact", 2},
-            {"jump",     3}
+            {"jump",     3},
+            {"drop",     4},
+            {"dropinv",  5}
     }
     );
     this->command->runtimeOverload()
@@ -381,6 +377,10 @@ void ComandManager::registerSpComand() {
                 SP_ONLINE_OPERATE3_CALL(Interact)
             case 3:
                 SP_ONLINE_OPERATE3_CALL(Jump)
+            case 4:
+                SP_ONLINE_OPERATE3_CALL(Drop)
+            case 5:
+                SP_ONLINE_OPERATE3_CALL(DropInv)
             }
         });
 

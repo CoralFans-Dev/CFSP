@@ -164,7 +164,7 @@ void CFSPManager::load() {
     loadGroupData();
     if (this->mConfig.enabled) command::ComandManager::getInstance().registerCommand(this->mConfig.permission);
     helper::CFSPHelperManager::getInstance().SimPlayerHelperHook();
-    fix::CFSPFixManager::getInstance().featureFix();
+    fix::CFSPFixManager::getInstance().cfspBugFixHook();
 }
 
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(Player* sp) {

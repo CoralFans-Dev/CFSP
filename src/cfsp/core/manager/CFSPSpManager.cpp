@@ -256,8 +256,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
         // check：permission
         if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Delete))
             return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-        if (!force && !it->second->mSaveData.isEmptyInv)
-            return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
+        if (!force && !it->second->isEmptyInv()) return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOnlineSp", {spname});
         if (!it->second->mSimPlayer || it->second->mSimPlayer->isDead())
@@ -284,7 +283,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
         // check：permission
         if (!nocheck && !it->second->hasPermission(player, simulated_player::SimPlayerPermission::Delete))
             return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-        if (!force && !it->second->mSaveData.isEmptyInv)
+        if (!force && !it->second->checkInvEmptyForOfflineCFSP())
             return base::OperateResult::swing("manager.fail.notEmpty"_tr(spname));
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspSplist", {spname});
         ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspOfflineSp", {spname});
@@ -344,8 +343,8 @@ base::OperateResult CFSPManager::spInvInfo(Player* player, std::string const& sp
 SP_ONLINE_FUNC_DEF(Stop, stop())
 SP_ONLINE_FUNC_DEF(LookAt, lookAt(pos), Vec3 const& pos)
 
-SP_ONLINE_FUNC_DEF(Drop, drop())
-SP_ONLINE_FUNC_DEF(DropInv, dropInv())
+SP_ONLINE_FUNC_DEF(Drop, drop(times, interval), int times, int interval)
+SP_ONLINE_FUNC_DEF(DropInv, dropInv(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(Swap, swap(player))
 SP_ONLINE_FUNC_DEF(Select, select(id), int id)
 

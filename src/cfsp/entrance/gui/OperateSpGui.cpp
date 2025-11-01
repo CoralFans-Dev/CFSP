@@ -178,9 +178,12 @@ void GuiManager::sendOperateSpPage(Player& player, std::shared_ptr<simulated_pla
                     if (!result.has_value()) return;
 
                     if (result.value() == ll::form::ModalFormSelectedButton::Upper) {
-                        if (!cfsp->mSimPlayer)
-                            return base::OperateResult::error("manager.error.loseSimplayer"_tr()).sendTo(player);
-                        if (cfsp->mSaveData.isEmptyInv)
+                        if (cfsp->mSimPlayer) {
+                            if (cfsp->isEmptyInv())
+                                return manager::CFSPManager::getInstance()
+                                    .spDelete(&player, cfsp->mSaveData.name)
+                                    .sendTo(player);
+                        } else if (cfsp->checkInvEmptyForOfflineCFSP())
                             return manager::CFSPManager::getInstance()
                                 .spDelete(&player, cfsp->mSaveData.name)
                                 .sendTo(player);
@@ -327,18 +330,108 @@ void GuiManager::sendSpInvOperatorPage(Player& player, std::shared_ptr<simulated
         form.appendButton("gui.inv.sp.swap"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spSwap(&player, spname).sendTo(player);
         });
-    if (perm & (uint)simulated_player::SimPlayerPermission::Drop)
-        form.appendButton("gui.inv.sp.drop"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
-            manager::CFSPManager::getInstance().spDrop(&player, spname).sendTo(player);
-        });
-    if (perm & (uint)simulated_player::SimPlayerPermission::DropInv)
-        form.appendButton("gui.inv.sp.dropinv"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
-            manager::CFSPManager::getInstance().spDropInv(&player, spname).sendTo(player);
-        });
+    if (cfsp->isFree()) {
+        if (perm & (uint)simulated_player::SimPlayerPermission::Drop)
+            form.appendButton("gui.inv.sp.drop"_tr(), [this, cfsp, perm](Player& player) {
+                sendSpDropPage(player, cfsp, perm);
+            });
+        if (perm & (uint)simulated_player::SimPlayerPermission::DropInv)
+            form.appendButton("gui.inv.sp.dropinv"_tr(), [this, cfsp, perm](Player& player) {
+                sendSpDropInvPage(player, cfsp, perm);
+            });
+    }
     form.sendTo(player, [this, cfsp](Player& player, int, ll::form::FormCancelReason cancelReason) {
         if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
             this->sendOperateSpPage(player, cfsp);
     });
+}
+
+void GuiManager::sendSpDropPage(
+    Player&                                      player,
+    std::shared_ptr<simulated_player::SimPlayer> cfsp,
+    uint                                         perm,
+    std::string                                  defTimes,
+    std::string                                  defInterval
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.inv.sp.drop"_tr());
+    form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
+    form.appendInput("interval", "gui.para.interval"_tr(), "1", defInterval);
+    form.sendTo(
+        player,
+        [this,
+         cfsp,
+         perm](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendSpInvOperatorPage(player, cfsp, perm);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            auto it = elements.value().find("times");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleTimes = std::get<std::string>(it->second);
+            auto times    = this->tryGetInt(eleTimes);
+
+            it = elements.value().find("interval");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleInterval = std::get<std::string>(it->second);
+            auto interval    = this->tryGetInt(eleInterval);
+
+            if (!times.has_value() || !interval.has_value()) {
+                base::OperateResult::error("gui.para.intError"_tr()).sendTo(player);
+                return this->sendSpDropPage(player, cfsp, perm, eleTimes, eleInterval);
+            }
+
+            return manager::CFSPManager::getInstance()
+                .spDrop(&player, cfsp->mSaveData.name, times.value(), interval.value())
+                .sendTo(player);
+        }
+    );
+}
+
+void GuiManager::sendSpDropInvPage(
+    Player&                                      player,
+    std::shared_ptr<simulated_player::SimPlayer> cfsp,
+    uint                                         perm,
+    std::string                                  defTimes,
+    std::string                                  defInterval
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.inv.sp.dropinv"_tr());
+    form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
+    form.appendInput("interval", "gui.para.interval"_tr(), "1", defInterval);
+    form.sendTo(
+        player,
+        [this,
+         cfsp,
+         perm](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendSpInvOperatorPage(player, cfsp, perm);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            auto it = elements.value().find("times");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleTimes = std::get<std::string>(it->second);
+            auto times    = this->tryGetInt(eleTimes);
+
+            it = elements.value().find("interval");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleInterval = std::get<std::string>(it->second);
+            auto interval    = this->tryGetInt(eleInterval);
+
+            if (!times.has_value() || !interval.has_value()) {
+                base::OperateResult::error("gui.para.intError"_tr()).sendTo(player);
+                return this->sendSpDropInvPage(player, cfsp, perm, eleTimes, eleInterval);
+            }
+
+            return manager::CFSPManager::getInstance()
+                .spDropInv(&player, cfsp->mSaveData.name, times.value(), interval.value())
+                .sendTo(player);
+        }
+    );
 }
 
 void GuiManager::sendSpTpOperatorPage(
