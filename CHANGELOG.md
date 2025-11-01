@@ -14,8 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-+ Fixed bug with dummy group authorization operations
-+ Fixed bug where authorization results were not saved when using authorization operations on offline dummies
++ Fixed bug with group authorization operations
++ Fixed bug where authorization results were not saved when using authorization operations on offline simulatedPlayer
 
 ## [3.0.0] - 2025-9-26
 

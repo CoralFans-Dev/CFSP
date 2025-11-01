@@ -16,8 +16,7 @@ bool SimPlayer::isEmptyInv() {
         || this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
         || ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty())
         return false;
-    auto ec = this->mSimPlayer->getEnderChestContainer();
-    if (ec.has_value() && ec->isEmpty()) return false;
+    if (auto ec = this->mSimPlayer->getEnderChestContainer(); !ec.has_value() || ec->isEmpty()) return false;
     return true;
 }
 
@@ -92,6 +91,14 @@ base::OperateResult SimPlayer::swap(Player* player) {
     } catch (std::exception ex) {
         return base::OperateResult::error(std::string("Error: ") + ex.what());
     }
+    auto ec                      = this->mSimPlayer->getEnderChestContainer();
+    this->mIsEnderContainerEmpty = !ec.has_value() || ec->isEmpty();
+    this->mIsEquipmentEmpty      = ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty();
+    this->mIsOffhandEmpty        = this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM();
+    this->mIsInventoryEmpty      = this->mSimPlayer->mInventory->mInventory->isEmpty();
+    this->mSaveData.isEmptyInv =
+        this->mIsEnderContainerEmpty && this->mIsEquipmentEmpty && this->mIsOffhandEmpty && this->mIsInventoryEmpty;
+    this->mShouldSave = true;
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
