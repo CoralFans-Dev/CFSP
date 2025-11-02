@@ -454,17 +454,105 @@ void GuiManager::sendGroupInvOperatorPage(Player& player, std::shared_ptr<group:
                 });
         });
     if (perm & (uint)group::GroupPermission::Drop)
-        form.appendButton("gui.inv.group.drop"_tr(), [gname = group->mData.name](Player& player) {
-            for (auto& perRes : manager::CFSPManager::getInstance().groupDrop(&player, gname)) perRes.sendTo(player);
+        form.appendButton("gui.inv.group.drop"_tr(), [this, group, perm](Player& player) {
+            sendGroupDropPage(player, group, perm);
         });
     if (perm & (uint)group::GroupPermission::DropInv)
-        form.appendButton("gui.inv.group.dropinv"_tr(), [gname = group->mData.name](Player& player) {
-            for (auto& perRes : manager::CFSPManager::getInstance().groupDropInv(&player, gname)) perRes.sendTo(player);
+        form.appendButton("gui.inv.group.dropinv"_tr(), [this, group, perm](Player& player) {
+            sendGroupDropInvPage(player, group, perm);
         });
     form.sendTo(player, [this, group](Player& player, int, ll::form::FormCancelReason cancelReason) {
         if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
             this->sendOperateGroupPage(player, group);
     });
+}
+
+void GuiManager::sendGroupDropPage(
+    Player&                           player,
+    std::shared_ptr<group::CFSPGroup> group,
+    uint                              perm,
+    std::string                       defTimes,
+    std::string                       defInterval
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.inv.group.drop"_tr());
+    form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
+    form.appendInput("interval", "gui.para.interval"_tr(), "1", defInterval);
+    form.sendTo(
+        player,
+        [this,
+         group,
+         perm](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendGroupInvOperatorPage(player, group, perm);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            auto it = elements.value().find("times");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleTimes = std::get<std::string>(it->second);
+            auto times    = this->tryGetInt(eleTimes);
+
+            it = elements.value().find("interval");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleInterval = std::get<std::string>(it->second);
+            auto interval    = this->tryGetInt(eleInterval);
+
+            if (!times.has_value() || !interval.has_value()) {
+                base::OperateResult::error("gui.para.intError"_tr()).sendTo(player);
+                return this->sendGroupDropPage(player, group, perm, eleTimes, eleInterval);
+            }
+
+            for (auto& perRes : manager::CFSPManager::getInstance()
+                                    .groupDrop(&player, group->mData.name, times.value(), interval.value()))
+                perRes.sendTo(player);
+        }
+    );
+}
+
+void GuiManager::sendGroupDropInvPage(
+    Player&                           player,
+    std::shared_ptr<group::CFSPGroup> group,
+    uint                              perm,
+    std::string                       defTimes,
+    std::string                       defInterval
+) {
+    using ll::i18n_literals::operator""_tr;
+    auto form = ll::form::CustomForm("gui.inv.group.dropinv"_tr());
+    form.appendInput("times", "gui.para.times"_tr(), "1", defTimes);
+    form.appendInput("interval", "gui.para.interval"_tr(), "1", defInterval);
+    form.sendTo(
+        player,
+        [this,
+         group,
+         perm](Player& player, ll::form::CustomFormResult const& elements, ll::form::FormCancelReason cancelReason) {
+            if (cancelReason.has_value() && cancelReason == ModalFormCancelReason::UserClosed)
+                return this->sendGroupInvOperatorPage(player, group, perm);
+            if (!elements.has_value()) return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+
+            auto it = elements.value().find("times");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleTimes = std::get<std::string>(it->second);
+            auto times    = this->tryGetInt(eleTimes);
+
+            it = elements.value().find("interval");
+            if (it == elements.value().end() || !std::holds_alternative<std::string>(it->second))
+                return base::OperateResult::error("gui.para.paraError"_tr()).sendTo(player);
+            auto eleInterval = std::get<std::string>(it->second);
+            auto interval    = this->tryGetInt(eleInterval);
+
+            if (!times.has_value() || !interval.has_value()) {
+                base::OperateResult::error("gui.para.intError"_tr()).sendTo(player);
+                return this->sendGroupDropInvPage(player, group, perm, eleTimes, eleInterval);
+            }
+
+            for (auto& perRes : manager::CFSPManager::getInstance()
+                                    .groupDropInv(&player, group->mData.name, times.value(), interval.value()))
+                perRes.sendTo(player);
+        }
+    );
 }
 
 void GuiManager::sendGroupMessageOperatorPage(Player& player, std::shared_ptr<group::CFSPGroup> group, uint perm) {
