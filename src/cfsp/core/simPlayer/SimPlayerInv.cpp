@@ -14,12 +14,11 @@
 namespace coral_fans::cfsp::simulated_player {
 bool SimPlayer::isEmptyInv() {
     if (!this->mSimPlayer) return false;
-    if (this->mSimPlayer->mInventory->mInventory->isEmpty()
-        || this->mSimPlayer->getOffhandSlot() == ItemStack::EMPTY_ITEM()
-        || ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty())
+    if (!this->mSimPlayer->mInventory->mInventory->isEmpty()
+        || this->mSimPlayer->getOffhandSlot() != ItemStack::EMPTY_ITEM()
+        || !ActorEquipment::getArmorContainer(this->mSimPlayer->getEntityContext()).isEmpty())
         return false;
-    auto ec = this->mSimPlayer->getEnderChestContainer();
-    if (ec.has_value() && ec->isEmpty()) return false;
+    if (auto ec = this->mSimPlayer->getEnderChestContainer(); ec.has_value()) return ec->isEmpty();
     return true;
 }
 
