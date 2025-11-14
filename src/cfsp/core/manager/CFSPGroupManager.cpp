@@ -41,7 +41,7 @@ base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& 
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     group::GroupData groupData;
     groupData.name      = gname;
-    groupData.ownerUuid = player->getUuid().asString();
+    groupData.ownerUuid = player ? player->getUuid().asString() : "";
     auto group          = std::make_shared<group::CFSPGroup>(groupData);
     group->save();
     this->mGroupMap.emplace(gname, group);
