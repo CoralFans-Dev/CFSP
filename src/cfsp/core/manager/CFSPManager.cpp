@@ -175,6 +175,13 @@ std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetC
     else return std::nullopt;
 }
 
+std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(Actor* sp) {
+    if (sp->isPlayer()) {
+        return this->tryGetCFSP(static_cast<Player*>(sp));
+    }
+    return std::nullopt;
+}
+
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(std::string const& name) {
     if (auto it = this->mOnlineSpMap.find(name); it != this->mOnlineSpMap.end()) return it->second;
     if (auto it = this->mOfflineSpMap.find(name); it != this->mOfflineSpMap.end()) return it->second;

@@ -4,6 +4,9 @@
 namespace coral_fans::cfsp::fix {
 class CFSPFixManager {
 public:
+    bool createSpMutex = false;
+
+public:
     static CFSPFixManager& getInstance() {
         static CFSPFixManager instance;
         return instance;
@@ -12,6 +15,7 @@ public:
 private:
     void featureFix();
     void handItemFix();
+    void sapiFix();
 
 public:
     void cfspBugFixHook();

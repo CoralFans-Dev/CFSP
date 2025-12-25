@@ -1,0 +1,198 @@
+Date : 2025-12-25 13:48:15
+Directory : f:\Project\levilamina\1.7.x\CFSP
+Total : 125 files,  608 codes, 33 comments, 81 blanks, all 722 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| JSON     |          8 |        308 |          0 |          0 |        308 |
+| C++      |         97 |        256 |         33 |         38 |        327 |
+| Markdown |          8 |         44 |          0 |         43 |         87 |
+| XMake    |          2 |          0 |          0 |          0 |          0 |
+| Lua      |          2 |          0 |          0 |          0 |          0 |
+| YAML     |          8 |          0 |          0 |          0 |          0 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                             | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                |        125 |        608 |         33 |         81 |        722 |
+| . (Files)                                                                        |          6 |        361 |          3 |        209 |        573 |
+| ..                                                                               |         61 |     -7,323 |        -95 |       -767 |     -8,185 |
+| ..\..                                                                            |         61 |     -7,323 |        -95 |       -767 |     -8,185 |
+| ..\..\1.5.x                                                                      |         61 |     -7,323 |        -95 |       -767 |     -8,185 |
+| ..\..\1.5.x\CFSP                                                                 |         61 |     -7,323 |        -95 |       -767 |     -8,185 |
+| ..\..\1.5.x\CFSP (Files)                                                         |          6 |       -317 |         -3 |       -166 |       -486 |
+| ..\..\1.5.x\CFSP\.github                                                         |          5 |       -184 |        -10 |        -51 |       -245 |
+| ..\..\1.5.x\CFSP\.github (Files)                                                 |          1 |        -10 |          0 |         -9 |        -19 |
+| ..\..\1.5.x\CFSP\.github\ISSUE_TEMPLATE                                          |          2 |        -72 |          0 |        -13 |        -85 |
+| ..\..\1.5.x\CFSP\.github\workflows                                               |          2 |       -102 |        -10 |        -29 |       -141 |
+| ..\..\1.5.x\CFSP\scripts                                                         |          1 |       -105 |         -1 |        -19 |       -125 |
+| ..\..\1.5.x\CFSP\src                                                             |         49 |     -6,717 |        -81 |       -531 |     -7,329 |
+| ..\..\1.5.x\CFSP\src\cfsp                                                        |         47 |     -6,397 |        -81 |       -531 |     -7,009 |
+| ..\..\1.5.x\CFSP\src\cfsp (Files)                                                |          5 |       -137 |         -9 |        -35 |       -181 |
+| ..\..\1.5.x\CFSP\src\cfsp\base                                                   |          5 |       -121 |          0 |        -28 |       -149 |
+| ..\..\1.5.x\CFSP\src\cfsp\core                                                   |         28 |     -2,656 |        -33 |       -216 |     -2,905 |
+| ..\..\1.5.x\CFSP\src\cfsp\core\fix                                               |          2 |       -133 |        -10 |        -12 |       -155 |
+| ..\..\1.5.x\CFSP\src\cfsp\core\group                                             |          4 |        -91 |          0 |        -10 |       -101 |
+| ..\..\1.5.x\CFSP\src\cfsp\core\helper                                            |          6 |       -318 |          0 |        -23 |       -341 |
+| ..\..\1.5.x\CFSP\src\cfsp\core\manager                                           |          5 |     -1,330 |        -18 |       -104 |     -1,452 |
+| ..\..\1.5.x\CFSP\src\cfsp\core\simPlayer                                         |         11 |       -784 |         -5 |        -67 |       -856 |
+| ..\..\1.5.x\CFSP\src\cfsp\entrance                                               |          9 |     -3,483 |        -39 |       -252 |     -3,774 |
+| ..\..\1.5.x\CFSP\src\cfsp\entrance\command                                       |          5 |     -1,382 |        -39 |        -61 |     -1,482 |
+| ..\..\1.5.x\CFSP\src\cfsp\entrance\gui                                           |          4 |     -2,101 |          0 |       -191 |     -2,292 |
+| ..\..\1.5.x\CFSP\src\lang                                                        |          2 |       -320 |          0 |          0 |       -320 |
+| .github                                                                          |          5 |        184 |         10 |         51 |        245 |
+| .github (Files)                                                                  |          1 |         10 |          0 |          9 |         19 |
+| .github\ISSUE_TEMPLATE                                                           |          2 |         72 |          0 |         13 |         85 |
+| .github\workflows                                                                |          2 |        102 |         10 |         29 |        141 |
+| scripts                                                                          |          1 |        105 |          1 |         19 |        125 |
+| src                                                                              |         52 |      7,281 |        114 |        569 |      7,964 |
+| src\cfsp                                                                         |         50 |      6,653 |        114 |        569 |      7,336 |
+| src\cfsp (Files)                                                                 |          5 |        137 |          9 |         35 |        181 |
+| src\cfsp\base                                                                    |          5 |        121 |          0 |         28 |        149 |
+| src\cfsp\core                                                                    |         31 |      2,717 |         66 |        234 |      3,017 |
+| src\cfsp\core\fix                                                                |          5 |        253 |         44 |         28 |        325 |
+| src\cfsp\core\group                                                              |          4 |         91 |          0 |         10 |        101 |
+| src\cfsp\core\helper                                                             |          6 |        200 |          0 |         19 |        219 |
+| src\cfsp\core\manager                                                            |          5 |      1,341 |         18 |        105 |      1,464 |
+| src\cfsp\core\simPlayer                                                          |         11 |        832 |          4 |         72 |        908 |
+| src\cfsp\entrance                                                                |          9 |      3,678 |         39 |        272 |      3,989 |
+| src\cfsp\entrance\command                                                        |          5 |      1,386 |         39 |         61 |      1,486 |
+| src\cfsp\entrance\gui                                                            |          4 |      2,292 |          0 |        211 |      2,503 |
+| src\lang                                                                         |          2 |        628 |          0 |          0 |        628 |
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                         | language | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| f:\Project\levilamina\1.5.x\CFSP\.github\ISSUE_TEMPLATE\bug_report.yml           | YAML     |        -47 |          0 |         -9 |        -56 |
+| f:\Project\levilamina\1.5.x\CFSP\.github\ISSUE_TEMPLATE\feature_request.yml      | YAML     |        -25 |          0 |         -4 |        -29 |
+| f:\Project\levilamina\1.5.x\CFSP\.github\PULL_REQUEST_TEMPLATE.md                | Markdown |        -10 |          0 |         -9 |        -19 |
+| f:\Project\levilamina\1.5.x\CFSP\.github\workflows\build.yml                     | YAML     |        -34 |        -10 |        -12 |        -56 |
+| f:\Project\levilamina\1.5.x\CFSP\.github\workflows\release.yml                   | YAML     |        -68 |          0 |        -17 |        -85 |
+| f:\Project\levilamina\1.5.x\CFSP\CHANGELOG.md                                    | Markdown |       -106 |          0 |        -73 |       -179 |
+| f:\Project\levilamina\1.5.x\CFSP\CHANGELOG_ZH.md                                 | Markdown |       -106 |          0 |        -73 |       -179 |
+| f:\Project\levilamina\1.5.x\CFSP\README.md                                       | Markdown |        -14 |          0 |        -12 |        -26 |
+| f:\Project\levilamina\1.5.x\CFSP\manifest.json                                   | JSON     |         -7 |          0 |          0 |         -7 |
+| f:\Project\levilamina\1.5.x\CFSP\scripts\after_build.lua                         | Lua      |       -105 |         -1 |        -19 |       -125 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\CFSP.cpp                               | C++      |        -22 |         -1 |         -9 |        -32 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\CFSP.h                                 | C++      |        -15 |         -6 |        -14 |        -35 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\Config.h                               | C++      |        -28 |          0 |         -6 |        -34 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\MemoryOperators.cpp                    | C++      |         -2 |         -2 |         -3 |         -7 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\PermissionConfig.h                     | C++      |        -70 |          0 |         -3 |        -73 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\base\Macros.h                          | C++      |         -6 |          0 |         -2 |         -8 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\base\OperateResult.h                   | C++      |        -44 |          0 |         -9 |        -53 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\base\Schedule.h                        | C++      |        -17 |          0 |         -5 |        -22 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\base\Utils.cpp                         | C++      |        -45 |          0 |         -6 |        -51 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\base\Utils.h                           | C++      |         -9 |          0 |         -6 |        -15 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\fix\CFSPFixManager.cpp            | C++      |       -122 |        -10 |        -11 |       -143 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\fix\CFSPFixManager.h              | C++      |        -11 |          0 |         -1 |        -12 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\group\CFSPGroup.cpp               | C++      |        -30 |          0 |         -4 |        -34 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\group\CFSPGroup.h                 | C++      |        -15 |          0 |         -4 |        -19 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\group\GroupData.h                 | C++      |        -14 |          0 |         -2 |        -16 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\group\GroupPermission.h           | C++      |        -32 |          0 |          0 |        -32 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPAutoFuncHelper.cpp     | C++      |        -73 |          0 |         -3 |        -76 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPHelperManager.cpp      | C++      |        -13 |          0 |         -2 |        -15 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPHelperManager.h        | C++      |        -22 |          0 |         -5 |        -27 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPOperateHelper.cpp      | C++      |        -46 |          0 |         -3 |        -49 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPSaveHelper.cpp         | C++      |       -153 |          0 |         -7 |       -160 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\helper\CFSPSchduleHelper.cpp      | C++      |        -11 |          0 |         -3 |        -14 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\manager\CFSPGroupManager.cpp      | C++      |       -193 |         -1 |        -12 |       -206 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\manager\CFSPManager.cpp           | C++      |       -236 |          0 |        -25 |       -261 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\manager\CFSPManager.h             | C++      |       -206 |          0 |        -24 |       -230 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\manager\CFSPPermissionManager.cpp | C++      |       -365 |         -5 |        -15 |       -385 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\manager\CFSPSpManager.cpp         | C++      |       -330 |        -12 |        -28 |       -370 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.cpp           | C++      |       -161 |         -4 |        -21 |       -186 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.h             | C++      |        -72 |          0 |        -11 |        -83 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerAction.cpp     | C++      |       -161 |         -1 |         -7 |       -169 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerBase.cpp       | C++      |        -31 |          0 |         -7 |        -38 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerInv.cpp        | C++      |       -115 |          0 |         -6 |       -121 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerMessage.cpp    | C++      |        -35 |          0 |         -2 |        -37 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerMove.cpp       | C++      |        -37 |          0 |         -3 |        -40 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerPermission.h   | C++      |        -32 |          0 |         -1 |        -33 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerSave.cpp       | C++      |        -63 |          0 |         -3 |        -66 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerSaveData.h     | C++      |        -21 |          0 |         -2 |        -23 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\core\simPlayer\SimPlayerStatus.cpp     | C++      |        -56 |          0 |         -4 |        -60 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\command\ComandManager.cpp     | C++      |       -113 |         -4 |         -9 |       -126 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\command\ComandManager.h       | C++      |        -19 |         -1 |         -5 |        -25 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\command\GroupCommand.cpp      | C++      |       -587 |        -15 |        -19 |       -621 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\command\GuiCommand.cpp        | C++      |        -41 |         -3 |         -4 |        -48 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\command\SpCommand.cpp         | C++      |       -622 |        -16 |        -24 |       -662 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\gui\GuiManager.cpp            | C++      |       -193 |          0 |        -12 |       -205 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\gui\GuiManager.h              | C++      |       -128 |          0 |         -7 |       -135 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\gui\OperateGroupGui.cpp       | C++      |       -858 |          0 |        -85 |       -943 |
+| f:\Project\levilamina\1.5.x\CFSP\src\cfsp\entrance\gui\OperateSpGui.cpp          | C++      |       -922 |          0 |        -87 |     -1,009 |
+| f:\Project\levilamina\1.5.x\CFSP\src\lang\en_US.json                             | JSON     |         -7 |          0 |          0 |         -7 |
+| f:\Project\levilamina\1.5.x\CFSP\src\lang\zh_CN.json                             | JSON     |       -313 |          0 |          0 |       -313 |
+| f:\Project\levilamina\1.5.x\CFSP\tooth.json                                      | JSON     |        -26 |          0 |          0 |        -26 |
+| f:\Project\levilamina\1.5.x\CFSP\xmake.lua                                       | XMake    |        -58 |         -3 |         -8 |        -69 |
+| f:\Project\levilamina\1.7.x\CFSP\.github\ISSUE_TEMPLATE\bug_report.yml           | YAML     |         47 |          0 |          9 |         56 |
+| f:\Project\levilamina\1.7.x\CFSP\.github\ISSUE_TEMPLATE\feature_request.yml      | YAML     |         25 |          0 |          4 |         29 |
+| f:\Project\levilamina\1.7.x\CFSP\.github\PULL_REQUEST_TEMPLATE.md                | Markdown |         10 |          0 |          9 |         19 |
+| f:\Project\levilamina\1.7.x\CFSP\.github\workflows\build.yml                     | YAML     |         34 |         10 |         12 |         56 |
+| f:\Project\levilamina\1.7.x\CFSP\.github\workflows\release.yml                   | YAML     |         68 |          0 |         17 |         85 |
+| f:\Project\levilamina\1.7.x\CFSP\CHANGELOG.md                                    | Markdown |        128 |          0 |         95 |        223 |
+| f:\Project\levilamina\1.7.x\CFSP\CHANGELOG_ZH.md                                 | Markdown |        128 |          0 |         94 |        222 |
+| f:\Project\levilamina\1.7.x\CFSP\README.md                                       | Markdown |         14 |          0 |         12 |         26 |
+| f:\Project\levilamina\1.7.x\CFSP\manifest.json                                   | JSON     |          7 |          0 |          0 |          7 |
+| f:\Project\levilamina\1.7.x\CFSP\scripts\after_build.lua                         | Lua      |        105 |          1 |         19 |        125 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\CFSP.cpp                               | C++      |         22 |          1 |          9 |         32 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\CFSP.h                                 | C++      |         15 |          6 |         14 |         35 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\Config.h                               | C++      |         28 |          0 |          6 |         34 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\MemoryOperators.cpp                    | C++      |          2 |          2 |          3 |          7 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\PermissionConfig.h                     | C++      |         70 |          0 |          3 |         73 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\base\Macros.h                          | C++      |          6 |          0 |          2 |          8 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\base\OperateResult.h                   | C++      |         44 |          0 |          9 |         53 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\base\Schedule.h                        | C++      |         17 |          0 |          5 |         22 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\base\Utils.cpp                         | C++      |         45 |          0 |          6 |         51 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\base\Utils.h                           | C++      |          9 |          0 |          6 |         15 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\fix\CFSPFeatureFix.cpp            | C++      |        122 |         10 |         11 |        143 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\fix\CFSPFixManager.cpp            | C++      |          8 |          0 |          2 |         10 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\fix\CFSPFixManager.h              | C++      |         16 |          0 |          4 |         20 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\fix\CFSPHandItemFix.cpp           | C++      |         53 |          0 |          4 |         57 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\fix\SAPIFix.cpp                   | C++      |         54 |         34 |          7 |         95 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\group\CFSPGroup.cpp               | C++      |         30 |          0 |          4 |         34 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\group\CFSPGroup.h                 | C++      |         15 |          0 |          4 |         19 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\group\GroupData.h                 | C++      |         14 |          0 |          2 |         16 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\group\GroupPermission.h           | C++      |         32 |          0 |          0 |         32 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPAutoFuncHelper.cpp     | C++      |         73 |          0 |          3 |         76 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPHelperManager.cpp      | C++      |         13 |          0 |          2 |         15 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPHelperManager.h        | C++      |         22 |          0 |          5 |         27 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPOperateHelper.cpp      | C++      |         46 |          0 |          3 |         49 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPSaveHelper.cpp         | C++      |         35 |          0 |          3 |         38 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\helper\CFSPSchduleHelper.cpp      | C++      |         11 |          0 |          3 |         14 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\manager\CFSPGroupManager.cpp      | C++      |        193 |          1 |         12 |        206 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\manager\CFSPManager.cpp           | C++      |        242 |          0 |         26 |        268 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\manager\CFSPManager.h             | C++      |        211 |          0 |         24 |        235 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\manager\CFSPPermissionManager.cpp | C++      |        366 |          5 |         15 |        386 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\manager\CFSPSpManager.cpp         | C++      |        329 |         12 |         28 |        369 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.cpp           | C++      |        152 |          3 |         22 |        177 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayer.h             | C++      |         71 |          0 |         13 |         84 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerAction.cpp     | C++      |        163 |          1 |          7 |        171 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerBase.cpp       | C++      |         31 |          0 |          7 |         38 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerInv.cpp        | C++      |        139 |          0 |          7 |        146 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerMessage.cpp    | C++      |         35 |          0 |          2 |         37 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerMove.cpp       | C++      |         37 |          0 |          3 |         40 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerPermission.h   | C++      |         32 |          0 |          1 |         33 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerSave.cpp       | C++      |         96 |          0 |          4 |        100 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerSaveData.h     | C++      |         20 |          0 |          2 |         22 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\core\simPlayer\SimPlayerStatus.cpp     | C++      |         56 |          0 |          4 |         60 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\command\ComandManager.cpp     | C++      |        113 |          4 |          9 |        126 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\command\ComandManager.h       | C++      |         19 |          1 |          5 |         25 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\command\GroupCommand.cpp      | C++      |        588 |         15 |         19 |        622 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\command\GuiCommand.cpp        | C++      |         41 |          3 |          4 |         48 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\command\SpCommand.cpp         | C++      |        625 |         16 |         24 |        665 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\gui\GuiManager.cpp            | C++      |        193 |          0 |         12 |        205 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\gui\GuiManager.h              | C++      |        156 |          0 |          7 |        163 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\gui\OperateGroupGui.cpp       | C++      |        936 |          0 |         95 |      1,031 |
+| f:\Project\levilamina\1.7.x\CFSP\src\cfsp\entrance\gui\OperateSpGui.cpp          | C++      |      1,007 |          0 |         97 |      1,104 |
+| f:\Project\levilamina\1.7.x\CFSP\src\lang\en_US.json                             | JSON     |        314 |          0 |          0 |        314 |
+| f:\Project\levilamina\1.7.x\CFSP\src\lang\zh_CN.json                             | JSON     |        314 |          0 |          0 |        314 |
+| f:\Project\levilamina\1.7.x\CFSP\tooth.json                                      | JSON     |         26 |          0 |          0 |         26 |
+| f:\Project\levilamina\1.7.x\CFSP\xmake.lua                                       | XMake    |         58 |          3 |          8 |         69 |
+| Total                                                                            |          |        608 |         33 |         81 |        722 |
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+

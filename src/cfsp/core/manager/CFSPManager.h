@@ -75,6 +75,7 @@ private:
     uint getGroupPermissionMask(CommandPermissionLevel);
 
 public:
+    std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Actor* sp);
     std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(Player* sp);
     std::optional<std::shared_ptr<simulated_player::SimPlayer>> tryGetCFSP(std::string const& name);
     std::optional<std::shared_ptr<group::CFSPGroup>>            tryGetCFSPGroup(std::string const& name);

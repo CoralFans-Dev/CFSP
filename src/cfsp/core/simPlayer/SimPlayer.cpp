@@ -2,16 +2,14 @@
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/base/Schedule.h"
 #include "cfsp/base/Utils.h"
+#include "cfsp/core/fix/CFSPFixManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/service/Bedrock.h"
-#include "mc/entity/components_json_legacy/NavigationComponent.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
-#include "mc/world/actor/ai/navigation/PathNavigation.h"
 #include "mc/world/actor/provider/ActorAttribute.h"
-#include "mc/world/actor/provider/MobMovement.h"
 #include <optional>
 
 
@@ -30,27 +28,11 @@ base::OperateResult SimPlayer::stop() {
 
     this->mSimPlayer->simulateStopDestroyingBlock();
 
-    // simPlayer->simulateStopInteracting();
-    this->mSimPlayer->deleteContainerManager();
+    this->mSimPlayer->simulateStopInteracting();
 
-    // simPlayer->simulateStopMoving();
-    // from lse
-    auto& type = this->mSimPlayer->mSimulatedMovement->mType.get();
-    if (std::holds_alternative<sim::MoveInDirectionIntent>(type)
-        || std::holds_alternative<sim::MoveToPositionIntent>(type)) {
-        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), 0.0f, 0.0f, 0.0f);
-    } else if (std::holds_alternative<sim::NavigateToPositionsIntent>(type)
-               || std::holds_alternative<sim::NavigateToEntityIntent>(type)) {
-        MobMovement::setLocalMoveVelocity(this->mSimPlayer->getEntityContext(), 0.0f, 0.0f, 0.0f);
-        auto component = this->mSimPlayer->getEntityContext().tryGetComponent<NavigationComponent>();
-        if (component) {
-            component->mNavigation->stop(component, *this->mSimPlayer);
-        }
-    }
+    this->mSimPlayer->simulateStopMoving();
 
-    // simPlayer->simulateStopUsingItem();
-    if (this->mSimPlayer->isAlive()) [[likely]]
-        this->mSimPlayer->releaseUsingItem();
+    this->mSimPlayer->simulateStopUsingItem();
 
     return base::OperateResult::success("manager.success.operate"_tr());
 }
@@ -69,8 +51,12 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     if (!serverNetworkHandler) return nullptr;
     auto xuid = "-" + std::to_string(std::hash<std::string>()(spname));
     // auto* simPlayer = SimulatedPlayer::create(spname, pos, dim, serverNetworkHandler, xuid, std::nullopt);
+
+    fix::CFSPFixManager::getInstance().createSpMutex = true;
     auto* simPlayer =
         SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, serverNetworkHandler, xuid, std::nullopt);
+    fix::CFSPFixManager::getInstance().createSpMutex = false;
+
     if (!simPlayer) [[unlikely]]
         return nullptr;
 
@@ -100,7 +86,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     auto serverNetworkHandler = mc->getServerNetworkHandler();
     if (!serverNetworkHandler) return base::OperateResult::error("manager.error.failedtocreate"_tr());
 
-    this->mSimPlayer = SimulatedPlayer::create(
+    fix::CFSPFixManager::getInstance().createSpMutex = true;
+    this->mSimPlayer                                 = SimulatedPlayer::create(
         this->mSaveData.name,
         {0, 0, 0},
         {0, 0, 0},
@@ -110,9 +97,11 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
         serverNetworkHandler,
         this->mSaveData.xuid,
         this->mSaveData.uniqueId.has_value()
-            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
-            : std::nullopt
+                                            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
+                                            : std::nullopt
     );
+    fix::CFSPFixManager::getInstance().createSpMutex = false;
+
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.failedtocreate"_tr());
     this->loadSpNbt();
@@ -135,7 +124,9 @@ base::OperateResult SimPlayer::despawn() {
     this->mShouldSave        = true;
     this->save();
     this->mSimPlayer->disconnect();
+    // try {
     this->mSimPlayer->remove();
+    // } catch (...) {}
     this->mSimPlayer->setGameTestHelper(nullptr);
     this->mSimPlayer = nullptr;
     return base::OperateResult::success("manager.success.operate"_tr());
