@@ -1,0 +1,40 @@
+#include "SimPlayer.h"
+#include "cfsp/base/OperateResult.h"
+#include "ll/api/i18n/I18n.h"
+#include "mc/scripting/modules/gametest/ScriptNavigationResult.h"
+
+namespace coral_fans::cfsp::simulated_player {
+base::OperateResult SimPlayer::moveTo(Vec3 const& pos, float speed) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
+    if (speed <= 0) return base::OperateResult::error("manager.fail.speedSmallerThan0"_tr());
+    if (speed > 4.3f) speed = 4.3f;
+    this->mSimPlayer->simulateMoveToLocation(pos, speed, false);
+    return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult SimPlayer::navTo(Vec3 const& pos, float speed) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
+    if (speed <= 0) return base::OperateResult::error("manager.fail.speedSmallerThan0"_tr());
+    if (speed > 4.3f) speed = 4.3f;
+    this->mSimPlayer->simulateNavigateToLocation(pos, speed);
+    return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult SimPlayer::tp(Vec3 pos, std::optional<int> dimId) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!dimId.has_value()) dimId = this->mSimPlayer->getDimensionId();
+    if (dimId.value() != this->mSimPlayer->getDimensionId()) pos.y -= 1.62f;
+    this->mSimPlayer->teleport(pos, dimId.value());
+    return base::OperateResult::success("manager.success.operate"_tr());
+}
+} // namespace coral_fans::cfsp::simulated_player

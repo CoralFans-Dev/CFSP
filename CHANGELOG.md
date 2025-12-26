@@ -5,6 +5,90 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1] - 2025-12.25
+
+### Fixed
+
++ Resolved known compatibility issues with the SAPI
+
+## [3.3.0] - 2025-11.14
+
+### Added
+
++ Adapt to 1.21.120
+
+## [3.2.3] - 2025-11-1
+
+### Added
+
++ added times&interval params for drop/dropinv operate
+
+### Fixed
+
++ fixed a issue where system incorrectly warned about non-empty inventory when deleting simulatedPlayer, even when their inventory was actually empty 
+
+
+## [3.2.2] -2025-10-19
+
+### Added
+
++ Added "all" parameter for all authorization operations to grant all permissions
+
+### Fixed
+
++ Fixed bug with group authorization operations
++ Fixed bug where authorization results were not saved when using authorization operations on offline simulatedPlayer
+
+## [3.2.1] - 2025-10.5
+
+### Added
+
++ add en-US lang file
+
+### Fixed
+
++ fix the bug that simulatedPlayer can't change it's body rotation when use lookat
+
+## [3.2.0] - 2025-10.4
+
+### Added
+
++ Adapt to 1.21.111
+
+## [3.1.0] - 2025-9-26
+
+### Added
+
++ Adapt to 1.21.102
+
+## [3.0.0] - 2025-9-26
+
+### Added
+
++ Project refactoring
++ Updated the permission system for simulatedPlayer/simulatedPlayer groups. All simulatedPlayer functions now have independent permissions, and public permissions can be configured.
+
+### Changed
+
++ SimulatedPlayer no longer lock the camera view when moving (but navigate still does)
++ Added a speed parameter to simulatedPlayer move/navigate to adjust bot movement speed
++ SimulatedPlayer actions can now be performed continuously by setting the times or long parameter to 0
++ SimulatedPlayer data is now saved using JSON and NBT, allowing direct viewing of simulatedPlayer data in the data folder under the plugin directory
+
+### Removed
+
++ Temporarily removed the simulatedPlayer script system
+
+### Fixed
+
++ Fixed an issue where simulatedPlayer data could be lost randomly
+
+## [2.7.0] - 2025-8-26
+
+### Added
+
++ Adapt to 1.21.93
+
 ## [2.6.0] - 2025-7-26
 
 ### Added

@@ -5,7 +5,84 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.7.0] - 2025-7-26
+## [3.3.1] - 2025-12.25
+
+### Fixed
+
++ Resolved known compatibility issues with the SAPI.
+
+## [3.3.0] - 2025-11.14
+
+### Added
+
++ 适配1.21.120
+
+## [3.2.3] - 2025-11-1
+
+### Added
+
++ 为假人drop/dropinv操作添加times与interval参数
+
+### Fixed
+
++ 修复了删除假人时即便假人背包为空依旧提示假人背包不为空的问题
+
+## [3.2.2] - 2025-10-19
+
+### Added
+
++ 为所有授权操作添加"all"参数，用于授权全部权限
+
+### Fixed
+
++ 修复假人组授权操作的bug
++ 修复了对不在线的假人使用授权操作时授权的结果没有保存的bug
+
+## [3.2.1] - 2025-10.5
+
+### Added
+
++ 添加en-US语言文件
+
+### Fixed
+
++ 修复了假人在lookat时无法转身的bug
+
+## [3.2.0] - 2025-10.4
+
+### Added
+
++ 适配1.21.111
+
+## [3.1.0] - 2025-9-26
+
+### Added
+
++ 适配1.21.102
+
+## [3.0.0] - 2025-9-26
+
+### Added
+
++ 项目重构
++ 更新假人/假人组权限系统，现在假人所有的功能都有独立的权限，且可以设置公共权限
+
+### Changed
+
++ 假人移动时不再锁定视角（但是寻路仍会）
++ 假人移动/寻路新增参数speed，可以调节假人的移动速度
++ 假人执行操作现在可以进行持续操作，需将需要的参数times或long设置为0
++ 现在假人数据使用json与nbt进行保存，可以直接在插件目录的data文件夹下直接查看假人数据
+
+### Removed
+
++ 暂时移除假人脚本系统
+
+### Fixed
+
++ 修复了假人数据概率丢失的问题
+
+## [2.7.0] - 2025-8-26
 
 ### Added
 

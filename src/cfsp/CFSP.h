@@ -2,6 +2,7 @@
 
 #include "ll/api/mod/NativeMod.h"
 
+
 namespace coral_fans::cfsp {
 
 class CFSP {

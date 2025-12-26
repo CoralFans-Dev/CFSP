@@ -1,0 +1,55 @@
+Date : 2025-09-16 17:49:59
+Directory : f:\Project\levilamina\1.4.x\CFSP
+Total : 19 files,  712 codes, -3 comments, 50 blanks, all 759 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |         18 |        671 |         -3 |         50 |        718 |
+| JSON     |          1 |         41 |          0 |          0 |         41 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                            | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                               |         19 |        712 |         -3 |         50 |        759 |
+| src                                                                             |         19 |        712 |         -3 |         50 |        759 |
+| src\cfsp                                                                        |         18 |        671 |         -3 |         50 |        718 |
+| src\cfsp\base                                                                   |          1 |          0 |         -2 |          0 |         -2 |
+| src\cfsp\core                                                                   |         13 |        -69 |         -2 |         -2 |        -73 |
+| src\cfsp\core\group                                                             |          2 |          8 |          0 |          1 |          9 |
+| src\cfsp\core\manager                                                           |          9 |        -76 |         -2 |         -3 |        -81 |
+| src\cfsp\core\simPlayer                                                         |          2 |         -1 |          0 |          0 |         -1 |
+| src\cfsp\entrance                                                               |          4 |        740 |          1 |         52 |        793 |
+| src\cfsp\entrance\command                                                       |          1 |         15 |          1 |          1 |         17 |
+| src\cfsp\entrance\gui                                                           |          3 |        725 |          0 |         51 |        776 |
+| src\lang                                                                        |          1 |         41 |          0 |          0 |         41 |
++---------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                        | language | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\base\OperateResult.h                  | C++      |          0 |         -2 |          0 |         -2 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\group\CFSPGroup.cpp              | C++      |          7 |          0 |          1 |          8 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\group\CFSPGroup.h                | C++      |          1 |          0 |          0 |          1 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.cpp          | C++      |         12 |          0 |          1 |         13 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManager.h            | C++      |          4 |          0 |          0 |          4 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerGroup.cpp     | C++      |         95 |          0 |          3 |         98 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSp.cpp        | C++      |         26 |         -2 |          7 |         31 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSpInv.cpp     | C++      |        -59 |          0 |         -4 |        -63 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSpMessage.cpp | C++      |        -26 |          0 |         -2 |        -28 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSpMove.cpp    | C++      |        -44 |          0 |         -3 |        -47 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSpOperate.cpp | C++      |        -55 |          0 |         -3 |        -58 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\manager\CFSPManagerSpStatus.cpp  | C++      |        -29 |          0 |         -2 |        -31 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayerBase.cpp      | C++      |         -2 |          0 |          0 |         -2 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\core\simPlayer\SimPlayerPermission.h  | C++      |          1 |          0 |          0 |          1 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\command\GroupCommand.cpp     | C++      |         15 |          1 |          1 |         17 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\GuiManager.h             | C++      |         40 |          0 |          1 |         41 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\OperateGroupGui.cpp      | C++      |        683 |          0 |         50 |        733 |
+| f:\Project\levilamina\1.4.x\CFSP\src\cfsp\entrance\gui\OperateSpGui.cpp         | C++      |          2 |          0 |          0 |          2 |
+| f:\Project\levilamina\1.4.x\CFSP\src\lang\zh_CN.json                            | JSON     |         41 |          0 |          0 |         41 |
+| Total                                                                           |          |        712 |         -3 |         50 |        759 |
++---------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
