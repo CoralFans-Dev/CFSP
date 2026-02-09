@@ -3,19 +3,27 @@ add_rules("mode.debug", "mode.release")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.git")
 
--- add_requires("levilamina x.x.x") for a specific version
--- add_requires("levilamina develop") to use develop version
--- please note that you should add bdslibrary yourself if using dev version
+if is_config("target_type", "server") then
+    add_requires("levilamina", {configs = {target_type = "server"}})
+else
+    add_requires("levilamina", {configs = {target_type = "client"}})
+end
+
 add_requires(
-    "levilamina 1.7.3",
     "levibuildscript",
-    "timewheel"
+    "timewheel",
+    "boost", {configs = {all = true}}
 )
-add_requires("boost", {configs = {all = true}})
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
 end
+
+option("target_type")
+    set_default("server")
+    set_showmenu(true)
+    set_values("server", "client")
+option_end()
 
 target("CFSP") -- Change this to your mod name.
     add_rules("@levibuildscript/linkrule")
@@ -31,7 +39,7 @@ target("CFSP") -- Change this to your mod name.
         "/w45204"
     )
     add_defines("NOMINMAX", "UNICODE", "CFSPEXP")
-    add_defines("VERSION=\"$(shell git describe --tags --abbrev=0 --always)\"")
+    add_defines("CF_VERSION=\"$(shell git describe --tags --abbrev=0 --always)\"")
     add_defines("COMMITID=\"$(shell git rev-parse HEAD)\"")
     add_files("src/**.cpp")
     add_headerfiles("src/(cfsp/**.h)")
@@ -48,6 +56,15 @@ target("CFSP") -- Change this to your mod name.
     set_kind("shared")
     set_languages("c++20")
     set_symbols("debug")
+    if is_config("target_type", "server") then
+        add_defines("LL_PLAT_S")
+    --  add_includedirs("src-server")
+    --  add_files("src-server/**.cpp")
+    else
+        add_defines("LL_PLAT_C")
+    --  add_includedirs("src-client")
+    --  add_files("src-client/**.cpp")
+    end
 
     after_build(function (target)
         local mod_packer = import("scripts.after_build")

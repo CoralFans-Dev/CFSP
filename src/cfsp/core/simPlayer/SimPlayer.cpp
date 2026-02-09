@@ -9,7 +9,9 @@
 #include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
-#include "mc/world/actor/provider/ActorAttribute.h"
+#include "mc/world/level/Level.h"
+
+// #include "mc/world/actor/provider/ActorAttribute.h"
 #include <optional>
 
 
@@ -123,10 +125,18 @@ base::OperateResult SimPlayer::despawn() {
     this->mSaveData.isOnline = false;
     this->mShouldSave        = true;
     this->save();
+
+    auto& removingRecord = fix::CFSPFixManager::getInstance().mRemovingRecord;
+    auto  currentTick    = this->mSimPlayer->getLevel().getCurrentTick();
+    if (currentTick.tickID - removingRecord.mLastTick.tickID > 2) {
+        removingRecord.mRemovingSpList.clear();
+    }
+    removingRecord.mLastTick = currentTick;
+    removingRecord.mRemovingSpList.emplace(this->mSimPlayer->mName);
+
+
     this->mSimPlayer->disconnect();
-    // try {
     this->mSimPlayer->remove();
-    // } catch (...) {}
     this->mSimPlayer->setGameTestHelper(nullptr);
     this->mSimPlayer = nullptr;
     return base::OperateResult::success("manager.success.operate"_tr());
@@ -161,8 +171,7 @@ base::OperateResult SimPlayer::info() {
              + this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
         res += "manager.info.spGamemode"_tr() + base::utils::getGameModeStr((int)this->mSimPlayer->getPlayerGameType())
              + "\n  ";
-        res += "manager.info.spHealth"_tr()
-             + std::to_string(ActorAttribute::getHealth(this->mSimPlayer->getEntityContext())) + " / "
+        res += "manager.info.spHealth"_tr() + std::to_string(mSimPlayer->getHealth()) + " / "
              + std::to_string(this->mSimPlayer->getMaxHealth()) + "\n  ";
         res += "manager.info.spIsFree"_tr() + (this->isFree() ? "base.yesOrNo.yes"_tr() : "base.yesOrNo.no"_tr());
     }

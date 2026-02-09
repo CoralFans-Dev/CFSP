@@ -46,12 +46,15 @@ LL_TYPE_INSTANCE_HOOK(
     auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(this);
     if (cfsp.has_value()) {
         cfsp.value()->stop();
-        ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspDeadSp", {cfsp.value()->mSaveData.name});
+        ll::command::CommandRegistrar::getInstance(false).addSoftEnumValues(
+            "cfspDeadSp",
+            {cfsp.value()->mSaveData.name}
+        );
         if (manager::CFSPManager::getInstance().getAutoRespawn()) {
             cfsp.value()->mTaskid =
                 base::Schedule::getInstance().getSchedule()->add(20, [cfsp = cfsp.value()](unsigned long long) {
                     if (!cfsp->respawn()) return false;
-                    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues(
+                    ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues(
                         "cfspDeadSp",
                         {cfsp->mSaveData.name}
                     );

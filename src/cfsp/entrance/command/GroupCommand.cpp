@@ -131,7 +131,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <addsp|rmsp> <gname: cfspGroup> <spname: cfspSplist>
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate1",
         {
             {"addsp", 0},
@@ -167,7 +167,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <delete|spawn|despawn|respawn|stop|drop|dropinv|info|invinfo> <gname: cfspGroup>
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate2",
         {
             {"delete",  0},
@@ -259,7 +259,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <sneaking|swimming|flying|sprinting> <gname: cfspGroup> [enabled: bool]
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate3",
         {
             {"sneaking",  0},
@@ -291,7 +291,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <attack|build|interact|jump> <gname: cfspGroup> [times: int] [interval: int]
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate4",
         {
             {"attack",   0},
@@ -330,7 +330,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <use|destroy> <gname: cfspGroup> [long: int] [times: int] [interval: int]
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate5",
         {
             {"use",     0},
@@ -358,7 +358,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <chat|runcmd> <gname: cfspGroup> <message: string>
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate6",
         {
             {"chat",   0},
@@ -431,7 +431,7 @@ void ComandManager::registerGroupComand() {
         });
 
     // sp g <moveto|navto> <gname: cfspGroup> [pos: Vec3] [speed: float]
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupOperate7",
         {
             {"moveto", 0},
@@ -533,7 +533,7 @@ void ComandManager::registerGroupComand() {
             for (auto perRes : res) perRes.output(output);
         });
 
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspGroupPermType",
         {
             {"all",       -1},

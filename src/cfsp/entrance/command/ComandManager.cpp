@@ -31,13 +31,13 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
     using ll::i18n_literals::operator""_tr;
 
     // reg cmd
-    this->command = &ll::command::CommandRegistrar::getInstance()
+    this->command = &ll::command::CommandRegistrar::getInstance(false)
                          .getOrCreateCommand("sp", "command.sp.description"_tr(), permission);
 
     // sp version
     this->command->overload().text("version").execute([](CommandOrigin const&, CommandOutput& output) {
-#ifdef VERSION
-        output.success(VERSION);
+#ifdef CF_VERSION
+        output.success(CF_VERSION);
 #endif
 #ifdef COMMITID
         output.success("Commit ID: {}", COMMITID);
@@ -45,7 +45,7 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
     });
 
     // sp c <autojoin|autorespawn|autodespawn> <isopen: bool>
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspSettingType",
         {
             {"autojoin",    0},
@@ -76,7 +76,7 @@ void ComandManager::registerCommand(CommandPermissionLevel permission) {
         });
 
     // sp <addmanager|rmmanager> <player: Player>
-    ll::command::CommandRegistrar::getInstance().tryRegisterRuntimeEnum(
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspManagerSettingType",
         {
             {"addmanager", 0},

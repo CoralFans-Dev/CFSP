@@ -4,8 +4,11 @@
 #include "mc/deps/ecs./WeakEntityRef.h"
 #include "mc/scripting/modules/minecraft/actor/ScriptActor.h"
 #include "mc/scripting/modules/minecraft/events/ScriptActorEventListener.h"
-#include "mc/scripting/modules/minecraft/events/ScriptLevelEventListener.h"
+#include "mc/scripting/modules/minecraft/events/ScriptActorGlobalEventListener.h"
+#include "mc/scripting/modules/minecraft/events/ScriptBlockGlobalEventListener.h"
+#include "mc/scripting/modules/minecraft/events/ScriptLevelGlobalEventListener.h"
 #include "mc/world/actor/Actor.h"
+#include "mc/world/actor/player/Player.h"
 #include "mc/world/events/ActorAttackEvent.h"
 #include "mc/world/events/ActorDiedEvent.h"
 #include "mc/world/events/ActorHealthChangedEvent.h"
@@ -13,10 +16,9 @@
 #include "mc/world/events/ActorRemovedEvent.h"
 #include "mc/world/events/EventResult.h"
 #include "mc/world/events/ProjectileHitEvent.h"
-#include <string>
+
 
 namespace coral_fans::cfsp::fix {
-std::unordered_multiset<std::string> mRemovingSpSet;
 
 LL_TYPE_INSTANCE_HOOK(
     CFSPSapiFixHook1,
@@ -29,7 +31,6 @@ LL_TYPE_INSTANCE_HOOK(
     if (auto entityContext = actorRemovedEvent.mEntity->lock()) {
         auto actor = Actor::tryGetFromEntity(*entityContext, false);
         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            mRemovingSpSet.insert(static_cast<Player*>(actor)->mName);
             return EventResult::KeepGoing;
         }
     }
@@ -56,8 +57,8 @@ LL_TYPE_INSTANCE_HOOK(
 LL_TYPE_INSTANCE_HOOK(
     CFSPSapiFixHook3,
     ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptActorEventListener,
-    &ScriptModuleMinecraft::ScriptActorEventListener::$onEvent,
+    ScriptModuleMinecraft::ScriptActorGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptActorGlobalEventListener::$onEvent,
     EventResult,
     ::ActorHurtEvent const& actorHurtEvent
 ) {
@@ -90,8 +91,8 @@ LL_TYPE_INSTANCE_HOOK(
 LL_TYPE_INSTANCE_HOOK(
     CFSPSapiFixHook5,
     ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptActorEventListener,
-    &ScriptModuleMinecraft::ScriptActorEventListener::$onEvent,
+    ScriptModuleMinecraft::ScriptActorGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptActorGlobalEventListener::$onEvent,
     EventResult,
     ::ActorDiedEvent const& actorDiedEvent
 ) {
@@ -122,16 +123,100 @@ LL_TYPE_INSTANCE_HOOK(
 LL_TYPE_INSTANCE_HOOK(
     CFSPSapiFixHook7,
     ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptLevelEventListener,
-    &ScriptModuleMinecraft::ScriptLevelEventListener::$onLevelRemovedPlayer,
+    ScriptModuleMinecraft::ScriptLevelGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptLevelGlobalEventListener::$onLevelRemovedPlayer,
     EventResult,
     ::Player& player
 ) {
-    if (auto it = mRemovingSpSet.find(player.mName); it != mRemovingSpSet.end()) {
-        mRemovingSpSet.erase(it);
+    auto& removingList = fix::CFSPFixManager::getInstance().mRemovingRecord.mRemovingSpList;
+    if (auto it = removingList.find(player.mName); it != removingList.end()) {
         return EventResult::KeepGoing;
     }
     return origin(player);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSapiFixHook8,
+    ll::memory::HookPriority::Normal,
+    ScriptModuleMinecraft::ScriptLevelGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptLevelGlobalEventListener::$onLevelAddedPlayer,
+    EventResult,
+    Player& player
+) {
+    if (fix::CFSPFixManager::getInstance().createSpMutex
+        || manager::CFSPManager::getInstance().tryGetCFSP(&player).has_value()) {
+        return EventResult::KeepGoing;
+    }
+    return origin(player);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSapiFixHook9,
+    ll::memory::HookPriority::Normal,
+    ScriptModuleMinecraft::ScriptLevelGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptLevelGlobalEventListener::$onLevelRemovedActor,
+    EventResult,
+    Actor& actor
+) {
+    if (actor.isSimulatedPlayer()) {
+        auto& removingList = fix::CFSPFixManager::getInstance().mRemovingRecord.mRemovingSpList;
+        if (auto it = removingList.find(static_cast<Player*>(&actor)->mName); it != removingList.end()) {
+            return EventResult::KeepGoing;
+        }
+    }
+    return origin(actor);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSapiFixHook10,
+    ll::memory::HookPriority::Normal,
+    ScriptModuleMinecraft::ScriptBlockGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptBlockGlobalEventListener::$onBlockPlacedByPlayer,
+    EventResult,
+    ::Player&         player,
+    ::Block const&    placedBlock,
+    ::BlockPos const& pos,
+    bool              isUnderwater
+) {
+    if (manager::CFSPManager::getInstance().tryGetCFSP(&player).has_value()) {
+        return EventResult::KeepGoing;
+    }
+    return origin(player, placedBlock, pos, isUnderwater);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSapiFixHook11,
+    ll::memory::HookPriority::Normal,
+    ScriptModuleMinecraft::ScriptBlockGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptBlockGlobalEventListener::$onBlockDestroyedByPlayer,
+    EventResult,
+    ::Player&              player,
+    ::Block const&         destroyedBlock,
+    ::BlockPos const&      pos,
+    ::ItemStackBase const& currentItem,
+    ::ItemStackBase const& itemBeforeBlockBreak
+) {
+    if (manager::CFSPManager::getInstance().tryGetCFSP(&player).has_value()) {
+        return EventResult::KeepGoing;
+    }
+    return origin(player, destroyedBlock, pos, currentItem, itemBeforeBlockBreak);
+}
+
+LL_TYPE_INSTANCE_HOOK(
+    CFSPSapiFixHook12,
+    ll::memory::HookPriority::Normal,
+    ScriptModuleMinecraft::ScriptBlockGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptBlockGlobalEventListener::$onBlockDestructionStarted,
+    EventResult,
+    ::Player&         player,
+    ::BlockPos const& pos,
+    ::Block const&    hitBlock,
+    uchar const       face
+) {
+    if (manager::CFSPManager::getInstance().tryGetCFSP(&player).has_value()) {
+        return EventResult::KeepGoing;
+    }
+    return origin(player, pos, hitBlock, face);
 }
 
 void CFSPFixManager::sapiFix() {
@@ -142,5 +227,10 @@ void CFSPFixManager::sapiFix() {
     CFSPSapiFixHook5::hook();
     CFSPSapiFixHook6::hook();
     CFSPSapiFixHook7::hook();
+    CFSPSapiFixHook8::hook();
+    CFSPSapiFixHook9::hook();
+    CFSPSapiFixHook10::hook();
+    CFSPSapiFixHook11::hook();
+    CFSPSapiFixHook12::hook();
 }
 } // namespace coral_fans::cfsp::fix

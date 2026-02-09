@@ -46,7 +46,7 @@ base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& 
     group->save();
     this->mGroupMap.emplace(gname, group);
 
-    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspGroup", {gname});
+    ll::command::CommandRegistrar::getInstance(false).addSoftEnumValues("cfspGroup", {gname});
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
@@ -82,7 +82,7 @@ base::OperateResult CFSPManager::groupDelete(Player* player, std::string const& 
     if (checkResult.mType != base::OperateResult::Type::Success
         && !it->second->hasPermission(player, group::GroupPermission::Delete))
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspGroup", {gname});
+    ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues("cfspGroup", {gname});
     this->mGroupMap.erase(it);
     try {
         std::filesystem::remove_all(

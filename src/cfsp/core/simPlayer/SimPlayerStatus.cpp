@@ -44,7 +44,7 @@ base::OperateResult SimPlayer::flying(std::optional<bool> enable) {
                    ))
             return base::OperateResult::success("manager.success.operate"_tr());
     }
-    return base::OperateResult::error("manager.error.faileToSetFlying"_tr());
+    return base::OperateResult::error("manager.fail.faileToSetFlying"_tr());
 }
 
 base::OperateResult SimPlayer::sprinting(std::optional<bool> enable) {
