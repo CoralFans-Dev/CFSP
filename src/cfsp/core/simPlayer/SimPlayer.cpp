@@ -221,7 +221,7 @@ base::OperateResult SimPlayer::lookAt(Direction direction) {
         offSet = {0, -1, 0};
         break;
     default:
-        break;
+        return base::OperateResult::error("manager.fail.invalidDirection"_tr());
     }
 
     this->mSaveData.lookAtOffSet = offSet;

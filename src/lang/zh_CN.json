@@ -62,7 +62,8 @@
             "targetNotHavePerm": "目标没有该权限",
             "targetIsSp": "目标对象为假人",
             "targetIsManager": " 目标对象已为管理员",
-            "targetNotManager": " 目标对象不是管理员"
+            "targetNotManager": " 目标对象不是管理员",
+            "invalidDirection": "无效的方向"
         },
         "error": {
             "failedtocreate": "Error: 创建假人失败",
