@@ -328,6 +328,7 @@ base::OperateResult CFSPManager::spInvInfo(Player* player, std::string const& sp
 
 SP_ONLINE_FUNC_DEF(Stop, stop())
 SP_ONLINE_FUNC_DEF(LookAt, lookAt(pos), Vec3 const& pos)
+SP_ONLINE_FUNC_DEF(LookAt, lookAt(direction), simulated_player::SimPlayer::Direction direction)
 
 SP_ONLINE_FUNC_DEF(Drop, drop(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(DropInv, dropInv(times, interval), int times, int interval)

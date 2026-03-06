@@ -100,6 +100,8 @@ public:
     base::OperateResult spStop(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
+    base::OperateResult
+    spLookAt(Player* player, std::string const& spname, simulated_player::SimPlayer::Direction direction, bool nocheck = false);
 
     base::OperateResult spInvInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult
@@ -222,6 +224,8 @@ public:
     std::vector<base::OperateResult> groupRunCmd(Player* player, std::string const& gname, std::string const& message);
 
     std::vector<base::OperateResult> groupLookAt(Player* player, std::string const& gname, Vec3 const& pos);
+    std::vector<base::OperateResult>
+    groupLookAt(Player* player, std::string const& gname, simulated_player::SimPlayer::Direction direction);
 
     std::vector<base::OperateResult>
     groupMoveTo(Player* player, std::string const& gname, Vec3 const& pos, float speed = 4.3f);

@@ -62,7 +62,8 @@
             "targetNotHavePerm": "Target does not have this permission",
             "targetIsSp": "Target object is a SimulatedPlayer",
             "targetIsManager": "Target object is already a manager",
-            "targetNotManager": "Target object is not a manager"
+            "targetNotManager": "Target object is not a manager",
+            "invalidDirection": "Invalid direction"
         },
         "error": {
             "failedtocreate": "Error: Failed to create SimulatedPlayer",

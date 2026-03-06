@@ -468,6 +468,35 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
+    // sp p lookat <name: cfspOnlineSp> <facing: cfspFacing>
+    ll ::command ::CommandRegistrar ::getInstance(false).tryRegisterRuntimeEnum(
+        "cfspFacing",
+        {
+            {"north", 0},
+            {"south", 1},
+            {"west",  2},
+            {"east",  3},
+            {"up",    4},
+            {"down",  5}
+    }
+    );
+    this->command->runtimeOverload()
+        .text("p")
+        .text("lookat")
+        .required("spname", ll ::command ::ParamKind ::SoftEnum, "cfspOnlineSp")
+        .required("facing", ll ::command ::ParamKind ::Enum, "cfspFacing")
+        .execute([this](CommandOrigin const& origin, CommandOutput& output, ll ::command ::RuntimeCommand const& self) {
+            auto player = this->tryGetPlayer(origin);
+            if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
+            return manager ::CFSPManager ::getInstance()
+                .spLookAt(
+                    player.value(),
+                    self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
+                    static_cast<simulated_player::SimPlayer::Direction>(self["facing"].get<ll ::command ::ParamKind ::Enum>().index)
+                )
+                .output(output);
+        });
+
     // sp p <moveto|navto> <name: cfspOnlineSp> [pos: Vec3] [speed: float]
     ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate6",

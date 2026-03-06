@@ -39,6 +39,9 @@ public:
     base::OperateResult setPermission(Player*, SimPlayerPermission);
 
 public:
+    enum class Direction : int { North, South, West, East, Up, Down };
+
+public:
     CFSP_API void cancelTask();
     CFSP_API void cancelScript();
     CFSP_API base::OperateResult stop();
@@ -48,6 +51,7 @@ public:
     CFSP_API base::OperateResult despawn();
     CFSP_API base::OperateResult respawn();
     CFSP_API base::OperateResult lookAt(Vec3 const& pos);
+    CFSP_API base::OperateResult lookAt(Direction direction);
     CFSP_API base::OperateResult info();
 
 public:

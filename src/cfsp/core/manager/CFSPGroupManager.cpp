@@ -199,6 +199,7 @@ GROUP_FUNC_FROM_SP(Destroy, Destroy(player, spname, _long, times, interval, true
 GROUP_FUNC_FROM_SP(Chat, Chat(player, spname, message, true), std::string const& message)
 GROUP_FUNC_FROM_SP(RunCmd, RunCmd(player, spname, message, true), std::string const& message)
 GROUP_FUNC_FROM_SP(LookAt, LookAt(player, spname, pos, true), Vec3 const& pos)
+GROUP_FUNC_FROM_SP(LookAt, LookAt(player, spname, direction, true), simulated_player::SimPlayer::Direction direction)
 GROUP_FUNC_FROM_SP(MoveTo, MoveTo(player, spname, pos, speed, true), Vec3 const& pos, float speed)
 GROUP_FUNC_FROM_SP(NavTo, NavTo(player, spname, pos, speed, true), Vec3 const& pos, float speed)
 GROUP_FUNC_FROM_SP(Tp, Tp(player, spname, pos, dimId, true), Vec3 pos, std::optional<int> dimId)

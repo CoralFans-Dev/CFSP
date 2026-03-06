@@ -5,6 +5,7 @@
 #include "cfsp/core/fix/CFSPFixManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/service/Bedrock.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/sim.h"
@@ -188,6 +189,46 @@ base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
     this->mSimPlayer->simulateSetBodyRotation(
         (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
     );
+    this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
+    return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult SimPlayer::lookAt(Direction direction) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
+
+    Vec3 offSet;
+    switch (direction) {
+    case Direction::North:
+        offSet = {0, 0, -1};
+        break;
+    case Direction::South:
+        offSet = {0, 0, 1};
+        break;
+    case Direction::West:
+        offSet = {-1, 0, 0};
+        break;
+    case Direction::East:
+        offSet = {1, 0, 0};
+        break;
+    case Direction::Up:
+        offSet = {0, 1, 0};
+        break;
+    case Direction::Down:
+        offSet = {0, -1, 0};
+        break;
+    default:
+        return base::OperateResult::error("manager.fail.invalidDirection"_tr());
+    }
+
+    this->mSaveData.lookAtOffSet = offSet;
+    this->mSimPlayer->simulateSetBodyRotation(
+        (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
+    );
+    Vec3 pos = this->mSimPlayer->getEyePos() + offSet;
     this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
