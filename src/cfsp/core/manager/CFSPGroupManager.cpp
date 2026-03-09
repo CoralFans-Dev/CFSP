@@ -46,7 +46,7 @@ base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& 
     group->save();
     this->mGroupMap.emplace(gname, group);
 
-    ll::command::CommandRegistrar::getInstance().addSoftEnumValues("cfspGroup", {gname});
+    ll::command::CommandRegistrar::getInstance(false).addSoftEnumValues("cfspGroup", {gname});
     return base::OperateResult::success("manager.success.create"_tr());
 }
 
@@ -82,7 +82,7 @@ base::OperateResult CFSPManager::groupDelete(Player* player, std::string const& 
     if (checkResult.mType != base::OperateResult::Type::Success
         && !it->second->hasPermission(player, group::GroupPermission::Delete))
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
-    ll::command::CommandRegistrar::getInstance().removeSoftEnumValues("cfspGroup", {gname});
+    ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues("cfspGroup", {gname});
     this->mGroupMap.erase(it);
     try {
         std::filesystem::remove_all(
@@ -199,6 +199,7 @@ GROUP_FUNC_FROM_SP(Destroy, Destroy(player, spname, _long, times, interval, true
 GROUP_FUNC_FROM_SP(Chat, Chat(player, spname, message, true), std::string const& message)
 GROUP_FUNC_FROM_SP(RunCmd, RunCmd(player, spname, message, true), std::string const& message)
 GROUP_FUNC_FROM_SP(LookAt, LookAt(player, spname, pos, true), Vec3 const& pos)
+GROUP_FUNC_FROM_SP(LookAt, LookAt(player, spname, direction, true), simulated_player::SimPlayer::Direction direction)
 GROUP_FUNC_FROM_SP(MoveTo, MoveTo(player, spname, pos, speed, true), Vec3 const& pos, float speed)
 GROUP_FUNC_FROM_SP(NavTo, NavTo(player, spname, pos, speed, true), Vec3 const& pos, float speed)
 GROUP_FUNC_FROM_SP(Tp, Tp(player, spname, pos, dimId, true), Vec3 pos, std::optional<int> dimId)

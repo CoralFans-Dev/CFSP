@@ -93,10 +93,10 @@ void CFSPManager::loadSpSaveData() {
             }
         }
     }
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOfflineSp", splist);
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspSplist", splist);
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspOnlineSp", {});
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspDeadSp", {});
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterSoftEnum("cfspOfflineSp", splist);
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterSoftEnum("cfspSplist", splist);
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterSoftEnum("cfspOnlineSp", {});
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterSoftEnum("cfspDeadSp", {});
 }
 
 void CFSPManager::loadGroupData() {
@@ -123,7 +123,7 @@ void CFSPManager::loadGroupData() {
             }
         }
     }
-    ll::command::CommandRegistrar::getInstance().tryRegisterSoftEnum("cfspGroup", cfspGrouplist);
+    ll::command::CommandRegistrar::getInstance(false).tryRegisterSoftEnum("cfspGroup", cfspGrouplist);
 }
 
 bool CFSPManager::init() {

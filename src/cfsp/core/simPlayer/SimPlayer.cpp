@@ -5,11 +5,14 @@
 #include "cfsp/core/fix/CFSPFixManager.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/service/Bedrock.h"
+#include "mc/deps/core/math/Vec3.h"
 #include "mc/server/SimulatedPlayer.h"
 #include "mc/server/sim/ContinuousLookAtPositionIntent.h"
 #include "mc/server/sim/sim.h"
 #include "mc/world/Minecraft.h"
-#include "mc/world/actor/provider/ActorAttribute.h"
+#include "mc/world/level/Level.h"
+
+// #include "mc/world/actor/provider/ActorAttribute.h"
 #include <optional>
 
 
@@ -123,10 +126,18 @@ base::OperateResult SimPlayer::despawn() {
     this->mSaveData.isOnline = false;
     this->mShouldSave        = true;
     this->save();
+
+    auto& removingRecord = fix::CFSPFixManager::getInstance().mRemovingRecord;
+    auto  currentTick    = this->mSimPlayer->getLevel().getCurrentTick();
+    if (currentTick.tickID - removingRecord.mLastTick.tickID > 2) {
+        removingRecord.mRemovingSpList.clear();
+    }
+    removingRecord.mLastTick = currentTick;
+    removingRecord.mRemovingSpList.emplace(this->mSimPlayer->mName);
+
+
     this->mSimPlayer->disconnect();
-    // try {
     this->mSimPlayer->remove();
-    // } catch (...) {}
     this->mSimPlayer->setGameTestHelper(nullptr);
     this->mSimPlayer = nullptr;
     return base::OperateResult::success("manager.success.operate"_tr());
@@ -161,8 +172,7 @@ base::OperateResult SimPlayer::info() {
              + this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
         res += "manager.info.spGamemode"_tr() + base::utils::getGameModeStr((int)this->mSimPlayer->getPlayerGameType())
              + "\n  ";
-        res += "manager.info.spHealth"_tr()
-             + std::to_string(ActorAttribute::getHealth(this->mSimPlayer->getEntityContext())) + " / "
+        res += "manager.info.spHealth"_tr() + std::to_string(mSimPlayer->getHealth()) + " / "
              + std::to_string(this->mSimPlayer->getMaxHealth()) + "\n  ";
         res += "manager.info.spIsFree"_tr() + (this->isFree() ? "base.yesOrNo.yes"_tr() : "base.yesOrNo.no"_tr());
     }
@@ -179,6 +189,46 @@ base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
     this->mSimPlayer->simulateSetBodyRotation(
         (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
     );
+    this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
+    return base::OperateResult::success("manager.success.operate"_tr());
+}
+
+base::OperateResult SimPlayer::lookAt(Direction direction) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (this->mSimPlayer->isDead()) [[unlikely]]
+        return base::OperateResult::error("manager.fail.spIsDead"_tr());
+
+    Vec3 offSet;
+    switch (direction) {
+    case Direction::North:
+        offSet = {0, 0, -1};
+        break;
+    case Direction::South:
+        offSet = {0, 0, 1};
+        break;
+    case Direction::West:
+        offSet = {-1, 0, 0};
+        break;
+    case Direction::East:
+        offSet = {1, 0, 0};
+        break;
+    case Direction::Up:
+        offSet = {0, 1, 0};
+        break;
+    case Direction::Down:
+        offSet = {0, -1, 0};
+        break;
+    default:
+        return base::OperateResult::error("manager.fail.invalidDirection"_tr());
+    }
+
+    this->mSaveData.lookAtOffSet = offSet;
+    this->mSimPlayer->simulateSetBodyRotation(
+        (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
+    );
+    Vec3 pos = this->mSimPlayer->getEyePos() + offSet;
     this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
     return base::OperateResult::success("manager.success.operate"_tr());
 }

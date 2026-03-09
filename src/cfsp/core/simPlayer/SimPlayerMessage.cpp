@@ -24,7 +24,9 @@ base::OperateResult SimPlayer::runcmd(std::string const& cmd) {
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     CommandContext ctx(
         cmd,
-        std::make_unique<PlayerCommandOrigin>(PlayerCommandOrigin(*this->mSimPlayer)),
+        std::make_unique<PlayerCommandOrigin>(
+            PlayerCommandOrigin(this->mSimPlayer->getLevel(), this->mSimPlayer->getOrCreateUniqueID())
+        ),
         CommandVersion::CurrentVersion()
     );
     auto mc = ll::service::getMinecraft();
