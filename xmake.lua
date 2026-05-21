@@ -12,7 +12,7 @@ end
 add_requires(
     "levibuildscript",
     "timewheel",
-    "boost", {configs = {all = true}}
+    "boost", {configs = {cmake = false, iostreams = true}}
 )
 
 if not has_config("vs_runtime") then
