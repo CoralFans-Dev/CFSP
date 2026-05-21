@@ -1,26 +1,86 @@
 {
-    "format_version": 2,
+    "format_version": 3,
+    "format_uuid": "289f771f-2c9a-4d73-9f3f-8492495a924d",
     "tooth": "github.com/CoralFans-Dev/CFSP",
-    "version": "3.4.0",
+    "version": "26.10.0-rc.1",
     "info": {
         "name": "CFSP",
-        "description": "CoralFans SimulatedPlayer",
+        "description": "CoralFans SimulatedPlayer.",
         "author": "CoralFans-Dev",
         "tags": [
             "platform:levilamina",
             "type:mod"
-        ]
+        ],
+        "avatar_url": "https://raw.githubusercontent.com/CoralFans-Dev/CoralFans-doc/refs/heads/main/docs/icon.png"
     },
-    "asset_url": "https://github.com/CoralFans-Dev/CFSP/releases/download/v$(version)/CFSP-windows-x64.zip",
-    "prerequisites": {
-        "github.com/LiteLDev/LeviLamina": ">=1.9.0 <1.10.0"
-    },
-    "files": {
-        "place": [
-            {
-                "src": "CFSP/*",
-                "dest": "plugins/CFSP/"
+    "variants": [
+        {
+            "label": "",
+            "platform": "win-x64",
+            "dependencies": {
+                "github.com/LiteLDev/LeviLamina": ">=26.10.0 <26.20.0"
+            },
+            "assets": [
+                {
+                    "type": "zip",
+                    "urls": [
+                        "https://github.com/CoralFans-Dev/CFSP/releases/download/v{{version}}/CFSP-server-windows-x64.zip"
+                    ],
+                    "placements": [
+                        {
+                            "type": "dir",
+                            "src": "CFSP/",
+                            "dest": "plugins/CFSP/"
+                        }
+                    ]
+                }
+            ],
+            "preserve_files": [],
+            "remove_files": [],
+            "scripts": {
+                "pre_install": [],
+                "install": [],
+                "post_install": [],
+                "pre_pack": [],
+                "post_pack": [],
+                "pre_uninstall": [],
+                "uninstall": [],
+                "post_uninstall": []
             }
-        ]
-    }
+        },
+        {
+            "label": "client",
+            "platform": "win-x64",
+            "dependencies": {
+                "github.com/LiteLDev/LeviLamina#client": ">=26.10.0 <26.20.0"
+            },
+            "assets": [
+                {
+                    "type": "zip",
+                    "urls": [
+                        "https://github.com/CoralFans-Dev/CFSP/releases/download/v{{version}}/CFSP-client-windows-x64.zip"
+                    ],
+                    "placements": [
+                        {
+                            "type": "dir",
+                            "src": "CFSP/",
+                            "dest": "mods/CFSP/"
+                        }
+                    ]
+                }
+            ],
+            "preserve_files": [],
+            "remove_files": [],
+            "scripts": {
+                "pre_install": [],
+                "install": [],
+                "post_install": [],
+                "pre_pack": [],
+                "post_pack": [],
+                "pre_uninstall": [],
+                "uninstall": [],
+                "post_uninstall": []
+            }
+        }
+    ]
 }

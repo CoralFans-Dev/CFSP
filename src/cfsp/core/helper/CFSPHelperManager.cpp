@@ -6,10 +6,10 @@ CFSPHelperManager& CFSPHelperManager::getInstance() {
     return instance;
 }
 
-void CFSPHelperManager::SimPlayerHelperHook() {
-    saveHelperHook();
-    autoFuncHelperRegister();
-    scheduleHelperHook();
-    operateHelperHook();
+void CFSPHelperManager::SimPlayerHelperHook(bool enabled) {
+    saveHelperHook(enabled);
+    autoFuncHelperRegister(enabled);
+    scheduleHelperHook(enabled);
+    operateHelperHook(enabled);
 }
 } // namespace coral_fans::cfsp::helper

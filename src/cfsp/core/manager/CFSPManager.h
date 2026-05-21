@@ -40,6 +40,8 @@ public:
     void                      setAutoDespawn(bool);
     bool                      init();
     void                      load();
+    void                      clear();
+    void                      unload();
 
 public:
     bool                isAllowed(const Player*);
@@ -100,8 +102,12 @@ public:
     base::OperateResult spStop(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spLookAt(Player* player, std::string const& spname, Vec3 const& pos, bool nocheck = false);
-    base::OperateResult
-    spLookAt(Player* player, std::string const& spname, simulated_player::SimPlayer::Direction direction, bool nocheck = false);
+    base::OperateResult spLookAt(
+        Player*                                player,
+        std::string const&                     spname,
+        simulated_player::SimPlayer::Direction direction,
+        bool                                   nocheck = false
+    );
 
     base::OperateResult spInvInfo(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult

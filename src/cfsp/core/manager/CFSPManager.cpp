@@ -75,7 +75,14 @@ void CFSPManager::save() {
 }
 
 void CFSPManager::loadSpSaveData() {
+#ifdef LL_PLAT_S
     auto dir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
+    auto dir =
+        worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
     if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> splist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
@@ -100,7 +107,13 @@ void CFSPManager::loadSpSaveData() {
 }
 
 void CFSPManager::loadGroupData() {
+#ifdef LL_PLAT_S
     auto dir = CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
+    auto dir = worldDataDir ? worldDataDir.value() / "group" : CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
     if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> cfspGrouplist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
@@ -163,8 +176,29 @@ void CFSPManager::load() {
     loadSpSaveData();
     loadGroupData();
     if (this->mConfig.enabled) command::ComandManager::getInstance().registerCommand(this->mConfig.permission);
-    helper::CFSPHelperManager::getInstance().SimPlayerHelperHook();
-    fix::CFSPFixManager::getInstance().cfspBugFixHook();
+    helper::CFSPHelperManager::getInstance().SimPlayerHelperHook(true);
+    fix::CFSPFixManager::getInstance().cfspBugFixHook(true);
+}
+
+void CFSPManager::clear() {
+    this->mOnlineSpMap.clear();
+    this->mOfflineSpMap.clear();
+    this->mGroupMap.clear();
+}
+
+void CFSPManager::unload() {
+    for (auto& [_, sp] : this->mOnlineSpMap) {
+        if (!sp->mSimPlayer) continue;
+        sp->save();
+        sp->stop();
+        sp->mSimPlayer->disconnect();
+        sp->mSimPlayer->remove();
+        sp->mSimPlayer->setGameTestHelper(nullptr);
+    }
+    clear();
+    ll::command::CommandRegistrar::getInstance(false).setSoftEnumValues("cfspOnlineSp", {});
+    ll::command::CommandRegistrar::getInstance(false).setSoftEnumValues("cfspSplist", {});
+    ll::command::CommandRegistrar::getInstance(false).setSoftEnumValues("cfspDeadSp", {});
 }
 
 std::optional<std::shared_ptr<simulated_player::SimPlayer>> CFSPManager::tryGetCFSP(Player* sp) {

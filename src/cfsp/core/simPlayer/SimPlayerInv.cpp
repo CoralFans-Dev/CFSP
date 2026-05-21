@@ -3,7 +3,7 @@
 #include "cfsp/base/Schedule.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h "
-#include "mc/nbt/CompoundTag.h"
+#include "mc/deps/nbt/CompoundTag.h"
 #include "mc/network/packet/MobEquipmentPacket.h"
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"

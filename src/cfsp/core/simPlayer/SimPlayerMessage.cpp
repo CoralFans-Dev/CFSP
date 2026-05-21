@@ -4,7 +4,6 @@
 #include "ll/api/service/Bedrock.h"
 #include "mc/deps/core/utility/MCRESULT.h"
 #include "mc/server/commands/CommandContext.h"
-#include "mc/server/commands/CommandVersion.h"
 #include "mc/server/commands/MinecraftCommands.h"
 #include "mc/server/commands/PlayerCommandOrigin.h"
 #include "mc/world/Minecraft.h"
@@ -27,7 +26,7 @@ base::OperateResult SimPlayer::runcmd(std::string const& cmd) {
         std::make_unique<PlayerCommandOrigin>(
             PlayerCommandOrigin(this->mSimPlayer->getLevel(), this->mSimPlayer->getOrCreateUniqueID())
         ),
-        CommandVersion::CurrentVersion()
+        static_cast<int>(CurrentCmdVersion::Latest)
     );
     auto mc = ll::service::getMinecraft();
     if (!mc) [[unlikely]]

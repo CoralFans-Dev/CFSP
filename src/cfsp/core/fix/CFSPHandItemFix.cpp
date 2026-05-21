@@ -5,6 +5,11 @@
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"
 
+#ifdef LL_PLAT_C
+#include "ll/api/service/Bedrock.h"
+#include "mc/server/ServerInstance.h"
+#endif
+
 
 namespace coral_fans::cfsp::fix {
 LL_TYPE_INSTANCE_HOOK(
@@ -19,6 +24,12 @@ LL_TYPE_INSTANCE_HOOK(
     ItemStack const& newItem,
     bool             forceBalanced
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(container, slot, oldItem, newItem, forceBalanced);
+#endif
     origin(container, slot, oldItem, newItem, forceBalanced);
     if (this->isSimulatedPlayer()) {
         if (slot == 0 && oldItem.getTypeName() != newItem.getTypeName()) {
@@ -42,6 +53,12 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     ItemStack const& item
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(item);
+#endif
     if (this->isSimulatedPlayer()) {
         if (this->getOffhandSlot().getTypeName() != item.getTypeName())
             MobEquipmentPacket(this->getRuntimeID(), item, 1, 0,
@@ -50,8 +67,13 @@ LL_TYPE_INSTANCE_HOOK(
     origin(item);
 }
 
-void CFSPFixManager::handItemFix() {
-    CFSPHandItemFixHook1::hook();
-    CFSPHandItemFixHook2::hook();
+void CFSPFixManager::handItemFix(bool enable) {
+    if (enable) {
+        CFSPHandItemFixHook1::hook();
+        CFSPHandItemFixHook2::hook();
+    } else {
+        CFSPHandItemFixHook1::unhook();
+        CFSPHandItemFixHook2::unhook();
+    }
 }
 } // namespace coral_fans::cfsp::fix

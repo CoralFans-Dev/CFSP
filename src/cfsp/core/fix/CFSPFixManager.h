@@ -23,14 +23,14 @@ public:
     }
 
 private:
-    void featureFix();
-    void handItemFix();
-    void sapiFix();
+    void featureFix(bool);
+    void handItemFix(bool);
+    void sapiFix(bool);
 
 public:
     CFSPRemovingListRecorder mRemovingRecord;
 
 public:
-    void cfspBugFixHook();
+    void cfspBugFixHook(bool);
 };
 } // namespace coral_fans::cfsp::fix

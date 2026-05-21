@@ -6,7 +6,6 @@
 #include "ll/api/command/CommandRegistrar.h"
 #include "ll/api/i18n/I18n.h"
 #include "mc/network/packet/TextPacket.h"
-#include "mc/world/Minecraft.h"
 #include <memory>
 #include <optional>
 #include <vector>
@@ -156,13 +155,17 @@ void CFSPManager::autoJoin() {
     std::vector<std::string> spawnDeadlist;
     auto                     it = this->mOfflineSpMap.begin();
     while (it != this->mOfflineSpMap.end()) {
-        if (it->second->mSaveData.isOnline && it->second->spawn(std::nullopt)) {
-            spawnlist.emplace_back(it->first);
-            if (it->second->mSimPlayer->isDead()) spawnDeadlist.emplace_back(it->first);
-            auto current_it = it++;
-            auto node       = this->mOfflineSpMap.extract(current_it);
-            mOnlineSpMap.insert(std::move(node));
-            continue;
+        if (it->second->mSaveData.isOnline) {
+            auto res = it->second->spawn(std::nullopt);
+            CFSP::getInstance().getSelf().getLogger().info(res.mInfo);
+            if (res) {
+                spawnlist.emplace_back(it->first);
+                if (it->second->mSimPlayer->isDead()) spawnDeadlist.emplace_back(it->first);
+                auto current_it = it++;
+                auto node       = this->mOfflineSpMap.extract(current_it);
+                mOnlineSpMap.insert(std::move(node));
+                continue;
+            }
         }
         it++;
     }

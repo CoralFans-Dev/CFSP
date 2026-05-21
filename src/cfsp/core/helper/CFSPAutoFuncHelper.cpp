@@ -2,14 +2,17 @@
 #include "cfsp/base/Schedule.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/command/CommandRegistrar.h"
-#include "ll/api/event/EventBus.h"
-#include "ll/api/event/player/PlayerJoinEvent.h"
 #include "ll/api/memory/Hook.h"
 #include "ll/api/service/Bedrock.h"
 #include "mc/world/level/Level.h"
 #include <queue>
 #include <unordered_map>
 #include <vector>
+
+#ifdef LL_PLAT_C
+#include "mc/server/ServerInstance.h"
+#endif
+
 
 namespace coral_fans::cfsp::helper {
 bool shouldDespawn(const std::string& spname) {
@@ -42,6 +45,12 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     ActorDamageSource const& source
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(source);
+#endif
     origin(source);
     auto cfsp = manager::CFSPManager::getInstance().tryGetCFSP(this);
     if (cfsp.has_value()) {
@@ -65,15 +74,7 @@ LL_TYPE_INSTANCE_HOOK(
     }
 }
 
-void CFSPHelperManager::autoFuncHelperRegister() {
-    if (manager::CFSPManager::getInstance().getAutoJoin())
-        playerJoinEventListener =
-            ll::event::EventBus::getInstance().emplaceListener<ll::event::player::PlayerJoinEvent>(
-                [this](ll::event::player::PlayerJoinEvent&) {
-                    ll::event::EventBus::getInstance().removeListener(playerJoinEventListener);
-                    manager::CFSPManager::getInstance().autoJoin();
-                }
-            );
-    CFSPAutoFuncHelperHook::hook();
+void CFSPHelperManager::autoFuncHelperRegister(bool enabled) {
+    enabled ? CFSPAutoFuncHelperHook::hook() : CFSPAutoFuncHelperHook::unhook();
 }
 } // namespace coral_fans::cfsp::helper

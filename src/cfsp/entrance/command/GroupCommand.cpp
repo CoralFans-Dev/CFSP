@@ -93,7 +93,7 @@ namespace coral_fans::cfsp::command {
             self["gname"].get<ll::command::ParamKind::SoftEnum>(),                                                     \
             self["pos"]                                                                                                \
                 .get<ll::command::ParamKind::Vec3>()                                                                   \
-                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})                                      \
+                .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})                           \
         );                                                                                                             \
     else                                                                                                               \
         res = manager::CFSPManager::getInstance().group##FUNC(                                                         \
@@ -101,7 +101,7 @@ namespace coral_fans::cfsp::command {
             self["gname"].get<ll::command::ParamKind::SoftEnum>(),                                                     \
             self["pos"]                                                                                                \
                 .get<ll::command::ParamKind::Vec3>()                                                                   \
-                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),                                     \
+                .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),                          \
             self["speed"].get<ll::command::ParamKind::Float>()                                                         \
         );                                                                                                             \
     break;
@@ -425,7 +425,7 @@ void ComandManager::registerGroupComand() {
                     self["gname"].get<ll ::command ::ParamKind ::SoftEnum>(),
                     self["pos"]
                         .get<ll ::command ::ParamKind ::Vec3>()
-                        .getPosition(CommandVersion ::CurrentVersion(), origin, {0, 0, 0})
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})
                 );
             for (auto perRes : res) perRes.output(output);
         });
@@ -454,7 +454,9 @@ void ComandManager::registerGroupComand() {
             res = manager::CFSPManager::getInstance().groupLookAt(
                 player.value(),
                 self["gname"].get<ll::command::ParamKind::SoftEnum>(),
-                static_cast<simulated_player::SimPlayer::Direction>(self["facing"].get<ll::command::ParamKind::Enum>().index)
+                static_cast<simulated_player::SimPlayer::Direction>(
+                    self["facing"].get<ll::command::ParamKind::Enum>().index
+                )
             );
             for (auto perRes : res) perRes.output(output);
         });
@@ -522,7 +524,7 @@ void ComandManager::registerGroupComand() {
                         self["gname"].get<ll::command::ParamKind::SoftEnum>(),
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
-                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})
+                            .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})
                     );
                 else
                     res = manager::CFSPManager::getInstance().groupTp(
@@ -530,7 +532,7 @@ void ComandManager::registerGroupComand() {
                         self["gname"].get<ll::command::ParamKind::SoftEnum>(),
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
-                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                            .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                         player.value()->getDimensionId()
                     );
             } else
@@ -539,7 +541,7 @@ void ComandManager::registerGroupComand() {
                     self["gname"].get<ll::command::ParamKind::SoftEnum>(),
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
-                        .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                     self["dim"].get<ll::command::ParamKind::Dimension>().id
                 );
             for (auto perRes : res) perRes.output(output);

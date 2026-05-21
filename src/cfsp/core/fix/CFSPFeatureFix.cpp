@@ -10,6 +10,10 @@
 #include "mc/network/packet/ShowCreditsPacket.h"
 #include "mc/server/SimulatedPlayer.h"
 
+#ifdef LL_PLAT_C
+#include "mc/server/ServerInstance.h"
+#endif
+
 namespace coral_fans::cfsp::fix {
 template <typename T>
 void SimulateSendPacketToServer(SimulatedPlayer& sp, T& packet) {
@@ -40,6 +44,12 @@ LL_TYPE_INSTANCE_HOOK(
     ::std::shared_ptr<::ChunkViewSource>,
     ::ChunkSource& mainChunkSource
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(mainChunkSource);
+#endif
     return this->ServerPlayer::$_createChunkSource(mainChunkSource);
 }
 
@@ -53,6 +63,12 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     ::Tick const& tick
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(tick);
+#endif
     origin(tick);
     this->ServerPlayer::$_updateChunkPublisherView(getPosition(), 16.0f);
 }
@@ -67,6 +83,12 @@ LL_TYPE_INSTANCE_HOOK(
     void,
     ::DimensionType dimension
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(dimension);
+#endif
     origin(dimension);
     ShowCreditsPacket packet{};
     packet.mPlayerID     = getRuntimeID();
@@ -125,6 +147,15 @@ LL_TYPE_INSTANCE_HOOK(
     ::UserEntityIdentifierComponent const* userIdentifier,
     ::Packet const&                        packet
 ) {
+#ifdef LL_PLAT_C
+    if (auto serverInstance = ll::service::getServerInstance();
+        !serverInstance
+        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+        return origin(
+            std::forward<::UserEntityIdentifierComponent const*>(userIdentifier),
+            std::forward<::Packet const&>(packet)
+        );
+#endif
     if (userIdentifier->mNetworkId == NetworkIdentifier::INVALID_ID()) {
         try {
             [[maybe_unused]] auto handled =
@@ -134,10 +165,17 @@ LL_TYPE_INSTANCE_HOOK(
     origin(std::forward<::UserEntityIdentifierComponent const*>(userIdentifier), std::forward<::Packet const&>(packet));
 };
 
-void CFSPFixManager::featureFix() {
-    LoadChunkFix__updateChunkPublisherView::hook();
-    LoadChunkFix_ChunkSource_LoadMode::hook();
-    TravelFix_ShowCredits::hook();
-    FixByPacketHook::hook();
+void CFSPFixManager::featureFix(bool enable) {
+    if (enable) {
+        LoadChunkFix__updateChunkPublisherView::hook();
+        LoadChunkFix_ChunkSource_LoadMode::hook();
+        TravelFix_ShowCredits::hook();
+        FixByPacketHook::hook();
+    } else {
+        LoadChunkFix__updateChunkPublisherView::unhook();
+        LoadChunkFix_ChunkSource_LoadMode::unhook();
+        TravelFix_ShowCredits::unhook();
+        FixByPacketHook::unhook();
+    }
 }
 } // namespace coral_fans::cfsp::fix

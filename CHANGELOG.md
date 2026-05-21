@@ -5,11 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.10.0] - 2026-5.21
+
+### Added
+
++ Adapted to 1.26.10
++ Adapted to client side
+
 ## [3.4.0] - 2026-2.9
 
 ### Added
 
-+ Adapt to 1.21.132
++ Adapted to 1.21.132
 
 ### Fixed
 
@@ -25,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-+ Adapt to 1.21.120
++ Adapted to 1.21.120
 
 ## [3.2.3] - 2025-11-1
 

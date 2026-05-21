@@ -113,7 +113,7 @@ namespace coral_fans::cfsp::command {
                 self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                \
                 self["pos"]                                                                                            \
                     .get<ll::command::ParamKind::Vec3>()                                                               \
-                    .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})                                  \
+                    .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})                       \
             )                                                                                                          \
             .output(output);                                                                                           \
     return manager::CFSPManager::getInstance()                                                                         \
@@ -122,7 +122,7 @@ namespace coral_fans::cfsp::command {
             self["spname"].get<ll::command::ParamKind::SoftEnum>(),                                                    \
             self["pos"]                                                                                                \
                 .get<ll::command::ParamKind::Vec3>()                                                                   \
-                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),                                     \
+                .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),                          \
             self["speed"].get<ll::command::ParamKind::Float>()                                                         \
         )                                                                                                              \
         .output(output);
@@ -204,7 +204,7 @@ void ComandManager::registerSpComand() {
                         self["name"].get<ll::command::ParamKind::String>(),
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
-                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                            .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                         player.value()->getDimensionId()
                     )
                     .output(output);
@@ -216,7 +216,7 @@ void ComandManager::registerSpComand() {
                         self["name"].get<ll::command::ParamKind::String>(),
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
-                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                            .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                         self["dim"].get<ll::command::ParamKind::Dimension>().id
                     )
                     .output(output);
@@ -226,7 +226,7 @@ void ComandManager::registerSpComand() {
                     self["name"].get<ll::command::ParamKind::String>(),
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
-                        .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                     self["dim"].get<ll::command::ParamKind::Dimension>().id,
                     self["lockUniqueId"].get<ll::command::ParamKind::Bool>()
                 )
@@ -463,7 +463,7 @@ void ComandManager::registerSpComand() {
                     self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
                     self["pos"]
                         .get<ll ::command ::ParamKind ::Vec3>()
-                        .getPosition(CommandVersion ::CurrentVersion(), origin, {0, 0, 0})
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})
                 )
                 .output(output);
         });
@@ -492,7 +492,9 @@ void ComandManager::registerSpComand() {
                 .spLookAt(
                     player.value(),
                     self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
-                    static_cast<simulated_player::SimPlayer::Direction>(self["facing"].get<ll ::command ::ParamKind ::Enum>().index)
+                    static_cast<simulated_player::SimPlayer::Direction>(
+                        self["facing"].get<ll ::command ::ParamKind ::Enum>().index
+                    )
                 )
                 .output(output);
         });
@@ -562,7 +564,7 @@ void ComandManager::registerSpComand() {
                             self["spname"].get<ll::command::ParamKind::SoftEnum>(),
                             self["pos"]
                                 .get<ll::command::ParamKind::Vec3>()
-                                .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0})
+                                .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})
                         )
                         .output(output);
                 return manager::CFSPManager::getInstance()
@@ -571,7 +573,7 @@ void ComandManager::registerSpComand() {
                         self["spname"].get<ll::command::ParamKind::SoftEnum>(),
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
-                            .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                            .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                         player.value()->getDimensionId()
                     )
                     .output(output);
@@ -582,7 +584,7 @@ void ComandManager::registerSpComand() {
                     self["spname"].get<ll::command::ParamKind::SoftEnum>(),
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
-                        .getPosition(CommandVersion::CurrentVersion(), origin, {0, 0, 0}),
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
                     self["dim"].get<ll::command::ParamKind::Dimension>().id
                 )
                 .output(output);

@@ -76,7 +76,7 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     auto cfsp = std::make_shared<simulated_player::SimPlayer>(saveData, simPlayer);
 
     cfsp->lookAt(
-        player ? simPlayer->getEyePos() + Vec3::directionFromRotation(player->getRotation()) : simPlayer->getEyePos()
+        player ? simPlayer->getHeadPos() + Vec3::directionFromRotation(player->getRotation()) : simPlayer->getHeadPos()
     );
 
     return cfsp;
@@ -110,7 +110,7 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     this->loadSpNbt();
     this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition = this->mSimPlayer->getFeetPos();
     this->mSimPlayer->mPlayerRespawnPoint->mDimension      = this->mSimPlayer->getDimensionId();
-    this->lookAt(this->mSimPlayer->getEyePos() + this->mSaveData.lookAtOffSet);
+    this->lookAt(this->mSimPlayer->getHeadPos() + this->mSaveData.lookAtOffSet);
     if (player.has_value())
         this->mSaveData.lastSpawnerUuid = player.value() ? player.value()->getUuid().asString() : "";
     this->mSaveData.isOnline = true;
@@ -185,7 +185,7 @@ base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
-    this->mSaveData.lookAtOffSet = pos - this->mSimPlayer->getEyePos();
+    this->mSaveData.lookAtOffSet = pos - this->mSimPlayer->getHeadPos();
     this->mSimPlayer->simulateSetBodyRotation(
         (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
     );
@@ -228,7 +228,7 @@ base::OperateResult SimPlayer::lookAt(Direction direction) {
     this->mSimPlayer->simulateSetBodyRotation(
         (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
     );
-    Vec3 pos = this->mSimPlayer->getEyePos() + offSet;
+    Vec3 pos                               = this->mSimPlayer->getHeadPos() + offSet;
     this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
