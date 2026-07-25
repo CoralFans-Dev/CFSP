@@ -1,6 +1,6 @@
 #include "CFSPManager.h"
 #include "cfsp/CFSP.h"
-#include "cfsp/ConFig.h"
+#include "cfsp/Config.h"
 #include "cfsp/core/fix/CFSPFixManager.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/helper/CFSPHelperManager.h"

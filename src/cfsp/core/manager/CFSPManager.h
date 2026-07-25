@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cfsp/ConFig.h"
+#include "cfsp/Config.h"
 #include "cfsp/PermissionConfig.h"
 #include "cfsp/base/OperateResult.h"
 #include "cfsp/core/group/CFSPGroup.h"
