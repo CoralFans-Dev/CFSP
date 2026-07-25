@@ -27,17 +27,23 @@ option_end()
 
 target("CFSP") -- Change this to your mod name.
     add_rules("@levibuildscript/linkrule")
-    add_cxflags(
-        "/EHa",
-        "/utf-8",
-        "/W4",
-        "/w44265",
-        "/w44289",
-        "/w44296",
-        "/w45263",
-        "/w44738",
-        "/w45204"
-    )
+    if is_plat("windows") then
+        add_cxflags("/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
+        add_cxflags(
+            "/EHs",
+            "-Wno-microsoft-cast",
+            "-Wno-invalid-offsetof",
+            "-Wno-c++2b-extensions",
+            "-Wno-microsoft-include",
+            "-Wno-overloaded-virtual",
+            "-Wno-ignored-qualifiers",
+            "-Wno-missing-field-initializers",
+            "-Wno-potentially-evaluated-expression",
+            "-Wno-pragma-system-header-outside-header",
+            {tools = {"clang_cl"}}
+        )
+        set_toolchains("clang-cl")
+    end
     add_defines("NOMINMAX", "UNICODE", "CFSPEXP")
     add_defines("CF_VERSION=\"$(shell git describe --tags --abbrev=0 --always)\"")
     add_defines("COMMITID=\"$(shell git rev-parse HEAD)\"")

@@ -189,10 +189,10 @@ void ComandManager::registerGroupComand() {
             std::vector<base::OperateResult> res;
             switch (self["operate"].get<ll::command::ParamKind::Enum>().index) {
             case 0:
-                res.emplace_back(manager::CFSPManager::getInstance().groupDelete(
-                    player.value(),
-                    self["gname"].get<ll::command::ParamKind::SoftEnum>()
-                ));
+                res.emplace_back(
+                    manager::CFSPManager::getInstance()
+                        .groupDelete(player.value(), self["gname"].get<ll::command::ParamKind::SoftEnum>())
+                );
                 break;
             case 1:
                 res = manager::CFSPManager::getInstance().groupSpawn(
@@ -542,7 +542,7 @@ void ComandManager::registerGroupComand() {
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
                         .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
-                    self["dim"].get<ll::command::ParamKind::Dimension>().id
+                    self["dim"].get<ll::command::ParamKind::Dimension>().mValue
                 );
             for (auto perRes : res) perRes.output(output);
         });

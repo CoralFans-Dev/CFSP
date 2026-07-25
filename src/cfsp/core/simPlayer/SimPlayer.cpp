@@ -168,7 +168,7 @@ base::OperateResult SimPlayer::info() {
         res += "manager.info.spPos"_tr() + base::utils::getDimName(this->mSimPlayer->getDimensionId()) + " "
              + this->mSimPlayer->getPosition().toString() + "\n  ";
         res += "manager.info.spRespawnpos"_tr()
-             + base::utils::getDimName(this->mSimPlayer->mPlayerRespawnPoint->mDimension->id) + " "
+             + base::utils::getDimName(this->mSimPlayer->mPlayerRespawnPoint->mDimension->mValue) + " "
              + this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition->toString() + "\n  ";
         res += "manager.info.spGamemode"_tr() + base::utils::getGameModeStr((int)this->mSimPlayer->getPlayerGameType())
              + "\n  ";

@@ -217,7 +217,7 @@ void ComandManager::registerSpComand() {
                         self["pos"]
                             .get<ll::command::ParamKind::Vec3>()
                             .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
-                        self["dim"].get<ll::command::ParamKind::Dimension>().id
+                        self["dim"].get<ll::command::ParamKind::Dimension>().mValue
                     )
                     .output(output);
             return manager::CFSPManager::getInstance()
@@ -227,7 +227,7 @@ void ComandManager::registerSpComand() {
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
                         .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
-                    self["dim"].get<ll::command::ParamKind::Dimension>().id,
+                    self["dim"].get<ll::command::ParamKind::Dimension>().mValue,
                     self["lockUniqueId"].get<ll::command::ParamKind::Bool>()
                 )
                 .output(output);
@@ -585,7 +585,7 @@ void ComandManager::registerSpComand() {
                     self["pos"]
                         .get<ll::command::ParamKind::Vec3>()
                         .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
-                    self["dim"].get<ll::command::ParamKind::Dimension>().id
+                    self["dim"].get<ll::command::ParamKind::Dimension>().mValue
                 )
                 .output(output);
         });

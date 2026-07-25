@@ -33,14 +33,8 @@ LL_TYPE_INSTANCE_HOOK(
     origin(container, slot, oldItem, newItem, forceBalanced);
     if (this->isSimulatedPlayer()) {
         if (slot == 0 && oldItem.getTypeName() != newItem.getTypeName()) {
-            MobEquipmentPacket(
-                this->getRuntimeID(),
-                newItem,
-                0,
-                0,
-                mInventory->mSelectedContainerId
-            )
-                .sendToClients(); // fix::更新主手
+            MobEquipmentPacketPayload payload(this->getRuntimeID(), newItem, 0, 0, mInventory->mSelectedContainerId);
+            MobEquipmentPacket(payload).sendToClients(); // fix::更新主手
         }
     }
 }
@@ -60,9 +54,10 @@ LL_TYPE_INSTANCE_HOOK(
         return origin(item);
 #endif
     if (this->isSimulatedPlayer()) {
-        if (this->getOffhandSlot().getTypeName() != item.getTypeName())
-            MobEquipmentPacket(this->getRuntimeID(), item, 1, 0,
-                               ContainerID::Offhand).sendToClients(); // fix::更新副手
+        if (this->getOffhandSlot().getTypeName() != item.getTypeName()) {
+            MobEquipmentPacketPayload payload(this->getRuntimeID(), item, 1, 0, ContainerID::Offhand);
+            MobEquipmentPacket(payload).sendToClients(); // fix::更新副手
+        }
     }
     origin(item);
 }

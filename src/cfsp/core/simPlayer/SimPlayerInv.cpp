@@ -109,13 +109,9 @@ base::OperateResult SimPlayer::swap(Player* player) {
     } catch (std::exception ex) {
         return base::OperateResult::error(std::string("Error: ") + ex.what());
     }
-    MobEquipmentPacket(
-        this->mSimPlayer->getRuntimeID(),
-        this->mSimPlayer->getOffhandSlot(),
-        1,
-        0,
-        ContainerID::Offhand
-    )
+    MobEquipmentPacketPayload
+        payload(this->mSimPlayer->getRuntimeID(), this->mSimPlayer->getOffhandSlot(), 1, 0, ContainerID::Offhand);
+    MobEquipmentPacket(payload)
         .sendToClients(); // fix::更新副手，主手通过CFSPSaveHelperHook1更新，装备mojang代码自动更新
     return base::OperateResult::success("manager.success.operate"_tr());
 }
@@ -131,14 +127,14 @@ base::OperateResult SimPlayer::select(int id) {
     for (int i = 0; i < size; i++)
         if (inv.getItem(i).getId() == id) {
             inv.swapSlots(i, this->mSimPlayer->getSelectedItemSlot());
-            MobEquipmentPacket(
+            MobEquipmentPacketPayload payload(
                 this->mSimPlayer->getRuntimeID(),
                 this->mSimPlayer->getSelectedItem(),
                 0,
                 0,
                 this->mSimPlayer->mInventory->mSelectedContainerId
-            )
-                .sendToClients(); // fix::更新主手
+            );
+            MobEquipmentPacket(payload).sendToClients(); // fix::更新主手
             return base::OperateResult::success("manager.success.operate"_tr());
         }
     return base::OperateResult::error("manager.fail.selectNoFound"_tr());
