@@ -10,7 +10,6 @@
 #include "ll/api/Config.h"
 #include "ll/api/command/CommandRegistrar.h"
 #include "mc/world/actor/player/Player.h"
-#include <boost/filesystem.hpp>
 #include <memory>
 #include <optional>
 #include <vector>

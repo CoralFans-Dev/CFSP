@@ -3,7 +3,6 @@
 #include "ll/api/Config.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/deps/nbt/CompoundTag.h"
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <filesystem>
 
 namespace coral_fans::cfsp::simulated_player {
@@ -60,9 +59,11 @@ bool SimPlayer::loadSpNbt() {
     if (!f.is_open()) [[unlikely]]
         return false;
     try {
-        boost::iostreams::mapped_file_source mmap;
-        mmap.open(path.string());
-        std::string_view      snbt{mmap.data(), mmap.size()};
+        auto size = f.tellg();
+        f.seekg(0);
+        std::string content(size, '\0');
+        f.read(content.data(), size);
+        std::string_view      snbt{content};
         DefaultDataLoadHelper helper;
         auto                  tag = CompoundTag::fromSnbt(snbt).value();
         this->mSimPlayer->load(tag, helper);
@@ -93,9 +94,11 @@ bool SimPlayer::checkInvEmptyForOfflineCFSP() {
     if (!f.is_open()) [[unlikely]]
         return false;
     try {
-        boost::iostreams::mapped_file_source mmap;
-        mmap.open(path.string());
-        std::string_view                snbt{mmap.data(), mmap.size()};
+        auto size = f.tellg();
+        f.seekg(0);
+        std::string content(size, '\0');
+        f.read(content.data(), size);
+        std::string_view                snbt{content};
         DefaultDataLoadHelper           helper;
         auto                            tag     = CompoundTag::fromSnbt(snbt).value();
         static std::vector<std::string> invKeys = {"Armor", "EnderChestInventory", "Inventory", "Offhand"};

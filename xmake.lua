@@ -11,8 +11,7 @@ end
 
 add_requires(
     "levibuildscript",
-    "timewheel",
-    "boost", {configs = {cmake = false, iostreams = true}}
+    "timewheel"
 )
 
 if not has_config("vs_runtime") then
@@ -52,7 +51,6 @@ target("CFSP") -- Change this to your mod name.
     add_includedirs("src")
     add_packages(
         "levilamina",
-        "boost",
         "levibuildscript",
         "lua",
         "timewheel"
