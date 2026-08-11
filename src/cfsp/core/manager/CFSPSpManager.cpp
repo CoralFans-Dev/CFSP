@@ -337,6 +337,7 @@ SP_ONLINE_FUNC_DEF(Drop, drop(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(DropInv, dropInv(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(Swap, swap(player))
 SP_ONLINE_FUNC_DEF(Select, select(id), int id)
+SP_ONLINE_FUNC_DEF(OpenInv, openInv(player))
 
 SP_ONLINE_FUNC_DEF(Chat, chat(message), std::string const& message)
 SP_ONLINE_FUNC_DEF(RunCmd, runcmd(message), std::string const& message)

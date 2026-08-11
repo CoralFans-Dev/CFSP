@@ -330,6 +330,10 @@ void GuiManager::sendSpInvOperatorPage(Player& player, std::shared_ptr<simulated
         form.appendButton("gui.inv.sp.swap"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spSwap(&player, spname).sendTo(player);
         });
+    if (perm & (uint)simulated_player::SimPlayerPermission::OpenInv)
+        form.appendButton("gui.inv.sp.openinv"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
+            manager::CFSPManager::getInstance().spOpenInv(&player, spname).sendTo(player);
+        });
     if (cfsp->isFree()) {
         if (perm & (uint)simulated_player::SimPlayerPermission::Drop)
             form.appendButton("gui.inv.sp.drop"_tr(), [this, cfsp, perm](Player& player) {

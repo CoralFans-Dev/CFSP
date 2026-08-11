@@ -4,11 +4,16 @@
 #include "ll/api/i18n/I18n.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h "
 #include "mc/deps/nbt/CompoundTag.h"
+#include "mc/network/packet/BlockActorDataPacket.h"
+#include "mc/network/packet/ContainerOpenPacket.h"
+#include "mc/network/packet/ContainerOpenPacketPayload.h"
 #include "mc/network/packet/MobEquipmentPacket.h"
+#include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/world/actor/player/Inventory.h"
 #include "mc/world/actor/player/PlayerInventory.h"
 #include "mc/world/actor/provider/ActorEquipment.h"
 #include <exception>
+#include <utility>
 
 
 namespace coral_fans::cfsp::simulated_player {
@@ -138,5 +143,45 @@ base::OperateResult SimPlayer::select(int id) {
             return base::OperateResult::success("manager.success.operate"_tr());
         }
     return base::OperateResult::error("manager.fail.selectNoFound"_tr());
+}
+
+base::OperateResult SimPlayer::openInv(Player* player) {
+    using ll::i18n_literals::operator""_tr;
+    if (!this->mSimPlayer) [[unlikely]]
+        return base::OperateResult::error("manager.error.loseSimplayer"_tr());
+    if (!player) [[unlikely]]
+        return base::OperateResult::error("manager.fail.playerIsNull"_tr());
+
+    const auto               blockPos = this->mSimPlayer->getFeetBlockPos();
+    UpdateBlockPacketPayload pldUpdateBlock(blockPos, 0, 2647010207, 3);
+    UpdateBlockPacket(pldUpdateBlock).sendTo(*player);
+
+    const auto&                     inventory = *this->mSimPlayer->mInventory->mInventory;
+    std::vector<CompoundTagVariant> items;
+    for (int i = 0; i < inventory.getContainerSize(); i++) {
+        const auto& item = inventory.getItem(i);
+        if (item == ItemStack::EMPTY_ITEM()) continue;
+        items.push_back(*item.getUserData());
+    }
+    CompoundTag tag;
+    tag["BlockEntityVersion"] = IntTag(0);
+    tag["Findable"]           = ByteTag(0);
+    tag["facing"]             = ByteTag(1);
+    tag["id"]                 = StringTag("ShulkerBox");
+    tag["x"]                  = IntTag(blockPos.x);
+    tag["y"]                  = IntTag(blockPos.y);
+    tag["z"]                  = IntTag(blockPos.z);
+    tag["Items"]              = ListTag(std::move(items));
+    BlockActorDataPacketPayload pldBlockActor(blockPos, tag);
+    BlockActorDataPacket(pldBlockActor).sendTo(*player);
+
+    ContainerOpenPacketPayload pldContainer(
+        ContainerID::First,
+        SharedTypes::Legacy::ContainerType::Container,
+        blockPos,
+        player->getOrCreateUniqueID()
+    );
+    ContainerOpenPacket(pldContainer).sendTo(*player);
+    return base::OperateResult::success("manager.success.operate"_tr());
 }
 } // namespace coral_fans::cfsp::simulated_player

@@ -246,7 +246,7 @@ void ComandManager::registerSpComand() {
                 .output(output);
         });
 
-    // sp p <despawn|stop|swap|info|invinfo> <name: cfspOnlineSp>
+    // sp p <despawn|stop|swap|info|invinfo|openinv> <name: cfspOnlineSp>
     ll::command::CommandRegistrar::getInstance(false).tryRegisterRuntimeEnum(
         "cfspOnlineSpOperate1",
         {
@@ -254,7 +254,8 @@ void ComandManager::registerSpComand() {
             {"stop",    1},
             {"swap",    2},
             {"info",    3},
-            {"invinfo", 4}
+            {"invinfo", 4},
+            {"openinv", 5}
     }
     );
     this->command->runtimeOverload()
@@ -276,6 +277,9 @@ void ComandManager::registerSpComand() {
                 SP_ONLINE_OPERATE1_CALL(Info)
             case 4:
                 SP_ONLINE_OPERATE1_CALL(InvInfo)
+            case 5:
+                if (!player.has_value()) return output.error("command.fail.onlyplayer"_tr());
+                SP_ONLINE_OPERATE1_CALL(OpenInv)
             }
         });
 
@@ -639,6 +643,7 @@ void ComandManager::registerSpComand() {
             {"NavTo",          23},
             {"Tp",             24},
             {"BeAddedToGroup", 25},
+            {"OpenInv",        26},
     }
     );
     this->command->runtimeOverload()

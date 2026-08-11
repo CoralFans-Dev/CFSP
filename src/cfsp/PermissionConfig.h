@@ -33,6 +33,7 @@ struct PermissionConfig {
     FuncStruct spChat          = {true, CommandPermissionLevel::Any};
     FuncStruct spRunCmd        = {true, CommandPermissionLevel::Any};
     FuncStruct spSelect        = {true, CommandPermissionLevel::Any};
+    FuncStruct spOpenInv       = {false, CommandPermissionLevel::Any};  // 该功能未完成
     FuncStruct spLookAt        = {true, CommandPermissionLevel::Any};
     FuncStruct spMoveTo        = {true, CommandPermissionLevel::Any};
     FuncStruct spNavTo         = {true, CommandPermissionLevel::Any};

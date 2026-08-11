@@ -116,6 +116,7 @@ public:
     spDropInv(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
     base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spSelect(Player* player, std::string const& spname, int id, bool nocheck = false);
+    base::OperateResult spOpenInv(Player* player, std::string const& spname, bool nocheck = false);
 
     base::OperateResult spSneaking(
         Player*             player,

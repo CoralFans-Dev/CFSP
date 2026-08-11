@@ -29,5 +29,6 @@ enum class SimPlayerPermission : unsigned int {
     NavTo          = 1 << 23,
     Tp             = 1 << 24,
     BeAddedToGroup = 1 << 25,
+    OpenInv        = 1 << 26,
 };
 }
