@@ -16,6 +16,10 @@ bool SimPlayer::save() {
     auto dataDir =
         worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
 #endif
+    if (this->mSimPlayer && this->mSaveData.mGameType != this->mSimPlayer->getPlayerGameType()) {
+        this->mSaveData.mGameType = this->mSimPlayer->getPlayerGameType();
+        this->mShouldSave         = true;
+    }
     if (this->mShouldSave) {
         if (ll::config::saveConfig(
                 this->mSaveData,
