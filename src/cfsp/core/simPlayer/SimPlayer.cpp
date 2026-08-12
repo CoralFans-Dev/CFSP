@@ -11,6 +11,7 @@
 #include "mc/world/Minecraft.h"
 #include "mc/world/level/Level.h"
 
+
 // #include "mc/world/actor/provider/ActorAttribute.h"
 #include <optional>
 
@@ -179,21 +180,18 @@ base::OperateResult SimPlayer::info() {
     return base::OperateResult::success(res);
 }
 
-base::OperateResult SimPlayer::lookAt(Vec3 const& pos, bool continuous) {
+base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
     this->mSaveData.lookAtOffSet = pos - this->mSimPlayer->getHeadPos();
-    // this->mSimPlayer->simulateSetBodyRotation(
-    //     (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
-    // );
-    this->mSimPlayer->simulateLookAt(pos, continuous ? sim::LookDuration::Continuous : sim::LookDuration::Instant);
+    this->mSimPlayer->simulateLookAt(pos, sim::LookDuration::Instant);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::lookAt(Direction direction, bool continuous) {
+base::OperateResult SimPlayer::lookAt(Direction direction) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
@@ -225,6 +223,6 @@ base::OperateResult SimPlayer::lookAt(Direction direction, bool continuous) {
     }
 
     Vec3 pos = this->mSimPlayer->getHeadPos() + offSet;
-    return this->lookAt(pos, continuous);
+    return this->lookAt(pos);
 }
 } // namespace coral_fans::cfsp::simulated_player

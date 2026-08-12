@@ -438,31 +438,22 @@ void ComandManager::registerSpComand() {
         .text("lookat")
         .required("spname", ll::command::ParamKind::SoftEnum, "cfspOnlineSp")
         .optional("pos", ll::command::ParamKind::Vec3)
-        .optional("continuous", ll::command::ParamKind::Bool)
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll::command::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
-            bool continuous =
-                self["continuous"].has_value() ? self["continuous"].get<ll::command::ParamKind::Bool>() : false;
             if (!self["pos"].has_value()) {
                 if (!player.value()) [[unlikely]]
                     return output.error("command.fail.lackPara"_tr());
                 const auto& hit = player.value()->traceRay(5.25f, false, true);
                 if (hit)
                     return manager ::CFSPManager ::getInstance()
-                        .spLookAt(
-                            player.value(),
-                            self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
-                            hit.mPos,
-                            continuous
-                        )
+                        .spLookAt(player.value(), self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(), hit.mPos)
                         .output(output);
                 return manager ::CFSPManager ::getInstance()
                     .spLookAt(
                         player.value(),
                         self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
-                        player.value()->getFeetPos(),
-                        continuous
+                        player.value()->getFeetPos()
                     )
                     .output(output);
             }
@@ -472,13 +463,12 @@ void ComandManager::registerSpComand() {
                     self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
                     self["pos"]
                         .get<ll ::command ::ParamKind ::Vec3>()
-                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0}),
-                    continuous
+                        .getPosition(static_cast<int>(CurrentCmdVersion::Latest), origin, {0, 0, 0})
                 )
                 .output(output);
         });
 
-    // sp p lookat <name: cfspOnlineSp> <facing: cfspFacing> [continuous: bool]
+    // sp p lookat <name: cfspOnlineSp> <facing: cfspFacing>
     ll ::command ::CommandRegistrar ::getInstance(false).tryRegisterRuntimeEnum(
         "cfspFacing",
         {
@@ -495,20 +485,16 @@ void ComandManager::registerSpComand() {
         .text("lookat")
         .required("spname", ll ::command ::ParamKind ::SoftEnum, "cfspOnlineSp")
         .required("facing", ll ::command ::ParamKind ::Enum, "cfspFacing")
-        .optional("continuous", ll ::command ::ParamKind ::Bool)
         .execute([this](CommandOrigin const& origin, CommandOutput& output, ll ::command ::RuntimeCommand const& self) {
             auto player = this->tryGetPlayer(origin);
             if (!player.has_value()) return output.error("command.fail.illegalOrigin"_tr());
-            bool continuous =
-                self["continuous"].has_value() ? self["continuous"].get<ll ::command ::ParamKind ::Bool>() : false;
             return manager ::CFSPManager ::getInstance()
                 .spLookAt(
                     player.value(),
                     self["spname"].get<ll ::command ::ParamKind ::SoftEnum>(),
                     static_cast<simulated_player::SimPlayer::Direction>(
                         self["facing"].get<ll ::command ::ParamKind ::Enum>().index
-                    ),
-                    continuous
+                    )
                 )
                 .output(output);
         });

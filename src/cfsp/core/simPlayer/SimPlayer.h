@@ -50,8 +50,8 @@ public:
     CFSP_API base::OperateResult spawn(std::optional<const Player*> player); // 当player为std::nullopt时，为autojoin
     CFSP_API base::OperateResult despawn();
     CFSP_API base::OperateResult respawn();
-    CFSP_API base::OperateResult lookAt(Vec3 const& pos, bool continuous = false);
-    CFSP_API base::OperateResult lookAt(Direction direction, bool continuous = false);
+    CFSP_API base::OperateResult lookAt(Vec3 const& pos);
+    CFSP_API base::OperateResult lookAt(Direction direction);
     CFSP_API base::OperateResult info();
 
 public:
