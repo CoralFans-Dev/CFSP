@@ -29,6 +29,8 @@ enum class SimPlayerPermission : unsigned int {
     NavTo          = 1 << 23,
     Tp             = 1 << 24,
     BeAddedToGroup = 1 << 25,
-    OpenInv        = 1 << 26,
+#ifdef OPENINV // OpenInv 功能未完成
+    OpenInv = 1 << 26,
+#endif
 };
-}
+} // namespace coral_fans::cfsp::simulated_player

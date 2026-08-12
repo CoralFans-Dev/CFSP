@@ -20,8 +20,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
         mOfflineSpMap; // <假人名, 不在线的CF假人对象>
     std::unordered_map<std::string, std::shared_ptr<simulated_player::SimPlayer>>
-        mOnlineSpMap; // <假人名, 在线的CF假人对象>
-    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap; //<假人组名, 假人组对象>
+                                                                       mOnlineSpMap; // <假人名, 在线的CF假人对象>
+    std::unordered_map<std::string, std::shared_ptr<group::CFSPGroup>> mGroupMap;    //<假人组名, 假人组对象>
     config::Config                                                     mConfig;
     config::PermissionConfig                                           mPermissionConfig;
 
@@ -116,7 +116,9 @@ public:
     spDropInv(Player* player, std::string const& spname, int times = 1, int interval = 1, bool nocheck = false);
     base::OperateResult spSwap(Player* player, std::string const& spname, bool nocheck = false);
     base::OperateResult spSelect(Player* player, std::string const& spname, int id, bool nocheck = false);
+#ifdef OPENINV // OpenInv 功能未完成
     base::OperateResult spOpenInv(Player* player, std::string const& spname, bool nocheck = false);
+#endif
 
     base::OperateResult spSneaking(
         Player*             player,

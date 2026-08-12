@@ -330,10 +330,12 @@ void GuiManager::sendSpInvOperatorPage(Player& player, std::shared_ptr<simulated
         form.appendButton("gui.inv.sp.swap"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spSwap(&player, spname).sendTo(player);
         });
+#ifdef OPENINV // OpenInv 功能未完成
     if (perm & (uint)simulated_player::SimPlayerPermission::OpenInv)
         form.appendButton("gui.inv.sp.openinv"_tr(), [spname = cfsp->mSaveData.name](Player& player) {
             manager::CFSPManager::getInstance().spOpenInv(&player, spname).sendTo(player);
         });
+#endif
     if (cfsp->isFree()) {
         if (perm & (uint)simulated_player::SimPlayerPermission::Drop)
             form.appendButton("gui.inv.sp.drop"_tr(), [this, cfsp, perm](Player& player) {
@@ -910,10 +912,12 @@ void GuiManager::sendSpPermPage2(
     std::string                                  targetPlayerUuid
 ) {
     using ll::i18n_literals::operator""_tr;
-    auto form = ll::form::CustomForm("gui.perm.spTitle2"_tr(
-        cfsp->mSaveData.name,
-        targetPlayerName != "" ? targetPlayerName : "gui.perm.publicSp"_tr()
-    ));
+    auto form = ll::form::CustomForm(
+        "gui.perm.spTitle2"_tr(
+            cfsp->mSaveData.name,
+            targetPlayerName != "" ? targetPlayerName : "gui.perm.publicSp"_tr()
+        )
+    );
 
     uint perm = 0;
     if (targetPlayerName == "") perm = cfsp->mSaveData.publicPermission;

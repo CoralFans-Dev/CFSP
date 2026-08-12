@@ -69,6 +69,7 @@ target("CFSP") -- Change this to your mod name.
     --  add_includedirs("src-client")
     --  add_files("src-client/**.cpp")
     end
+    -- add_defines("OPENINV")
 
     after_build(function (target)
         local mod_packer = import("scripts.after_build")

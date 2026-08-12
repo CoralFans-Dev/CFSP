@@ -254,8 +254,11 @@ void ComandManager::registerSpComand() {
             {"stop",    1},
             {"swap",    2},
             {"info",    3},
-            {"invinfo", 4},
+            {"invinfo", 4}
+#ifdef OPENINV  // OpenInv 功能未完成
+            ,
             {"openinv", 5}
+#endif
     }
     );
     this->command->runtimeOverload()
@@ -277,9 +280,11 @@ void ComandManager::registerSpComand() {
                 SP_ONLINE_OPERATE1_CALL(Info)
             case 4:
                 SP_ONLINE_OPERATE1_CALL(InvInfo)
+#ifdef OPENINV // OpenInv 功能未完成
             case 5:
                 if (!player.has_value()) return output.error("command.fail.onlyplayer"_tr());
                 SP_ONLINE_OPERATE1_CALL(OpenInv)
+#endif
             }
         });
 
@@ -642,8 +647,11 @@ void ComandManager::registerSpComand() {
             {"MoveTo",         22},
             {"NavTo",          23},
             {"Tp",             24},
-            {"BeAddedToGroup", 25},
-            {"OpenInv",        26},
+            {"BeAddedToGroup", 25}
+#ifdef OPENINV  // OpenInv 功能未完成
+            ,
+            {"OpenInv",        26}
+#endif
     }
     );
     this->command->runtimeOverload()
