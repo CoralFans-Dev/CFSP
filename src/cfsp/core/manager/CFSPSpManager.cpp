@@ -106,7 +106,15 @@ CFSPManager::spCreate(Player* player, std::string const& name, Vec3 const& pos, 
         return base::OperateResult::error("manager.fail.spHasExisted"_tr());
     }
     // check: name
-    if (!this->tryCreateDiretory(cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer", spname))
+#ifdef LL_PLAT_S
+    auto spDir = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = cfsp::CFSP::getInstance().getSelf().getWorldDataDir();
+    auto spDir        = worldDataDir ? worldDataDir.value() / "simplayer"
+                                     : cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
+    if (!this->tryCreateDiretory(spDir, spname))
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     // create
     auto simplayer = simulated_player::SimPlayer::create(player, spname, pos, dim, lockUniqueId);
@@ -337,9 +345,6 @@ SP_ONLINE_FUNC_DEF(Drop, drop(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(DropInv, dropInv(times, interval), int times, int interval)
 SP_ONLINE_FUNC_DEF(Swap, swap(player))
 SP_ONLINE_FUNC_DEF(Select, select(id), int id)
-#ifdef OPENINV // OpenInv 功能未完成
-SP_ONLINE_FUNC_DEF(OpenInv, openInv(player))
-#endif
 
 SP_ONLINE_FUNC_DEF(Chat, chat(message), std::string const& message)
 SP_ONLINE_FUNC_DEF(RunCmd, runcmd(message), std::string const& message)

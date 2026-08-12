@@ -33,9 +33,6 @@ struct PermissionConfig {
     FuncStruct spChat      = {true, CommandPermissionLevel::Any};
     FuncStruct spRunCmd    = {true, CommandPermissionLevel::Any};
     FuncStruct spSelect    = {true, CommandPermissionLevel::Any};
-#ifdef OPENINV // OpenInv 功能未完成
-    FuncStruct spOpenInv = {false, CommandPermissionLevel::Any};
-#endif
     FuncStruct spLookAt        = {true, CommandPermissionLevel::Any};
     FuncStruct spMoveTo        = {true, CommandPermissionLevel::Any};
     FuncStruct spNavTo         = {true, CommandPermissionLevel::Any};

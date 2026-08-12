@@ -23,7 +23,6 @@ public:
     }
 
 private:
-    void featureFix(bool);
     void handItemFix(bool);
     void sapiFix(bool);
 

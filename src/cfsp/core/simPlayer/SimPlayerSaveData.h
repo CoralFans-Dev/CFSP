@@ -2,6 +2,7 @@
 
 #include "ll/api/base/StdInt.h"
 #include "mc/deps/core/math/Vec3.h"
+#include "mc/world/level/GameType.h"
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -18,5 +19,6 @@ struct SimPlayerSaveData {
     std::unordered_map<std::string, uint> permission; // <玩家uuid, permission>
     bool                                  isOnline     = true;
     Vec3                                  lookAtOffSet = {0, 0, 0};
+    GameType                              mGameType    = GameType::Survival;
 };
 } // namespace coral_fans::cfsp::simulated_player

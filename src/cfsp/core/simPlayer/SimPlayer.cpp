@@ -7,8 +7,7 @@
 #include "ll/api/service/Bedrock.h"
 #include "mc/deps/core/math/Vec3.h"
 #include "mc/server/SimulatedPlayer.h"
-#include "mc/server/sim/ContinuousLookAtPositionIntent.h"
-#include "mc/server/sim/sim.h"
+#include "mc/server/sim/LookDuration.h"
 #include "mc/world/Minecraft.h"
 #include "mc/world/level/Level.h"
 
@@ -50,19 +49,18 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     auto uuid = player ? player->getUuid().asString() : "";
     auto mc   = ll::service::getMinecraft();
     if (!mc) return nullptr;
-    auto serverNetworkHandler = mc->getServerNetworkHandler();
-    if (!serverNetworkHandler) return nullptr;
+    auto handler = mc->getServerNetworkHandler();
+    if (!handler) return nullptr;
     auto xuid = "-" + std::to_string(std::hash<std::string>()(spname));
-    // auto* simPlayer = SimulatedPlayer::create(spname, pos, dim, serverNetworkHandler, xuid, std::nullopt);
 
     fix::CFSPFixManager::getInstance().createSpMutex = true;
-    auto* simPlayer =
-        SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, serverNetworkHandler, xuid, std::nullopt);
+    auto* simPlayer = SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, handler, xuid, std::nullopt);
     fix::CFSPFixManager::getInstance().createSpMutex = false;
 
     if (!simPlayer) [[unlikely]]
         return nullptr;
 
+    simPlayer->teleport(pos, dim);
     simPlayer->mPlayerRespawnPoint->mPlayerPosition = pos;
     simPlayer->mPlayerRespawnPoint->mDimension      = dim;
 
@@ -72,6 +70,10 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     saveData.xuid            = xuid;
     saveData.ownerUuid       = uuid;
     saveData.lastSpawnerUuid = uuid;
+
+    const auto& gameType = player->getPlayerGameType();
+    simPlayer->setPlayerGameType(gameType);
+    saveData.mGameType = gameType;
 
     auto cfsp = std::make_shared<simulated_player::SimPlayer>(saveData, simPlayer);
 
@@ -86,8 +88,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     using ll::i18n_literals::operator""_tr;
     auto mc = ll::service::getMinecraft();
     if (!mc) return base::OperateResult::error("manager.error.failedtocreate"_tr());
-    auto serverNetworkHandler = mc->getServerNetworkHandler();
-    if (!serverNetworkHandler) return base::OperateResult::error("manager.error.failedtocreate"_tr());
+    auto handler = mc->getServerNetworkHandler();
+    if (!handler) return base::OperateResult::error("manager.error.failedtocreate"_tr());
 
     fix::CFSPFixManager::getInstance().createSpMutex = true;
     this->mSimPlayer                                 = SimulatedPlayer::create(
@@ -97,7 +99,7 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
         {0, 0},
         false,
         0,
-        serverNetworkHandler,
+        handler,
         this->mSaveData.xuid,
         this->mSaveData.uniqueId.has_value()
                                             ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
@@ -108,6 +110,7 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.failedtocreate"_tr());
     this->loadSpNbt();
+    this->mSimPlayer->teleport(this->mSimPlayer->getFeetPos(), this->mSimPlayer->getDimensionId());
     this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition = this->mSimPlayer->getFeetPos();
     this->mSimPlayer->mPlayerRespawnPoint->mDimension      = this->mSimPlayer->getDimensionId();
     this->lookAt(this->mSimPlayer->getHeadPos() + this->mSaveData.lookAtOffSet);
@@ -115,6 +118,7 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
         this->mSaveData.lastSpawnerUuid = player.value() ? player.value()->getUuid().asString() : "";
     this->mSaveData.isOnline = true;
     this->mShouldSave        = true;
+    this->mSimPlayer->setPlayerGameType(this->mSaveData.mGameType);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -148,11 +152,7 @@ base::OperateResult SimPlayer::respawn() {
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isAlive()) return base::OperateResult::error("manager.fail.spIsAlive"_tr());
-    auto& spawnPos                              = this->mSimPlayer->mPlayerRespawnPoint->mPlayerPosition;
-    this->mSimPlayer->mRespawnPositionCandidate = {spawnPos->x + 0.5f, spawnPos->y + 1.62001f, spawnPos->z + 0.5f};
-    this->mSimPlayer->mRespawnReady             = true;
-    this->mSimPlayer->mRespawningFromTheEnd     = false;
-    this->mSimPlayer->respawn();
+    if (!this->mSimPlayer->simulateRespawn()) return base::OperateResult::error("manager.fail.failToRespawn"_tr());
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
@@ -179,21 +179,21 @@ base::OperateResult SimPlayer::info() {
     return base::OperateResult::success(res);
 }
 
-base::OperateResult SimPlayer::lookAt(Vec3 const& pos) {
+base::OperateResult SimPlayer::lookAt(Vec3 const& pos, bool continuous) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
     if (this->mSimPlayer->isDead()) [[unlikely]]
         return base::OperateResult::error("manager.fail.spIsDead"_tr());
     this->mSaveData.lookAtOffSet = pos - this->mSimPlayer->getHeadPos();
-    this->mSimPlayer->simulateSetBodyRotation(
-        (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
-    );
-    this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
+    // this->mSimPlayer->simulateSetBodyRotation(
+    //     (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
+    // );
+    this->mSimPlayer->simulateLookAt(pos, continuous ? sim::LookDuration::Continuous : sim::LookDuration::Instant);
     return base::OperateResult::success("manager.success.operate"_tr());
 }
 
-base::OperateResult SimPlayer::lookAt(Direction direction) {
+base::OperateResult SimPlayer::lookAt(Direction direction, bool continuous) {
     using ll::i18n_literals::operator""_tr;
     if (!this->mSimPlayer) [[unlikely]]
         return base::OperateResult::error("manager.error.loseSimplayer"_tr());
@@ -224,12 +224,7 @@ base::OperateResult SimPlayer::lookAt(Direction direction) {
         return base::OperateResult::error("manager.fail.invalidDirection"_tr());
     }
 
-    this->mSaveData.lookAtOffSet = offSet;
-    this->mSimPlayer->simulateSetBodyRotation(
-        (float)(atan2(this->mSaveData.lookAtOffSet.z, this->mSaveData.lookAtOffSet.x) * 57.295776) - 90.0f
-    );
-    Vec3 pos                               = this->mSimPlayer->getHeadPos() + offSet;
-    this->mSimPlayer->mLookAtIntent->mType = sim::ContinuousLookAtPositionIntent(glm::vec3(pos.x, pos.y, pos.z), false);
-    return base::OperateResult::success("manager.success.operate"_tr());
+    Vec3 pos = this->mSimPlayer->getHeadPos() + offSet;
+    return this->lookAt(pos, continuous);
 }
 } // namespace coral_fans::cfsp::simulated_player

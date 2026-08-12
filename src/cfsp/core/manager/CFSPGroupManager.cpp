@@ -37,7 +37,15 @@ base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& 
     if (this->mGroupMap.find(gname) != this->mGroupMap.end())
         return base::OperateResult::error("manager.fail.groupHasExisted"_tr());
     // check: name
-    if (!this->tryCreateDiretory(cfsp::CFSP::getInstance().getSelf().getDataDir() / "group", gname))
+#ifdef LL_PLAT_S
+    auto groupDir = cfsp::CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = cfsp::CFSP::getInstance().getSelf().getWorldDataDir();
+    auto groupDir =
+        worldDataDir ? worldDataDir.value() / "group" : cfsp::CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+    if (!this->tryCreateDiretory(groupDir, gname))
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     group::GroupData groupData;
     groupData.name      = gname;
@@ -82,13 +90,19 @@ base::OperateResult CFSPManager::groupDelete(Player* player, std::string const& 
     if (checkResult.mType != base::OperateResult::Type::Success
         && !it->second->hasPermission(player, group::GroupPermission::Delete))
         return base::OperateResult::error("manager.fail.permissionDenied"_tr());
+    auto groupName = it->second->mData.name;
     ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues("cfspGroup", {gname});
     this->mGroupMap.erase(it);
     try {
-        std::filesystem::remove_all(
-            CFSP::getInstance().getSelf().getDataDir() / "group"
-            / reinterpret_cast<const char8_t*>(it->second->mData.name.c_str())
-        );
+#ifdef LL_PLAT_S
+        auto groupDelDir = CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+#ifdef LL_PLAT_C
+        auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
+        auto groupDelDir =
+            worldDataDir ? worldDataDir.value() / "group" : CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+        std::filesystem::remove_all(groupDelDir / reinterpret_cast<const char8_t*>(groupName.c_str()));
     } catch (...) {
         return base::OperateResult::error("manager.error.deleteFileFail"_tr());
     }
