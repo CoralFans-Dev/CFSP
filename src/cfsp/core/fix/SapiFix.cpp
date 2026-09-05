@@ -448,18 +448,19 @@ LL_TYPE_INSTANCE_HOOK(
     ::Player&         player,
     ::BlockPos const& pos,
     ::Block const&    hitBlock,
-    uchar const       face
+    uchar const       face,
+    int const         previousProgress
 ) {
 #ifdef LL_PLAT_C
     if (auto serverInstance = ll::service::getServerInstance();
         !serverInstance
         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(player, pos, hitBlock, face);
+        return origin(player, pos, hitBlock, face, previousProgress);
 #endif
     if (manager::CFSPManager::getInstance().tryGetCFSP(&player).has_value()) {
         return EventResult::KeepGoing;
     }
-    return origin(player, pos, hitBlock, face);
+    return origin(player, pos, hitBlock, face, previousProgress);
 }
 
 LL_TYPE_INSTANCE_HOOK(

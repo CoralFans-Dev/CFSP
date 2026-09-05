@@ -3,11 +3,7 @@ add_rules("mode.debug", "mode.release")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.git")
 
-if is_config("target_type", "server") then
-    add_requires("levilamina", {configs = {target_type = "server"}})
-else
-    add_requires("levilamina", {configs = {target_type = "client"}})
-end
+add_requires("levilamina 419250a49121a60449db328b7d2eb146a2432a9f", {configs = {target_type = get_config("target_type")}})
 
 add_requires(
     "levibuildscript",
