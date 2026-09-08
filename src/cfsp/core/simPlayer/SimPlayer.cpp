@@ -55,7 +55,7 @@ std::shared_ptr<SimPlayer> SimPlayer::create(
     auto xuid = "-" + std::to_string(std::hash<std::string>()(spname));
 
     fix::CFSPFixManager::getInstance().createSpMutex = true;
-    auto* simPlayer = SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, handler, xuid, std::nullopt);
+    auto simPlayer = SimulatedPlayer::create(spname, pos, {0, 0, 0}, {0, 0}, false, dim, handler, xuid, std::nullopt);
     fix::CFSPFixManager::getInstance().createSpMutex = false;
 
     if (!simPlayer) [[unlikely]]
@@ -103,8 +103,8 @@ base::OperateResult SimPlayer::spawn(std::optional<const Player*> player) {
         handler,
         this->mSaveData.xuid,
         this->mSaveData.uniqueId.has_value()
-                                            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
-                                            : std::nullopt
+            ? std::optional<ActorUniqueID>(ActorUniqueID(this->mSaveData.uniqueId.value()))
+            : std::nullopt
     );
     fix::CFSPFixManager::getInstance().createSpMutex = false;
 
@@ -161,7 +161,7 @@ base::OperateResult SimPlayer::info() {
     using ll::i18n_literals::operator""_tr;
     std::string res  = "\n  " + "manager.info.spname"_tr() + this->mSaveData.name + "\n  ";
     res             += "manager.info.spOwner"_tr() + base::utils::tryGetPlayerName(this->mSaveData.ownerUuid) + "\n  ";
-    res             += "manager.info.spStatus"_tr()
+    res += "manager.info.spStatus"_tr()
          + (this->mSimPlayer ? this->mSimPlayer->isAlive() ? "base.spstatus.alive"_tr() : "base.spstatus.dead"_tr()
                              : "base.spstatus.offline"_tr())
          + "\n  ";
