@@ -13,11 +13,11 @@
 #include "mc/scripting/modules/minecraft/actor/ScriptActorFactory.h"
 #include "mc/scripting/modules/minecraft/actor/ScriptActorQuery.h"
 // #include "mc/scripting/modules/minecraft/commands/ScriptCommandError.h"
-#include "mc/scripting/modules/minecraft/events/ScriptActorEventListener.h"
+// #include "mc/scripting/modules/minecraft/events/ScriptActorEventListener.h"
 #include "mc/scripting/modules/minecraft/events/ScriptActorGlobalEventListener.h"
 #include "mc/scripting/modules/minecraft/events/ScriptBlockGlobalEventListener.h"
 #include "mc/scripting/modules/minecraft/events/ScriptLevelGlobalEventListener.h"
-#include "mc/scripting/modules/minecraft/events/ScriptPlayerEventListener.h"
+// #include "mc/scripting/modules/minecraft/events/ScriptPlayerEventListener.h"
 #include "mc/scripting/modules/minecraft/player/ScriptPlayer.h"
 #include "mc/server/ServerLevel.h"
 #include "mc/world/actor/Actor.h"
@@ -84,8 +84,8 @@ namespace coral_fans::cfsp::fix {
 LL_TYPE_INSTANCE_HOOK(
     ScriptActorEventListenerFix1,
     ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptActorEventListener,
-    &ScriptModuleMinecraft::ScriptActorEventListener::$onEvent,
+    ScriptModuleMinecraft::ScriptActorGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptActorGlobalEventListener::$onEvent,
     EventResult,
     ::ActorRemovedEvent const& actorRemovedEvent
 ) {
@@ -107,8 +107,8 @@ LL_TYPE_INSTANCE_HOOK(
 LL_TYPE_INSTANCE_HOOK(
     ScriptActorEventListenerFix2,
     ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptActorEventListener,
-    &ScriptModuleMinecraft::ScriptActorEventListener::$onActorCreated,
+    ScriptModuleMinecraft::ScriptActorGlobalEventListener,
+    &ScriptModuleMinecraft::ScriptActorGlobalEventListener::$onActorCreated,
     EventResult,
     ::Actor&                    actor,
     ::ActorInitializationMethod initializationMethod
@@ -463,327 +463,327 @@ LL_TYPE_INSTANCE_HOOK(
     return origin(player, pos, hitBlock, face, previousProgress);
 }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix1,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerRespawnEvent const& respawnEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(respawnEvent);
-#endif
-    if (auto entityContext = respawnEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix1,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerGlobalEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerRespawnEvent const& respawnEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(respawnEvent);
+// #endif
+//     if (auto entityContext = respawnEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix2,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInitialSpawnEvent const& initialSpawnEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(initialSpawnEvent);
-#endif
-    if (auto entityContext = initialSpawnEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return origin(initialSpawnEvent);
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix2,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInitialSpawnEvent const& initialSpawnEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(initialSpawnEvent);
+// #endif
+//     if (auto entityContext = initialSpawnEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return origin(initialSpawnEvent);
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix3,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerDimensionChangeAfterEvent const& playerDimensionChangeEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerDimensionChangeEvent);
-#endif
-    if (auto entityContext = playerDimensionChangeEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix3,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerDimensionChangeAfterEvent const& playerDimensionChangeEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerDimensionChangeEvent);
+// #endif
+//     if (auto entityContext = playerDimensionChangeEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix4,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInputModeChangeEvent const& playerInputModeChangeEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerInputModeChangeEvent);
-#endif
-    if (auto entityContext = playerInputModeChangeEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix4,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInputModeChangeEvent const& playerInputModeChangeEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerInputModeChangeEvent);
+// #endif
+//     if (auto entityContext = playerInputModeChangeEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix5,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInputPermissionCategoryChangeEvent const& event
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(event);
-#endif
-    if (auto entityContext = event.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix5,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInputPermissionCategoryChangeEvent const& event
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(event);
+// #endif
+//     if (auto entityContext = event.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix6,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInteractWithEntityAfterEvent const& playerInteractWithEntityEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerInteractWithEntityEvent);
-#endif
-    if (auto entityContext = playerInteractWithEntityEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix6,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInteractWithEntityAfterEvent const& playerInteractWithEntityEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerInteractWithEntityEvent);
+// #endif
+//     if (auto entityContext = playerInteractWithEntityEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix7,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInteractWithBlockAfterEvent const& playerInteractWithBlockEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerInteractWithBlockEvent);
-#endif
-    if (auto entityContext = playerInteractWithBlockEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix7,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInteractWithBlockAfterEvent const& playerInteractWithBlockEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerInteractWithBlockEvent);
+// #endif
+//     if (auto entityContext = playerInteractWithBlockEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix8,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerGameModeChangeEvent const& playerGameModeChangeEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerGameModeChangeEvent);
-#endif
-    if (auto entityContext = playerGameModeChangeEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix8,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerGameModeChangeEvent const& playerGameModeChangeEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerGameModeChangeEvent);
+// #endif
+//     if (auto entityContext = playerGameModeChangeEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix9,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerEmoteEvent const& playerEmoteEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(playerEmoteEvent);
-#endif
-    if (auto entityContext = playerEmoteEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix9,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerEmoteEvent const& playerEmoteEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(playerEmoteEvent);
+// #endif
+//     if (auto entityContext = playerEmoteEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix10,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerScriptInputEvent const& e
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(e);
-#endif
-    if (auto entityContext = e.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix10,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerScriptInputEvent const& e
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(e);
+// #endif
+//     if (auto entityContext = e.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix11,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerInventoryItemChangeEvent const& e
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(e);
-#endif
-    if (auto entityContext = e.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix11,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerInventoryItemChangeEvent const& e
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(e);
+// #endif
+//     if (auto entityContext = e.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix12,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerHotbarSelectedSlotChangeEvent const& e
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(e);
-#endif
-    if (auto entityContext = e.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix12,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerHotbarSelectedSlotChangeEvent const& e
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(e);
+// #endif
+//     if (auto entityContext = e.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix13,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerUseNameTagEvent const& nameTagEvent
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(nameTagEvent);
-#endif
-    if (auto entityContext = nameTagEvent.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix13,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerUseNameTagEvent const& nameTagEvent
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(nameTagEvent);
+// #endif
+//     if (auto entityContext = nameTagEvent.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
-LL_TYPE_INSTANCE_HOOK(
-    ScriptPlayerEventListenerFix14,
-    ll::memory::HookPriority::Normal,
-    ScriptModuleMinecraft::ScriptPlayerEventListener,
-    &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
-    EventResult,
-    ::PlayerSwingStartEvent const& e
-) {
-#ifdef LL_PLAT_C
-    if (auto serverInstance = ll::service::getServerInstance();
-        !serverInstance
-        || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(e);
-#endif
-    if (auto entityContext = e.mPlayer->lock()) {
-        auto actor = Actor::tryGetFromEntity(*entityContext, false);
-        if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
-            return EventResult::KeepGoing;
-        }
-    }
-    return EventResult::KeepGoing;
-}
+// LL_TYPE_INSTANCE_HOOK(
+//     ScriptPlayerEventListenerFix14,
+//     ll::memory::HookPriority::Normal,
+//     ScriptModuleMinecraft::ScriptPlayerEventListener,
+//     &ScriptModuleMinecraft::ScriptPlayerEventListener::$onEvent,
+//     EventResult,
+//     ::PlayerSwingStartEvent const& e
+// ) {
+// #ifdef LL_PLAT_C
+//     if (auto serverInstance = ll::service::getServerInstance();
+//         !serverInstance
+//         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
+//         return origin(e);
+// #endif
+//     if (auto entityContext = e.mPlayer->lock()) {
+//         auto actor = Actor::tryGetFromEntity(*entityContext, false);
+//         if (actor && manager::CFSPManager::getInstance().tryGetCFSP(actor).has_value()) {
+//             return EventResult::KeepGoing;
+//         }
+//     }
+//     return EventResult::KeepGoing;
+// }
 
 // LL_TYPE_STATIC_HOOK(
 //     CFSPSapiFixHook27,
@@ -852,20 +852,20 @@ void CFSPFixManager::sapiFix(bool enable) {
         ScriptBlockGlobalEventListenerFix1::hook();
         ScriptBlockGlobalEventListenerFix2::hook();
         ScriptBlockGlobalEventListenerFix3::hook();
-        ScriptPlayerEventListenerFix1::hook();
-        ScriptPlayerEventListenerFix2::hook();
-        ScriptPlayerEventListenerFix3::hook();
-        ScriptPlayerEventListenerFix4::hook();
-        ScriptPlayerEventListenerFix5::hook();
-        ScriptPlayerEventListenerFix6::hook();
-        ScriptPlayerEventListenerFix7::hook();
-        ScriptPlayerEventListenerFix8::hook();
-        ScriptPlayerEventListenerFix9::hook();
-        ScriptPlayerEventListenerFix10::hook();
-        ScriptPlayerEventListenerFix11::hook();
-        ScriptPlayerEventListenerFix12::hook();
-        ScriptPlayerEventListenerFix13::hook();
-        ScriptPlayerEventListenerFix14::hook();
+        // ScriptPlayerEventListenerFix1::hook();
+        // ScriptPlayerEventListenerFix2::hook();
+        // ScriptPlayerEventListenerFix3::hook();
+        // ScriptPlayerEventListenerFix4::hook();
+        // ScriptPlayerEventListenerFix5::hook();
+        // ScriptPlayerEventListenerFix6::hook();
+        // ScriptPlayerEventListenerFix7::hook();
+        // ScriptPlayerEventListenerFix8::hook();
+        // ScriptPlayerEventListenerFix9::hook();
+        // ScriptPlayerEventListenerFix10::hook();
+        // ScriptPlayerEventListenerFix11::hook();
+        // ScriptPlayerEventListenerFix12::hook();
+        // ScriptPlayerEventListenerFix13::hook();
+        // ScriptPlayerEventListenerFix14::hook();
     } else {
         ScriptActorEventListenerFix1::unhook();
         ScriptActorEventListenerFix2::unhook();
@@ -884,20 +884,20 @@ void CFSPFixManager::sapiFix(bool enable) {
         ScriptBlockGlobalEventListenerFix1::unhook();
         ScriptBlockGlobalEventListenerFix2::unhook();
         ScriptBlockGlobalEventListenerFix3::unhook();
-        ScriptPlayerEventListenerFix1::unhook();
-        ScriptPlayerEventListenerFix2::unhook();
-        ScriptPlayerEventListenerFix3::unhook();
-        ScriptPlayerEventListenerFix4::unhook();
-        ScriptPlayerEventListenerFix5::unhook();
-        ScriptPlayerEventListenerFix6::unhook();
-        ScriptPlayerEventListenerFix7::unhook();
-        ScriptPlayerEventListenerFix8::unhook();
-        ScriptPlayerEventListenerFix9::unhook();
-        ScriptPlayerEventListenerFix10::unhook();
-        ScriptPlayerEventListenerFix11::unhook();
-        ScriptPlayerEventListenerFix12::unhook();
-        ScriptPlayerEventListenerFix13::unhook();
-        ScriptPlayerEventListenerFix14::unhook();
+        // ScriptPlayerEventListenerFix1::unhook();
+        // ScriptPlayerEventListenerFix2::unhook();
+        // ScriptPlayerEventListenerFix3::unhook();
+        // ScriptPlayerEventListenerFix4::unhook();
+        // ScriptPlayerEventListenerFix5::unhook();
+        // ScriptPlayerEventListenerFix6::unhook();
+        // ScriptPlayerEventListenerFix7::unhook();
+        // ScriptPlayerEventListenerFix8::unhook();
+        // ScriptPlayerEventListenerFix9::unhook();
+        // ScriptPlayerEventListenerFix10::unhook();
+        // ScriptPlayerEventListenerFix11::unhook();
+        // ScriptPlayerEventListenerFix12::unhook();
+        // ScriptPlayerEventListenerFix13::unhook();
+        // ScriptPlayerEventListenerFix14::unhook();
     }
     // CFSPSapiFixHook27::hook();
     // CFSPSapiFixHook28::hook();

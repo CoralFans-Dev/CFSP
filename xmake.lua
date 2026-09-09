@@ -3,7 +3,7 @@ add_rules("mode.debug", "mode.release")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 add_repositories("coralfansdev-repo https://github.com/CoralFans-Dev/xmake-repo.git")
 
-add_requires("levilamina 26.32.2", {configs = {target_type = get_config("target_type")}})
+add_requires("levilamina", {configs = {target_type = get_config("target_type")}})
 
 add_requires(
     "levibuildscript",
@@ -51,7 +51,6 @@ target("CFSP") -- Change this to your mod name.
         "lua",
         "timewheel"
     )
-    add_shflags("/DELAYLOAD:bedrock_server.dll") -- To use symbols provided by SymbolProvider.
     set_exceptions("none") -- To avoid conflicts with /EHa.
     set_kind("shared")
     set_languages("c++20")
