@@ -10,6 +10,8 @@
 #include "mc/world/phys/HitResult.h"
 #include <memory>
 
+#include "mc/world/level/block/Block.h"
+#include "mc/world/level/material/Material.h"
 
 namespace coral_fans::cfsp::simulated_player {
 base::OperateResult SimPlayer::attack(int times, int interval) {
@@ -42,7 +44,10 @@ base::OperateResult SimPlayer::build(int times, int interval) {
     this->mTaskid = base::Schedule::getInstance().getSchedule()->add(interval, [times, this](unsigned long long t) {
         if (!this->mSimPlayer) [[unlikely]]
             return false;
-        const auto& hit = this->mSimPlayer->traceRay(5.25f);
+        const auto& hit =
+            this->mSimPlayer->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
+                return !block.mBlockType->mMaterial.mLiquid;
+            });
         if (hit.mType == HitResultType::Tile) {
             helper::CFSPHelperManager::getInstance().buildMutex = true;
             [[maybe_unused]] InteractionResult tem              = this->mSimPlayer->mGameMode->useItemOn(
@@ -141,7 +146,11 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
             if (!this->mSimPlayer) [[unlikely]]
                 return false;
             if (!_long && t >= (unsigned long long)interval) {
-                auto hit = this->mSimPlayer->traceRay(5.25f);
+                auto hit =
+                    this->mSimPlayer
+                        ->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
+                            return !block.mBlockType->mMaterial.mLiquid;
+                        });
                 if (hit.mType == HitResultType::Tile)
                     this->mSimPlayer->simulateDestroyBlock(
                         hit.mBlock,
@@ -156,7 +165,11 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                 return t / (interval + _long) != (unsigned long long)times;
             }
             if (index >= (unsigned long long)interval) {
-                auto hit = this->mSimPlayer->traceRay(5.25f);
+                auto hit =
+                    this->mSimPlayer
+                        ->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
+                            return !block.mBlockType->mMaterial.mLiquid;
+                        });
                 if (hit.mType == HitResultType::Tile)
                     this->mSimPlayer->simulateDestroyBlock(
                         hit.mBlock,
