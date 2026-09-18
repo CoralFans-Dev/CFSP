@@ -54,7 +54,7 @@ std::string CFSPManager::listOnlineSp(const Player* player) {
     auto uuid  = player->getUuid().asString();
     int  count = 0;
     for (auto cfsp : this->mOnlineSpMap)
-        if (cfsp.second->mSaveData.ownerUuid == uuid) {
+        if (cfsp.second->mSaveData.ownerUuid == uuid || cfsp.second->mSaveData.permission.contains(uuid)) {
             res += "manager.info.onlineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),
@@ -82,7 +82,7 @@ std::string CFSPManager::listOfflineSp(const Player* player) {
     auto uuid  = player->getUuid().asString();
     int  count = 0;
     for (auto cfsp : this->mOfflineSpMap)
-        if (cfsp.second->mSaveData.ownerUuid == uuid) {
+        if (cfsp.second->mSaveData.ownerUuid == uuid || cfsp.second->mSaveData.permission.contains(uuid)) {
             res += "manager.info.oflineSp"_tr(
                 cfsp.first,
                 base::utils::tryGetPlayerName(cfsp.second->mSaveData.ownerUuid),

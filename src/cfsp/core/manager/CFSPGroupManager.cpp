@@ -71,7 +71,7 @@ std::string CFSPManager::listGroup(const Player* player) {
         auto uuid  = player->getUuid().asString();
         int  count = 0;
         for (auto group : this->mGroupMap) {
-            if (group.second->mData.ownerUuid != uuid) continue;
+            if (group.second->mData.ownerUuid != uuid && !group.second->mData.permission.contains(uuid)) continue;
             count++;
             res += "manager.info.group"_tr(group.first, base::utils::tryGetPlayerName(group.second->mData.ownerUuid));
             for (auto spname : group.second->mData.splist) res += "  " + spname + '\n';
