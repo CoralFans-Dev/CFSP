@@ -1,5 +1,6 @@
 #include "MainMenuPage.h"
 #include "GroupListPage.h"
+#include "PublicGroupListPage.h"
 #include "PublicSpListPage.h"
 #include "SpListPage.h"
 #include "ll/api/form/SimpleForm.h"
@@ -18,6 +19,9 @@ void MainMenuPage::sendTo(Player& player) {
     });
     form.appendButton("gui.mainmenu.grouplistButton"_tr(), [self = shared_from_this()](Player& player) {
         std::make_shared<GroupListPage>(self)->sendTo(player);
+    });
+    form.appendButton("gui.mainmenu.publicGrouplistButton"_tr(), [self = shared_from_this()](Player& player) {
+        std::make_shared<PublicGroupListPage>(self)->sendTo(player);
     });
     form.sendTo(player);
 }

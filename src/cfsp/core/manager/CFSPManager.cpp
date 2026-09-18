@@ -263,6 +263,15 @@ std::vector<std::string> CFSPManager::getPublicSpNamesSorted() {
     return res;
 }
 
+std::vector<std::string> CFSPManager::getPublicGroupNamesSorted() {
+    std::vector<std::string> res;
+    for (auto i : mGroupMap) {
+        if (i.second->mData.publicPermission) res.emplace_back(i.first);
+    }
+    std::sort(res.begin(), res.end());
+    return res;
+}
+
 std::vector<std::string> CFSPManager::getAllSpNamesSorted() {
     std::vector<std::string> res;
     for (auto i : mOnlineSpMap) res.emplace_back(i.first);

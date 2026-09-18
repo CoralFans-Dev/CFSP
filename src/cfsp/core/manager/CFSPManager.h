@@ -84,6 +84,7 @@ public:
     std::vector<std::string>                                    getSpNamesSorted(const Player*);
     std::vector<std::string>                                    getGroupNamesSorted(const Player*);
     std::vector<std::string>                                    getPublicSpNamesSorted();
+    std::vector<std::string>                                    getPublicGroupNamesSorted();
     std::vector<std::string>                                    getAllSpNamesSorted();
     std::vector<std::string>                                    getAllGroupNamesSorted();
     std::vector<std::string>                                    getCanBeAddedSpList(const Player*);
