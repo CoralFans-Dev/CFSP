@@ -17,19 +17,20 @@ LL_TYPE_INSTANCE_HOOK(
     Block,
     &Block::use,
     bool,
-    Player&                 player,
+    ::Player&               player,
     ::BlockPos const&       pos,
     uchar                   face,
+    ::HandSlot              handSlot,
     ::std::optional<::Vec3> hit
 ) {
 #ifdef LL_PLAT_C
     if (auto serverInstance = ll::service::getServerInstance();
         !serverInstance
         || std::this_thread::get_id() != ll::service::getServerInstance()->mServerInstanceThread->get_id())
-        return origin(player, pos, face, hit);
+        return origin(player, pos, face, handSlot, hit);
 #endif
     if (CFSPHelperManager::getInstance().buildMutex) return false;
-    return origin(player, pos, face, hit);
+    return origin(player, pos, face, handSlot, hit);
 }
 
 LL_TYPE_INSTANCE_HOOK(

@@ -55,6 +55,7 @@ base::OperateResult SimPlayer::build(int times, int interval) {
                 hit.mBlock,
                 hit.mFacing,
                 hit.mPos,
+                HandSlot::Mainhand,
                 &this->mSimPlayer->getDimensionBlockSource().getBlock(hit.mBlock),
                 true
             );
