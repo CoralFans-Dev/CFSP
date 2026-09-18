@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.40.1] - 2026-9.18
+
+### Fixed
+
++ 修复了假人尝试挖掘水与岩浆的bug
++ 修复了指令与gui中list假人与假人组时行为不一致的bug
+
 ## [26.40.0] - 2026-9.9
 
 ### Added
