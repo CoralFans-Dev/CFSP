@@ -106,14 +106,7 @@ CFSPManager::spCreate(Player* player, std::string const& name, Vec3 const& pos, 
         return base::OperateResult::error("manager.fail.spHasExisted"_tr());
     }
     // check: name
-#ifdef LL_PLAT_S
-    auto spDir = cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = cfsp::CFSP::getInstance().getSelf().getWorldDataDir();
-    auto spDir        = worldDataDir ? worldDataDir.value() / "simplayer"
-                                     : cfsp::CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
+    auto spDir = base::utils::getSimplayerDataDir();
     if (!this->tryCreateDiretory(spDir, spname))
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     // create
@@ -273,7 +266,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
         }
         try {
             std::filesystem::remove_all(
-                CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+                base::utils::getSimplayerDataDir()
                 / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
             );
         } catch (...) {
@@ -290,7 +283,7 @@ base::OperateResult CFSPManager::spDelete(Player* player, std::string const& spn
         ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues("cfspOfflineSp", {spname});
         try {
             std::filesystem::remove_all(
-                CFSP::getInstance().getSelf().getDataDir() / "simplayer"
+                base::utils::getSimplayerDataDir()
                 / reinterpret_cast<const char8_t*>(it->second->mSaveData.name.c_str())
             );
             this->mOfflineSpMap.erase(it);

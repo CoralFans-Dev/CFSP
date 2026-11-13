@@ -1,5 +1,6 @@
 #include "CFSPGroup.h"
 #include "cfsp/CFSP.h"
+#include "cfsp/base/Utils.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/manager/CFSPManager.h"
 #include "ll/api/Config.h"
@@ -10,8 +11,7 @@ CFSPGroup::CFSPGroup(GroupData groupData) { this->mData = groupData; }
 void CFSPGroup::save() {
     ll::config::saveConfig(
         this->mData,
-        CFSP::getInstance().getSelf().getDataDir() / "group"
-            / reinterpret_cast<const char8_t*>(this->mData.name.c_str()) / "data.json"
+        base::utils::getGroupDataDir() / reinterpret_cast<const char8_t*>(this->mData.name.c_str()) / "data.json"
     );
 }
 

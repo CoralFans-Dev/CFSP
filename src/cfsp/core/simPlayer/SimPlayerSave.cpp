@@ -1,5 +1,6 @@
 #include "SimPlayer.h"
 #include "cfsp/CFSP.h"
+#include "cfsp/base/Utils.h"
 #include "ll/api/Config.h"
 #include "mc/dataloadhelper/DefaultDataLoadHelper.h"
 #include "mc/deps/nbt/CompoundTag.h"
@@ -8,14 +9,7 @@
 namespace coral_fans::cfsp::simulated_player {
 
 bool SimPlayer::save() {
-#ifdef LL_PLAT_S
-    auto dataDir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-    auto dataDir =
-        worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
+    auto dataDir = base::utils::getSimplayerDataDir();
     if (this->mSimPlayer && this->mSaveData.mGameType != this->mSimPlayer->getPlayerGameType()) {
         this->mSaveData.mGameType = this->mSimPlayer->getPlayerGameType();
         this->mShouldSave         = true;
@@ -48,14 +42,7 @@ bool SimPlayer::save() {
 bool SimPlayer::loadSpNbt() {
     if (!this->mSimPlayer) [[unlikely]]
         return false;
-#ifdef LL_PLAT_S
-    auto dataDir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-    auto dataDir =
-        worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
+    auto dataDir = base::utils::getSimplayerDataDir();
     auto path = dataDir / reinterpret_cast<const char8_t*>(this->mSaveData.name.c_str()) / "nbt";
     if (!std::filesystem::exists(path)) [[unlikely]]
         return false;
@@ -83,14 +70,7 @@ bool SimPlayer::loadSpNbt() {
 }
 
 bool SimPlayer::checkInvEmptyForOfflineCFSP() {
-#ifdef LL_PLAT_S
-    auto dataDir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-    auto dataDir =
-        worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
+    auto dataDir = base::utils::getSimplayerDataDir();
     auto path = dataDir / reinterpret_cast<const char8_t*>(this->mSaveData.name.c_str()) / "nbt";
     if (!std::filesystem::exists(path)) [[unlikely]]
         return false;

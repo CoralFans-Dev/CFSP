@@ -1,6 +1,7 @@
 #include "CFSPManager.h"
 #include "cfsp/CFSP.h"
 #include "cfsp/Config.h"
+#include "cfsp/base/Utils.h"
 #include "cfsp/core/fix/CFSPFixManager.h"
 #include "cfsp/core/group/CFSPGroup.h"
 #include "cfsp/core/helper/CFSPHelperManager.h"
@@ -74,14 +75,7 @@ void CFSPManager::save() {
 }
 
 void CFSPManager::loadSpSaveData() {
-#ifdef LL_PLAT_S
-    auto dir = CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-    auto dir =
-        worldDataDir ? worldDataDir.value() / "simplayer" : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
-#endif
+    auto dir = base::utils::getSimplayerDataDir();
     if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> splist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {
@@ -106,13 +100,7 @@ void CFSPManager::loadSpSaveData() {
 }
 
 void CFSPManager::loadGroupData() {
-#ifdef LL_PLAT_S
-    auto dir = CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-    auto dir = worldDataDir ? worldDataDir.value() / "group" : CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
+    auto dir = base::utils::getGroupDataDir();
     if (!std::filesystem::exists(dir)) std::filesystem::create_directories(dir);
     std::vector<std::string> cfspGrouplist;
     for (auto const& path : std::filesystem::directory_iterator(dir)) {

@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "cfsp/CFSP.h"
 #include "ll/api/i18n/I18n.h"
 #include "ll/api/service/Bedrock.h"
 #include "mc/world/actor/player/Player.h"
@@ -10,6 +11,28 @@ std::string tryGetPlayerName(std::string UUID) {
     auto player = ll::service::getLevel()->getPlayer(mce::UUID(UUID));
     if (player) return *player->mName;
     else return UUID;
+}
+
+std::filesystem::path getSimplayerDataDir() {
+#ifdef LL_PLAT_S
+    return CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
+    return worldDataDir ? worldDataDir.value() / "simplayer"
+                        : CFSP::getInstance().getSelf().getDataDir() / "simplayer";
+#endif
+}
+
+std::filesystem::path getGroupDataDir() {
+#ifdef LL_PLAT_S
+    return CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
+#ifdef LL_PLAT_C
+    auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
+    return worldDataDir ? worldDataDir.value() / "group"
+                        : CFSP::getInstance().getSelf().getDataDir() / "group";
+#endif
 }
 
 BlockPos neighbor(BlockPos pos, int face) {

@@ -37,14 +37,7 @@ base::OperateResult CFSPManager::groupCreate(Player* player, std::string const& 
     if (this->mGroupMap.find(gname) != this->mGroupMap.end())
         return base::OperateResult::error("manager.fail.groupHasExisted"_tr());
     // check: name
-#ifdef LL_PLAT_S
-    auto groupDir = cfsp::CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
-#ifdef LL_PLAT_C
-    auto worldDataDir = cfsp::CFSP::getInstance().getSelf().getWorldDataDir();
-    auto groupDir =
-        worldDataDir ? worldDataDir.value() / "group" : cfsp::CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
+    auto groupDir = base::utils::getGroupDataDir();
     if (!this->tryCreateDiretory(groupDir, gname))
         return base::OperateResult::error("manager.fail.includeIllegalChar"_tr());
     group::GroupData groupData;
@@ -96,15 +89,7 @@ base::OperateResult CFSPManager::groupDelete(Player* player, std::string const& 
     ll::command::CommandRegistrar::getInstance(false).removeSoftEnumValues("cfspGroup", {gname});
     this->mGroupMap.erase(it);
     try {
-#ifdef LL_PLAT_S
-        auto groupDelDir = CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
-#ifdef LL_PLAT_C
-        auto worldDataDir = CFSP::getInstance().getSelf().getWorldDataDir();
-        auto groupDelDir =
-            worldDataDir ? worldDataDir.value() / "group" : CFSP::getInstance().getSelf().getDataDir() / "group";
-#endif
-        std::filesystem::remove_all(groupDelDir / reinterpret_cast<const char8_t*>(groupName.c_str()));
+        std::filesystem::remove_all(base::utils::getGroupDataDir() / reinterpret_cast<const char8_t*>(groupName.c_str()));
     } catch (...) {
         return base::OperateResult::error("manager.error.deleteFileFail"_tr());
     }
