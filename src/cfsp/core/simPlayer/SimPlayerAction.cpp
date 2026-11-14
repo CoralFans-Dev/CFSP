@@ -46,7 +46,7 @@ base::OperateResult SimPlayer::build(int times, int interval) {
             return false;
         const auto& hit =
             this->mSimPlayer->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
-                return !block.mBlockType->mMaterial.mLiquid;
+                return !block.mBlockType->mMaterial->mLiquid;
             });
         if (hit.mType == HitResultType::Tile) {
             helper::CFSPHelperManager::getInstance().buildMutex = true;
@@ -150,7 +150,7 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                 auto hit =
                     this->mSimPlayer
                         ->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
-                            return !block.mBlockType->mMaterial.mLiquid;
+                            return !block.mBlockType->mMaterial->mLiquid;
                         });
                 if (hit.mType == HitResultType::Tile)
                     this->mSimPlayer->simulateDestroyBlock(
@@ -169,7 +169,7 @@ base::OperateResult SimPlayer::destroy(int _long, int times, int interval) {
                 auto hit =
                     this->mSimPlayer
                         ->traceRay(5.25f, true, true, [](const class BlockSource&, const class Block& block, bool) {
-                            return !block.mBlockType->mMaterial.mLiquid;
+                            return !block.mBlockType->mMaterial->mLiquid;
                         });
                 if (hit.mType == HitResultType::Tile)
                     this->mSimPlayer->simulateDestroyBlock(
